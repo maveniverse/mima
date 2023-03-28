@@ -1,3 +1,5 @@
 package org.cstamas.maven.mima.engine;
 
-public interface Engine {}
+import org.cstamas.maven.mima.context.MimaContextFactory;
+
+public interface Engine extends MimaContextFactory {}
