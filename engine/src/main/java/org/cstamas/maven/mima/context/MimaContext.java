@@ -6,7 +6,7 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 
 public interface MimaContext {
-    RepositorySystemSession rootSession();
+    RepositorySystemSession repositorySystemSession();
 
     RepositorySystem repositorySystem();
 
