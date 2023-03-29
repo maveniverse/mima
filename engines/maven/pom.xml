@@ -13,6 +13,10 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.cstamas.maven.mima</groupId>
+      <artifactId>core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.maven.resolver</groupId>
       <artifactId>maven-resolver-api</artifactId>
       <scope>provided</scope>

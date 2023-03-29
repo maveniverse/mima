@@ -47,12 +47,17 @@
       </dependency>
       <dependency>
         <groupId>org.cstamas.maven.mima.engines</groupId>
+        <artifactId>maven</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.cstamas.maven.mima.engines</groupId>
         <artifactId>standalone</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.cstamas.maven.mima.engines</groupId>
-        <artifactId>maven</artifactId>
+        <artifactId>uber</artifactId>
         <version>${project.version}</version>
       </dependency>
 
@@ -226,7 +231,7 @@
             <configuration>
               <rules>
                 <requireMavenVersion>
-                  <version>3.9.1</version>
+                  <version>3.8.8</version>
                 </requireMavenVersion>
                 <requireJavaVersion>
                   <version>${maven.compiler.release}</version>

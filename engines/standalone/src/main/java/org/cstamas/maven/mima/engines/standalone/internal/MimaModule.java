@@ -19,21 +19,30 @@ public class MimaModule implements Module {
     @Override
     public void configure(final Binder binder) {
         binder.bind(ParameterKeys.PROPERTIES).toInstance(configurationProperties);
+        binder.bind(MimaBooter.class);
         binder.bind(ShutdownThread.class).asEagerSingleton();
     }
 
     static final class ShutdownThread extends Thread {
+        private final ClassLoader classLoader;
         private final MutableBeanLocator locator;
 
         @Inject
         ShutdownThread(final MutableBeanLocator locator) {
+            this.classLoader = Thread.currentThread().getContextClassLoader();
             this.locator = locator;
             Runtime.getRuntime().addShutdownHook(this);
         }
 
         @Override
         public void run() {
-            locator.clear();
+            ClassLoader original = Thread.currentThread().getContextClassLoader();
+            Thread.currentThread().setContextClassLoader(classLoader);
+            try {
+                locator.clear();
+            } finally {
+                Thread.currentThread().setContextClassLoader(original);
+            }
         }
     }
 }

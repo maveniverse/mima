@@ -16,12 +16,6 @@
   <modules>
     <module>maven</module>
     <module>standalone</module>
+    <module>uber</module>
   </modules>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.cstamas.maven.mima</groupId>
-      <artifactId>core</artifactId>
-    </dependency>
-  </dependencies>
 </project>
