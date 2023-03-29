@@ -23,8 +23,7 @@
     </dependency>
     <dependency>
       <groupId>org.cstamas.maven.mima.engines</groupId>
-      <artifactId>maven</artifactId>
-      <scope>runtime</scope>
+      <artifactId>uber</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>
