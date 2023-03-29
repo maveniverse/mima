@@ -16,6 +16,5 @@
   <modules>
     <module>maven</module>
     <module>standalone</module>
-    <module>uber</module>
   </modules>
 </project>
