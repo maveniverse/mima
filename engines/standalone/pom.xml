@@ -11,16 +11,6 @@
   <artifactId>standalone</artifactId>
   <name>${project.groupId}:${project.artifactId}</name>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>commons-codec</groupId>
-        <artifactId>commons-codec</artifactId>
-        <version>1.15</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <dependencies>
     <dependency>
       <groupId>org.apache.maven.resolver</groupId>

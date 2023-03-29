@@ -19,9 +19,8 @@
   </licenses>
 
   <modules>
-    <module>engine</module>
-    <module>engines</module>
     <module>core</module>
+    <module>engines</module>
     <module>impl</module>
   </modules>
 
@@ -43,17 +42,17 @@
       <!-- Internal -->
       <dependency>
         <groupId>org.cstamas.maven.mima</groupId>
-        <artifactId>engine</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.cstamas.maven.mima</groupId>
         <artifactId>core</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.cstamas.maven.mima</groupId>
-        <artifactId>cli</artifactId>
+        <groupId>org.cstamas.maven.mima.engines</groupId>
+        <artifactId>standalone</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.cstamas.maven.mima.engines</groupId>
+        <artifactId>maven</artifactId>
         <version>${project.version}</version>
       </dependency>
 
@@ -108,7 +107,17 @@
         <artifactId>maven-resolver-transport-http</artifactId>
         <version>${version.resolver}</version>
       </dependency>
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.15</version>
+      </dependency>
 
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-plugin-api</artifactId>
+        <version>${version.maven}</version>
+      </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-core</artifactId>

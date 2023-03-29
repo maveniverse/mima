@@ -2,7 +2,7 @@ package org.cstamas.maven.mima.core;
 
 import static java.util.Objects.requireNonNull;
 
-import org.cstamas.maven.mima.context.MimaContext;
+import org.cstamas.maven.mima.core.context.MimaContext;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.graph.Dependency;

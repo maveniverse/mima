@@ -1,4 +1,4 @@
-package org.cstamas.maven.mima.context;
+package org.cstamas.maven.mima.core.context;
 
 import static java.util.Objects.requireNonNull;
 

@@ -21,7 +21,7 @@
   <dependencies>
     <dependency>
       <groupId>org.cstamas.maven.mima</groupId>
-      <artifactId>engine</artifactId>
+      <artifactId>core</artifactId>
     </dependency>
   </dependencies>
 </project>
