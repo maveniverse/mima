@@ -1,5 +1,9 @@
 package org.cstamas.maven.mima.context;
 
 public interface MimaContextFactory {
-    MimaContext create();
+    default MimaContext create() {
+        return create(MimaContextOverrides.Builder.create().build());
+    }
+
+    MimaContext create(MimaContextOverrides overrides);
 }

@@ -22,7 +22,7 @@
     <module>engine</module>
     <module>engines</module>
     <module>core</module>
-    <module>cli</module>
+    <module>impl</module>
   </modules>
 
   <properties>

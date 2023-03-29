@@ -3,7 +3,7 @@ package org.cstamas.maven.mima.core;
 import static java.util.Objects.requireNonNull;
 
 import org.cstamas.maven.mima.context.MimaContext;
-import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyNode;
@@ -18,8 +18,9 @@ public class MimaResolver {
         this.context = requireNonNull(context);
     }
 
-    public String classpath(String artifactoid) throws DependencyResolutionException {
-        Dependency dependency = new Dependency(new DefaultArtifact(artifactoid), "runtime");
+    public String classpath(Artifact artifact) throws DependencyResolutionException {
+        requireNonNull(artifact);
+        Dependency dependency = new Dependency(artifact, "runtime");
         CollectRequest collectRequest = new CollectRequest();
         collectRequest.setRoot(dependency);
         collectRequest.setRepositories(context.remoteRepositories());

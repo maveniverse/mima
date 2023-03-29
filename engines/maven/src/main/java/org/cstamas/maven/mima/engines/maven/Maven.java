@@ -5,12 +5,13 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import org.apache.maven.execution.MavenSession;
 import org.cstamas.maven.mima.context.MimaContext;
-import org.cstamas.maven.mima.engine.Engine;
+import org.cstamas.maven.mima.context.MimaContextOverrides;
+import org.cstamas.maven.mima.engine.EngineSupport;
 import org.eclipse.aether.RepositorySystem;
 
 @Singleton
 @Named
-public class Maven implements Engine {
+public class Maven extends EngineSupport {
 
     private final RepositorySystem repositorySystem;
 
@@ -23,8 +24,8 @@ public class Maven implements Engine {
     }
 
     @Override
-    public MimaContext create() {
-        return new MavenMimaContext(
+    public MimaContext create(MimaContextOverrides overrides) {
+        return new MimaContext(
                 mavenSession.getRepositorySession(),
                 repositorySystem,
                 mavenSession.getCurrentProject().getRemotePluginRepositories());
