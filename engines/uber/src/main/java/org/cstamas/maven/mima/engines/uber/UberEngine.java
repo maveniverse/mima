@@ -7,7 +7,7 @@ import org.cstamas.maven.mima.core.engine.EngineSupport;
 public class UberEngine extends EngineSupport {
 
     public UberEngine() {
-        super("uber");
+        super("uber", 20);
     }
 
     @Override

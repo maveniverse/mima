@@ -18,7 +18,13 @@
     </dependency>
     <dependency>
       <groupId>org.cstamas.maven.mima.engines</groupId>
-      <artifactId>smart</artifactId>
+      <artifactId>maven</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.cstamas.maven.mima.engines</groupId>
+      <artifactId>standalone</artifactId>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

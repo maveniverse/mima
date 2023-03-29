@@ -5,42 +5,32 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.file.Paths;
-import org.cstamas.maven.mima.core.MimaResolver;
-import org.cstamas.maven.mima.core.context.MimaContext;
 import org.cstamas.maven.mima.core.context.MimaContextOverrides;
-import org.cstamas.maven.mima.engines.smart.SmartEngine;
-import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.junit.jupiter.api.Test;
 
 public class MimaUserTest {
     @Test
     public void simple() throws Exception {
-        SmartEngine engine = new SmartEngine();
+        Classpath classpath = new Classpath();
 
         MimaContextOverrides overrides = MimaContextOverrides.Builder.create()
                 .localRepository(Paths.get("target/simple"))
                 .build();
-        MimaContext context = engine.create(overrides);
-        MimaResolver resolver = new MimaResolver(context);
 
-        DefaultArtifact artifact = new DefaultArtifact("junit:junit:4.13.2");
-        String classpath = resolver.classpath(artifact);
-        assertThat(classpath, notNullValue());
+        String cp = classpath.classpath(overrides, "junit:junit:4.13.2");
+        assertThat(cp, notNullValue());
     }
 
     @Test
     public void simpleOffline() {
-        SmartEngine engine = new SmartEngine();
+        Classpath classpath = new Classpath();
 
         MimaContextOverrides overrides = MimaContextOverrides.Builder.create()
                 .localRepository(Paths.get("target/simple-offline"))
                 .offline(true)
                 .build();
-        MimaContext context = engine.create(overrides);
-        MimaResolver resolver = new MimaResolver(context);
 
-        DefaultArtifact artifact = new DefaultArtifact("junit:junit:4.13.2");
-        assertThrows(DependencyResolutionException.class, () -> resolver.classpath(artifact));
+        assertThrows(DependencyResolutionException.class, () -> classpath.classpath(overrides, "junit:junit:4.13.2"));
     }
 }

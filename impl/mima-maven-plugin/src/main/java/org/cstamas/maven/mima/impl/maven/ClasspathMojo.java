@@ -1,14 +1,14 @@
 package org.cstamas.maven.mima.impl.maven;
 
+import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
-import org.cstamas.maven.mima.core.MimaResolver;
 import org.cstamas.maven.mima.core.context.MimaContextOverrides;
-import org.eclipse.aether.artifact.DefaultArtifact;
+import org.cstamas.maven.mima.impl.library.Classpath;
 
 @Mojo(name = "classpath")
-public class ClasspathMojo extends AbstractMimaMojo {
+public class ClasspathMojo extends AbstractMojo {
     @Parameter(required = true)
     private String artifact;
 
@@ -18,13 +18,14 @@ public class ClasspathMojo extends AbstractMimaMojo {
     @Override
     public void execute() throws MojoExecutionException {
         try {
-            DefaultArtifact a = new DefaultArtifact(artifact);
-            MimaResolver resolver = getResolver(
-                    MimaContextOverrides.Builder.create().offline(offline).build());
-            String classpath = resolver.classpath(a);
+            Classpath classpath = new Classpath();
+            MimaContextOverrides overrides =
+                    MimaContextOverrides.Builder.create().offline(offline).build();
+
+            String cp = classpath.classpath(overrides, artifact);
             getLog().info("");
             getLog().info("Classpath of " + artifact + " artifact is:");
-            getLog().info(classpath);
+            getLog().info(cp);
             getLog().info("");
         } catch (Exception e) {
             throw new MojoExecutionException(e);

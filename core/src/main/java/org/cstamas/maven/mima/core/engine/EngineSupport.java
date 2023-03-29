@@ -13,13 +13,21 @@ import org.eclipse.aether.repository.RemoteRepository;
 public abstract class EngineSupport implements Engine {
     private final String name;
 
-    protected EngineSupport(String name) {
+    private final int priority;
+
+    protected EngineSupport(String name, int priority) {
         this.name = requireNonNull(name);
+        this.priority = priority;
     }
 
     @Override
     public String name() {
         return name;
+    }
+
+    @Override
+    public int priority() {
+        return priority;
     }
 
     protected MimaContext applyOverrides(

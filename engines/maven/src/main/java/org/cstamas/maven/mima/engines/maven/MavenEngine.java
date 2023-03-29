@@ -19,7 +19,7 @@ public class MavenEngine extends EngineSupport {
 
     @Inject
     public MavenEngine(RepositorySystem repositorySystem, MavenSession mavenSession) {
-        super("maven");
+        super("maven", 10);
         this.repositorySystem = repositorySystem;
         this.mavenSession = mavenSession;
     }

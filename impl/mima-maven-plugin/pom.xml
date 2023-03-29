@@ -18,12 +18,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.cstamas.maven.mima</groupId>
-      <artifactId>core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.cstamas.maven.mima.engines</groupId>
-      <artifactId>smart</artifactId>
+      <groupId>org.cstamas.maven.mima.impl</groupId>
+      <artifactId>library</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>

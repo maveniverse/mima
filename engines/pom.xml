@@ -17,6 +17,5 @@
     <module>maven</module>
     <module>standalone</module>
     <module>uber</module>
-    <module>smart</module>
   </modules>
 </project>
