@@ -1,7 +1,6 @@
 package org.cstamas.maven.mima.impl.library;
 
 import java.nio.file.Paths;
-import org.cstamas.maven.mima.core.MimaResolver;
 import org.cstamas.maven.mima.core.context.MimaContext;
 import org.cstamas.maven.mima.core.context.MimaContextOverrides;
 import org.cstamas.maven.mima.core.engine.Engine;

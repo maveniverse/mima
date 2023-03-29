@@ -1,4 +1,4 @@
-package org.cstamas.maven.mima.core;
+package org.cstamas.maven.mima.impl.library;
 
 import static java.util.Objects.requireNonNull;
 
