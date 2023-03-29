@@ -26,7 +26,8 @@ public class MavenEngine extends EngineSupport {
 
     @Override
     public MimaContext create(MimaContextOverrides overrides) {
-        return new MimaContext(
+        return applyOverrides(
+                overrides,
                 mavenSession.getRepositorySession(),
                 repositorySystem,
                 mavenSession.getCurrentProject().getRemotePluginRepositories());
