@@ -3,6 +3,8 @@ package org.cstamas.maven.mima.engines.standalone;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.stream.Collectors;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.cstamas.maven.mima.core.context.MimaContext;
 import org.cstamas.maven.mima.core.context.MimaContextOverrides;
@@ -13,6 +15,8 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.RemoteRepository;
 
+@Singleton
+@Named
 public class StandaloneEngine extends EngineSupport {
 
     public StandaloneEngine() {

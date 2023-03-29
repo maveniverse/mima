@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 import org.cstamas.maven.mima.core.MimaResolver;
 import org.cstamas.maven.mima.core.context.MimaContext;
 import org.cstamas.maven.mima.core.context.MimaContextOverrides;
-import org.cstamas.maven.mima.engines.standalone.StandaloneEngine;
+import org.cstamas.maven.mima.engines.smart.SmartEngine;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 public class MimaUserTest {
     @Test
     public void simple() throws Exception {
-        StandaloneEngine engine = new StandaloneEngine();
+        SmartEngine engine = new SmartEngine();
 
         MimaContextOverrides overrides = MimaContextOverrides.Builder.create()
                 .localRepository(Paths.get("target/simple"))
@@ -31,7 +31,7 @@ public class MimaUserTest {
 
     @Test
     public void simpleOffline() {
-        StandaloneEngine engine = new StandaloneEngine();
+        SmartEngine engine = new SmartEngine();
 
         MimaContextOverrides overrides = MimaContextOverrides.Builder.create()
                 .localRepository(Paths.get("target/simple-offline"))
