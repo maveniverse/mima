@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.file.Paths;
-import org.cstamas.maven.mima.core.context.MimaContextOverrides;
+import org.cstamas.maven.mima.core.MimaContextOverrides;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.junit.jupiter.api.Test;
 

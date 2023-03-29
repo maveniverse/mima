@@ -55,16 +55,6 @@
         <artifactId>standalone</artifactId>
         <version>${project.version}</version>
       </dependency>
-      <dependency>
-        <groupId>org.cstamas.maven.mima.engines</groupId>
-        <artifactId>uber</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.cstamas.maven.mima.impl</groupId>
-        <artifactId>library</artifactId>
-        <version>${project.version}</version>
-      </dependency>
 
       <!-- External -->
       <dependency>
