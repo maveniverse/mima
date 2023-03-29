@@ -14,11 +14,7 @@
   <name>${project.groupId}:${project.artifactId}</name>
 
   <modules>
-    <module>cli</module>
-    <!-- as shaded uberjar CLI -->
     <module>mima-maven-plugin</module>
-    <!-- as maven-plugin -->
     <module>library</module>
-    <!-- as library -->
   </modules>
 </project>
