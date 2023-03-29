@@ -46,6 +46,7 @@ under the License.
               <goal>classpath</goal>
             </goals>
             <configuration>
+              <!-- as ITs share local repo in invoker, the simple and simple-offline operate on different junit -->
               <artifact>junit:junit:4.13.1</artifact>
             </configuration>
           </execution>

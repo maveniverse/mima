@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import org.eclipse.aether.RepositoryListener;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.transfer.TransferListener;
 
 public final class MimaContextOverrides {
     private final Map<String, String> userProperties;
@@ -27,6 +28,8 @@ public final class MimaContextOverrides {
 
     private final RepositoryListener repositoryListener;
 
+    private final TransferListener transferListener;
+
     private MimaContextOverrides(Builder builder) {
         this.userProperties = builder.userProperties;
         this.repositories = builder.repositories;
@@ -36,6 +39,7 @@ public final class MimaContextOverrides {
         this.withUserSettings = builder.withUserSettings;
         this.settingsXml = builder.settingsXml;
         this.repositoryListener = builder.repositoryListener;
+        this.transferListener = builder.transferListener;
     }
 
     public Map<String, String> getUserProperties() {
@@ -70,6 +74,10 @@ public final class MimaContextOverrides {
         return repositoryListener;
     }
 
+    public TransferListener getTransferListener() {
+        return transferListener;
+    }
+
     public static final class Builder {
         private Map<String, String> userProperties;
 
@@ -86,6 +94,8 @@ public final class MimaContextOverrides {
         private List<Path> settingsXml;
 
         private RepositoryListener repositoryListener;
+
+        private TransferListener transferListener;
 
         public static Builder create() {
             return new Builder();
@@ -158,6 +168,11 @@ public final class MimaContextOverrides {
 
         public Builder repositoryListener(RepositoryListener repositoryListener) {
             this.repositoryListener = repositoryListener;
+            return this;
+        }
+
+        public Builder transferListener(TransferListener transferListener) {
+            this.transferListener = transferListener;
             return this;
         }
 

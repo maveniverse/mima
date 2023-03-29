@@ -47,6 +47,7 @@ under the License.
             </goals>
             <configuration>
               <offline>true</offline>
+              <!-- as ITs share local repo in invoker, the simple and simple-offline operate on different junit -->
               <artifact>junit:junit:4.13.2</artifact>
             </configuration>
           </execution>

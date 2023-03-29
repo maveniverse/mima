@@ -30,6 +30,6 @@ public class MavenEngine extends EngineSupport {
                 overrides,
                 mavenSession.getRepositorySession(),
                 repositorySystem,
-                mavenSession.getCurrentProject().getRemotePluginRepositories());
+                mavenSession.getCurrentProject().getRemoteProjectRepositories());
     }
 }
