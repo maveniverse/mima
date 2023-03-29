@@ -19,7 +19,7 @@ public class MavenMimaEngine extends MimaEngineSupport {
 
     @Inject
     public MavenMimaEngine(RepositorySystem repositorySystem, MavenSession mavenSession) {
-        super("maven", 10);
+        super("maven", 10, false);
         this.repositorySystem = repositorySystem;
         this.mavenSession = mavenSession;
     }

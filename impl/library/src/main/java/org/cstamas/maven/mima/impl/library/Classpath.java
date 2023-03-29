@@ -13,11 +13,11 @@ public class Classpath {
     public String classpath(MimaContextOverrides overrides, String artifactStr) throws DependencyResolutionException {
         MimaEngine mimaEngine = MimaEngines.INSTANCE.getEngine();
 
-        MimaContext context = mimaEngine.create(overrides);
-        Resolver resolver = new Resolver(context);
-
-        DefaultArtifact artifact = new DefaultArtifact(artifactStr);
-        return resolver.classpath(artifact);
+        try (MimaContext context = mimaEngine.create(overrides)) {
+            Resolver resolver = new Resolver(context);
+            DefaultArtifact artifact = new DefaultArtifact(artifactStr);
+            return resolver.classpath(artifact);
+        }
     }
 
     public static void main(String... args) {

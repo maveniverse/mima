@@ -16,7 +16,7 @@ import org.eclipse.aether.repository.RemoteRepository;
 public class StandaloneMimaEngine extends MimaEngineSupport {
 
     public StandaloneMimaEngine() {
-        super("standalone", 30);
+        super("standalone", 30, true);
     }
 
     @Override

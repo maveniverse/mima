@@ -13,9 +13,12 @@ public abstract class MimaEngineSupport implements MimaEngine {
 
     private final int priority;
 
-    protected MimaEngineSupport(String name, int priority) {
+    private final boolean managedRepositorySystem;
+
+    protected MimaEngineSupport(String name, int priority, boolean managedRepositorySystem) {
         this.name = requireNonNull(name);
         this.priority = priority;
+        this.managedRepositorySystem = managedRepositorySystem;
     }
 
     @Override
@@ -28,6 +31,11 @@ public abstract class MimaEngineSupport implements MimaEngine {
         return priority;
     }
 
+    @Override
+    public boolean managedRepositorySystem() {
+        return managedRepositorySystem;
+    }
+
     protected MimaContext applyOverrides(
             MimaContextOverrides overrides,
             RepositorySystemSession repositorySystemSession,
@@ -36,6 +44,15 @@ public abstract class MimaEngineSupport implements MimaEngine {
         if (overrides.isOffline()) {
             repositorySystemSession = new DefaultRepositorySystemSession(repositorySystemSession).setOffline(true);
         }
-        return new MimaContext(repositorySystemSession, repositorySystem, remoteRepositories);
+        return new MimaContext(
+                managedRepositorySystem(), repositorySystem, repositorySystemSession, remoteRepositories);
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{name='"
+                + name + '\'' + ", priority="
+                + priority + ", managedRepositorySystem="
+                + managedRepositorySystem + '}';
     }
 }
