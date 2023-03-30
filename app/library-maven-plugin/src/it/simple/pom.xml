@@ -23,7 +23,7 @@ under the License.
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.cstamas.maven.mima.impl.maven.its</groupId>
+  <groupId>eu.maveniverse.maven.mima.impl.maven.its</groupId>
   <artifactId>simple</artifactId>
   <version>1.0</version>
   <packaging>pom</packaging>
@@ -35,7 +35,7 @@ under the License.
   <build>
     <plugins>
       <plugin>
-        <groupId>org.cstamas.maven.mima.app</groupId>
+        <groupId>eu.maveniverse.maven.mima.app</groupId>
         <artifactId>library-maven-plugin</artifactId>
         <version>@project.version@</version>
         <executions>

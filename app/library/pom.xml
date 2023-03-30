@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.cstamas.maven.mima.app</groupId>
+    <groupId>eu.maveniverse.maven.mima.app</groupId>
     <artifactId>app</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
@@ -13,19 +13,19 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.cstamas.maven.mima</groupId>
+      <groupId>eu.maveniverse.maven.mima</groupId>
       <artifactId>context</artifactId>
       <version>${version.mima}</version>
     </dependency>
     <!-- Both runtimes present makes this library work anywhere -->
     <dependency>
-      <groupId>org.cstamas.maven.mima.runtime</groupId>
+      <groupId>eu.maveniverse.maven.mima.runtime</groupId>
       <artifactId>embedded-maven</artifactId>
       <version>${version.mima}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.cstamas.maven.mima.runtime</groupId>
+      <groupId>eu.maveniverse.maven.mima.runtime</groupId>
       <artifactId>standalone-sisu</artifactId>
       <version>${version.mima}</version>
       <scope>runtime</scope>
