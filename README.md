@@ -59,10 +59,12 @@ MIMA offers following runtimes:
 * [embedded-maven](runtime/embedded-maven) - this runtime should be always present (is dependency-free, all are in 
   `provided` scope). It "activates" when runtime finds itself inside a Maven instance, and installs itself with
   highest priority.
+* [standalone-shared](runtime/standalone-shared) - this is NOT a runtime, but "shared" code for standalone runtimes,
+  mostly related to creation of session in "Maven like way".
 * [standalone-sisu](runtime/standalone-sisu) - this runtime may be always present (but in case of Maven Plugin it will 
   generate a ton of warnings due wrong Maven artifact scopes), but is best to simply exclude it in Maven Plugin POMs.
   This is a "fallback" runtime, when no other runtime is present, and has the lowest priority. Note: if `embedded-maven`
-  is not present on classpath, this runtime **will fail** when running within Maven.
-* [embedded-sisu](runtime/embedded-sisu) - (unused in demo) this runtime may be used in case you have an application
-  that is already using Sisu for DI, like apps using Ollie https://github.com/takari/ollie or Sonatype Nexus2 is.
+  is not present on classpath, this runtime **will fail** when running within Maven. This runtime may be used in 
+  case you have an application that is already using Sisu for DI, like apps using [Ollie](https://github.com/takari/ollie)
+  or Sonatype Nexus2 is.
 
