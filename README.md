@@ -27,8 +27,8 @@ written like "this or that", when managed by Sisu or `ServiceLocator`, component
 `ServiceLocator` pretty much forces you to write components you had to write in "good old" Plexus days.
 
 Moreover, recent changes in Maven 3.9.x explicitly **prevents creation of new `RepositorySystem` instances**, for 
-a good reason: if you run within Maven, you have everything "offered on a plate" (just inject it), no need to 
-reinvent the wheel, you have full environment initialized with user specs and setup. No need to reinvent the wheel: 
+a good reason: if you run within Maven, you have everything "offered on a plate" (just inject it): 
+you have full environment initialized with user specs and setup. No need to reinvent the wheel: 
 less code, less bugs. This made `ServiceLocator` defunct in Maven 3.9.x and beyond as well.
 
 Finally, Maven project never offered one-stop shop solution to use Resolver as a library. There was `ServiceLocator`
