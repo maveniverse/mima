@@ -4,6 +4,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.building.ModelBuilder;
+import org.apache.maven.settings.building.SettingsBuilder;
 import org.cstamas.maven.mima.context.Context;
 import org.cstamas.maven.mima.context.ContextOverrides;
 import org.cstamas.maven.mima.context.RuntimeSupport;
@@ -16,11 +18,21 @@ public class MavenRuntime extends RuntimeSupport {
 
     private final MavenSession mavenSession;
 
+    private final ModelBuilder modelBuilder;
+
+    private final SettingsBuilder settingsBuilder;
+
     @Inject
-    public MavenRuntime(RepositorySystem repositorySystem, MavenSession mavenSession) {
+    public MavenRuntime(
+            RepositorySystem repositorySystem,
+            MavenSession mavenSession,
+            ModelBuilder modelBuilder,
+            SettingsBuilder settingsBuilder) {
         super("embedded-maven", 10, false);
         this.repositorySystem = repositorySystem;
         this.mavenSession = mavenSession;
+        this.modelBuilder = modelBuilder;
+        this.settingsBuilder = settingsBuilder;
     }
 
     @Override

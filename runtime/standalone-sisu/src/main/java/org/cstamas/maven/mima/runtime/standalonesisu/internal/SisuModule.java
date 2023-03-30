@@ -1,4 +1,4 @@
-package org.cstamas.maven.mima.runtime.sisu.internal;
+package org.cstamas.maven.mima.runtime.standalonesisu.internal;
 
 import static java.util.Objects.requireNonNull;
 

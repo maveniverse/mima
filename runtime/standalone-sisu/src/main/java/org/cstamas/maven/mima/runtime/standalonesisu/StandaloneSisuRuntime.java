@@ -1,4 +1,4 @@
-package org.cstamas.maven.mima.runtime.sisu;
+package org.cstamas.maven.mima.runtime.standalonesisu;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,15 +7,15 @@ import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.cstamas.maven.mima.context.Context;
 import org.cstamas.maven.mima.context.ContextOverrides;
 import org.cstamas.maven.mima.context.RuntimeSupport;
-import org.cstamas.maven.mima.runtime.sisu.internal.SisuBooter;
+import org.cstamas.maven.mima.runtime.standalonesisu.internal.SisuBooter;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.RemoteRepository;
 
-public class SisuRuntime extends RuntimeSupport {
-    public SisuRuntime() {
-        super("sisu", 30, true);
+public class StandaloneSisuRuntime extends RuntimeSupport {
+    public StandaloneSisuRuntime() {
+        super("standalone-sisu", 30, true);
     }
 
     @Override

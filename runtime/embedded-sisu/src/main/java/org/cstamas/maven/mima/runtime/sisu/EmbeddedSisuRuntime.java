@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.apache.maven.settings.building.SettingsBuilder;
 import org.cstamas.maven.mima.context.Context;
@@ -19,12 +20,16 @@ import org.eclipse.aether.repository.RemoteRepository;
 public class EmbeddedSisuRuntime extends RuntimeSupport {
     private final RepositorySystem repositorySystem;
 
+    private final ModelBuilder modelBuilder;
+
     private final SettingsBuilder settingsBuilder;
 
     @Inject
-    public EmbeddedSisuRuntime(RepositorySystem repositorySystem, SettingsBuilder settingsBuilder) {
+    public EmbeddedSisuRuntime(
+            RepositorySystem repositorySystem, ModelBuilder modelBuilder, SettingsBuilder settingsBuilder) {
         super("embedded-sisu", 15, false);
         this.repositorySystem = repositorySystem;
+        this.modelBuilder = modelBuilder;
         this.settingsBuilder = settingsBuilder;
     }
 
