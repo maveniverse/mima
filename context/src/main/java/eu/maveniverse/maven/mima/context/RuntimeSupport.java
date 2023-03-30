@@ -25,12 +25,9 @@ public abstract class RuntimeSupport implements Runtime {
 
     private final int priority;
 
-    private final boolean managedRepositorySystem;
-
-    protected RuntimeSupport(String name, int priority, boolean managedRepositorySystem) {
+    protected RuntimeSupport(String name, int priority) {
         this.name = requireNonNull(name);
         this.priority = priority;
-        this.managedRepositorySystem = managedRepositorySystem;
     }
 
     @Override
@@ -44,9 +41,7 @@ public abstract class RuntimeSupport implements Runtime {
     }
 
     @Override
-    public boolean managedRepositorySystem() {
-        return managedRepositorySystem;
-    }
+    public abstract boolean managedRepositorySystem();
 
     protected static Context customizeContext(ContextOverrides overrides, Context context, boolean reset) {
         DefaultRepositorySystemSession session = new DefaultRepositorySystemSession(context.repositorySystemSession());
@@ -151,9 +146,6 @@ public abstract class RuntimeSupport implements Runtime {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "{name='"
-                + name + '\'' + ", priority="
-                + priority + ", managedRepositorySystem="
-                + managedRepositorySystem + '}';
+        return getClass().getSimpleName() + "{name='" + name + '\'' + ", priority=" + priority + "}";
     }
 }

@@ -18,9 +18,14 @@ public class MavenRuntime extends RuntimeSupport {
 
     @Inject
     public MavenRuntime(RepositorySystem repositorySystem, MavenSession mavenSession) {
-        super("embedded-maven", 10, false);
+        super("embedded-maven", 10);
         this.repositorySystem = repositorySystem;
         this.mavenSession = mavenSession;
+    }
+
+    @Override
+    public boolean managedRepositorySystem() {
+        return false;
     }
 
     @Override

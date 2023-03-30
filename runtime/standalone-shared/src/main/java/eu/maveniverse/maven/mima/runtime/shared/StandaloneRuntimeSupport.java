@@ -38,8 +38,8 @@ import org.eclipse.aether.util.repository.DefaultProxySelector;
 import org.eclipse.aether.util.repository.SimpleResolutionErrorPolicy;
 
 public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
-    protected StandaloneRuntimeSupport(String name, int priority, boolean managedRepositorySystem) {
-        super(name, priority, managedRepositorySystem);
+    protected StandaloneRuntimeSupport(String name, int priority) {
+        super(name, priority);
     }
 
     protected static Context buildContext(

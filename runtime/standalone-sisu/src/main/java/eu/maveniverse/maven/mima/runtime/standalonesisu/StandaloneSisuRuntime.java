@@ -24,10 +24,15 @@ public class StandaloneSisuRuntime extends StandaloneRuntimeSupport {
     @Inject
     public StandaloneSisuRuntime(
             RepositorySystem repositorySystem, SettingsBuilder settingsBuilder, SettingsDecrypter settingsDecrypter) {
-        super("standalone-sisu", 30, repositorySystem == null);
+        super("standalone-sisu", 30);
         this.repositorySystem = repositorySystem;
         this.settingsBuilder = settingsBuilder;
         this.settingsDecrypter = settingsDecrypter;
+    }
+
+    @Override
+    public boolean managedRepositorySystem() {
+        return repositorySystem == null;
     }
 
     @Override
@@ -35,14 +40,9 @@ public class StandaloneSisuRuntime extends StandaloneRuntimeSupport {
         if (repositorySystem == null) {
             SisuBooter booter = SisuBooter.newRepositorySystem();
             return buildContext(
-                    managedRepositorySystem(),
-                    overrides,
-                    booter.repositorySystem,
-                    booter.settingsBuilder,
-                    booter.settingsDecrypter);
+                    true, overrides, booter.repositorySystem, booter.settingsBuilder, booter.settingsDecrypter);
         } else {
-            return buildContext(
-                    managedRepositorySystem(), overrides, repositorySystem, settingsBuilder, settingsDecrypter);
+            return buildContext(false, overrides, repositorySystem, settingsBuilder, settingsDecrypter);
         }
     }
 }
