@@ -61,8 +61,8 @@ MIMA offers following runtimes:
   highest priority.
 * [standalone-sisu](runtime/standalone-sisu) - this runtime may be always present (but in case of Maven Plugin it will 
   generate a ton of warnings due wrong Maven artifact scopes), but is best to simply exclude it in Maven Plugin POMs.
-  This is a "fallback" runtime, when no other runtime is present, has lowest priority. It is meant to be used outside
-  a Maven instances, and has lowest priority.
+  This is a "fallback" runtime, when no other runtime is present, and has the lowest priority. Note: if `embedded-maven`
+  is not present on classpath, this runtime **will fail** when running within Maven.
 * [embedded-sisu](runtime/embedded-sisu) - (unused in demo) this runtime may be used in case you have an application
   that is already using Sisu for DI, like apps using Ollie https://github.com/takari/ollie or Sonatype Nexus2 is.
 
