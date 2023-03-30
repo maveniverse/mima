@@ -1,6 +1,6 @@
 package org.cstamas.maven.mima.context;
 
-public interface MimaEngine extends MimaContextFactory {
+public interface Runtime extends ContextFactory {
     String name();
 
     int priority();

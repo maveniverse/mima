@@ -9,15 +9,15 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.sisu.launch.Main;
 import org.eclipse.sisu.space.BeanScanning;
 
-public class MimaBooter {
+public class StandaloneBooter {
     @Inject
     public RepositorySystem repositorySystem;
 
     @Inject
     public SettingsBuilder settingsBuilder;
 
-    public static MimaBooter newRepositorySystem(Map<String, String> configurationProperties) {
-        final Module app = Main.wire(BeanScanning.INDEX, new MimaModule(configurationProperties));
-        return Guice.createInjector(app).getInstance(MimaBooter.class);
+    public static StandaloneBooter newRepositorySystem(Map<String, String> configurationProperties) {
+        final Module app = Main.wire(BeanScanning.INDEX, new StandaloneModule(configurationProperties));
+        return Guice.createInjector(app).getInstance(StandaloneBooter.class);
     }
 }

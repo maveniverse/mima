@@ -8,14 +8,14 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 
-public abstract class MimaEngineSupport implements MimaEngine {
+public abstract class RuntimeSupport implements Runtime {
     private final String name;
 
     private final int priority;
 
     private final boolean managedRepositorySystem;
 
-    protected MimaEngineSupport(String name, int priority, boolean managedRepositorySystem) {
+    protected RuntimeSupport(String name, int priority, boolean managedRepositorySystem) {
         this.name = requireNonNull(name);
         this.priority = priority;
         this.managedRepositorySystem = managedRepositorySystem;
@@ -36,16 +36,15 @@ public abstract class MimaEngineSupport implements MimaEngine {
         return managedRepositorySystem;
     }
 
-    protected MimaContext applyOverrides(
-            MimaContextOverrides overrides,
+    protected Context applyOverrides(
+            ContextOverrides overrides,
             RepositorySystemSession repositorySystemSession,
             RepositorySystem repositorySystem,
             List<RemoteRepository> remoteRepositories) {
         if (overrides.isOffline()) {
             repositorySystemSession = new DefaultRepositorySystemSession(repositorySystemSession).setOffline(true);
         }
-        return new MimaContext(
-                managedRepositorySystem(), repositorySystem, repositorySystemSession, remoteRepositories);
+        return new Context(managedRepositorySystem(), repositorySystem, repositorySystemSession, remoteRepositories);
     }
 
     @Override

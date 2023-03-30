@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.file.Paths;
-import org.cstamas.maven.mima.context.MimaContextOverrides;
+import org.cstamas.maven.mima.context.ContextOverrides;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +14,7 @@ public class MimaUserTest {
     public void simple() throws Exception {
         Classpath classpath = new Classpath();
 
-        MimaContextOverrides overrides = MimaContextOverrides.Builder.create()
+        ContextOverrides overrides = ContextOverrides.Builder.create()
                 .localRepository(Paths.get("target/simple"))
                 .build();
 
@@ -26,7 +26,7 @@ public class MimaUserTest {
     public void simpleOffline() {
         Classpath classpath = new Classpath();
 
-        MimaContextOverrides overrides = MimaContextOverrides.Builder.create()
+        ContextOverrides overrides = ContextOverrides.Builder.create()
                 .localRepository(Paths.get("target/simple-offline"))
                 .offline(true)
                 .build();

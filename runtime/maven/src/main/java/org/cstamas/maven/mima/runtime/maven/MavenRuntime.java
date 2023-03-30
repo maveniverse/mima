@@ -4,28 +4,27 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import org.apache.maven.execution.MavenSession;
-import org.cstamas.maven.mima.context.MimaContext;
-import org.cstamas.maven.mima.context.MimaContextOverrides;
-import org.cstamas.maven.mima.context.MimaEngineSupport;
+import org.cstamas.maven.mima.context.Context;
+import org.cstamas.maven.mima.context.ContextOverrides;
+import org.cstamas.maven.mima.context.RuntimeSupport;
 import org.eclipse.aether.RepositorySystem;
 
 @Singleton
 @Named
-public class MavenMimaEngine extends MimaEngineSupport {
-
+public class MavenRuntime extends RuntimeSupport {
     private final RepositorySystem repositorySystem;
 
     private final MavenSession mavenSession;
 
     @Inject
-    public MavenMimaEngine(RepositorySystem repositorySystem, MavenSession mavenSession) {
+    public MavenRuntime(RepositorySystem repositorySystem, MavenSession mavenSession) {
         super("maven", 10, false);
         this.repositorySystem = repositorySystem;
         this.mavenSession = mavenSession;
     }
 
     @Override
-    public MimaContext create(MimaContextOverrides overrides) {
+    public Context create(ContextOverrides overrides) {
         return applyOverrides(
                 overrides,
                 mavenSession.getRepositorySession(),

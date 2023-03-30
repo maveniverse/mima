@@ -8,7 +8,7 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 
-public class MimaContext implements Closeable {
+public class Context implements Closeable {
     private final boolean managedRepositorySystem;
     private final RepositorySystem repositorySystem;
 
@@ -16,7 +16,7 @@ public class MimaContext implements Closeable {
 
     private final List<RemoteRepository> remoteRepositories;
 
-    public MimaContext(
+    public Context(
             boolean managedRepositorySystem,
             RepositorySystem repositorySystem,
             RepositorySystemSession repositorySystemSession,

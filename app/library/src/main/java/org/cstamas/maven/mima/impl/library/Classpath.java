@@ -1,19 +1,19 @@
 package org.cstamas.maven.mima.impl.library;
 
 import java.nio.file.Paths;
-import org.cstamas.maven.mima.context.MimaContext;
-import org.cstamas.maven.mima.context.MimaContextOverrides;
-import org.cstamas.maven.mima.context.MimaEngine;
-import org.cstamas.maven.mima.context.MimaEngines;
+import org.cstamas.maven.mima.context.Context;
+import org.cstamas.maven.mima.context.ContextOverrides;
+import org.cstamas.maven.mima.context.Runtime;
+import org.cstamas.maven.mima.context.Runtimes;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 
 public class Classpath {
 
-    public String classpath(MimaContextOverrides overrides, String artifactStr) throws DependencyResolutionException {
-        MimaEngine mimaEngine = MimaEngines.INSTANCE.getEngine();
+    public String classpath(ContextOverrides overrides, String artifactStr) throws DependencyResolutionException {
+        Runtime runtime = Runtimes.INSTANCE.getRuntime();
 
-        try (MimaContext context = mimaEngine.create(overrides)) {
+        try (Context context = runtime.create(overrides)) {
             Resolver resolver = new Resolver(context);
             DefaultArtifact artifact = new DefaultArtifact(artifactStr);
             return resolver.classpath(artifact);
@@ -26,7 +26,7 @@ public class Classpath {
         }
         Classpath classpath = new Classpath();
         try {
-            MimaContextOverrides overrides = MimaContextOverrides.Builder.create()
+            ContextOverrides overrides = ContextOverrides.Builder.create()
                     .localRepository(Paths.get("target/simple"))
                     .build();
 

@@ -11,7 +11,7 @@ import org.eclipse.aether.RepositoryListener;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.transfer.TransferListener;
 
-public final class MimaContextOverrides {
+public final class ContextOverrides {
     private final Map<String, String> userProperties;
 
     private final List<RemoteRepository> repositories;
@@ -30,7 +30,7 @@ public final class MimaContextOverrides {
 
     private final TransferListener transferListener;
 
-    private MimaContextOverrides(Builder builder) {
+    private ContextOverrides(Builder builder) {
         this.userProperties = builder.userProperties;
         this.repositories = builder.repositories;
         this.offline = builder.offline;
@@ -176,8 +176,8 @@ public final class MimaContextOverrides {
             return this;
         }
 
-        public MimaContextOverrides build() {
-            return new MimaContextOverrides(this);
+        public ContextOverrides build() {
+            return new ContextOverrides(this);
         }
     }
 }

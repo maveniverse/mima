@@ -2,7 +2,7 @@ package org.cstamas.maven.mima.impl.library;
 
 import static java.util.Objects.requireNonNull;
 
-import org.cstamas.maven.mima.context.MimaContext;
+import org.cstamas.maven.mima.context.Context;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.graph.Dependency;
@@ -12,9 +12,9 @@ import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
 
 public class Resolver {
-    private final MimaContext context;
+    private final Context context;
 
-    public Resolver(MimaContext context) {
+    public Resolver(Context context) {
         this.context = requireNonNull(context);
     }
 
