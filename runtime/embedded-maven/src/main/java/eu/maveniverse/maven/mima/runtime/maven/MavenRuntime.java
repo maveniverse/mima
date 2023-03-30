@@ -7,8 +7,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.building.ModelBuilder;
-import org.apache.maven.settings.building.SettingsBuilder;
 import org.eclipse.aether.RepositorySystem;
 
 @Singleton
@@ -18,29 +16,22 @@ public class MavenRuntime extends RuntimeSupport {
 
     private final MavenSession mavenSession;
 
-    private final ModelBuilder modelBuilder;
-
-    private final SettingsBuilder settingsBuilder;
-
     @Inject
-    public MavenRuntime(
-            RepositorySystem repositorySystem,
-            MavenSession mavenSession,
-            ModelBuilder modelBuilder,
-            SettingsBuilder settingsBuilder) {
+    public MavenRuntime(RepositorySystem repositorySystem, MavenSession mavenSession) {
         super("embedded-maven", 10, false);
         this.repositorySystem = repositorySystem;
         this.mavenSession = mavenSession;
-        this.modelBuilder = modelBuilder;
-        this.settingsBuilder = settingsBuilder;
     }
 
     @Override
     public Context create(ContextOverrides overrides) {
-        return applyOverrides(
+        return customizeContext(
                 overrides,
-                mavenSession.getRepositorySession(),
-                repositorySystem,
-                mavenSession.getCurrentProject().getRemoteProjectRepositories());
+                new Context(
+                        false,
+                        repositorySystem,
+                        mavenSession.getRepositorySession(),
+                        mavenSession.getCurrentProject().getRemoteProjectRepositories()),
+                false);
     }
 }

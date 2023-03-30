@@ -12,6 +12,18 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.transfer.TransferListener;
 
 public final class ContextOverrides {
+
+    public enum SnapshotUpdatePolicy {
+        ALWAYS,
+        NEVER
+    }
+
+    public enum ChecksumPolicy {
+        FAIL,
+        WARN,
+        IGNORE
+    }
+
     private final Map<String, String> userProperties;
 
     private final List<RemoteRepository> repositories;
@@ -20,11 +32,13 @@ public final class ContextOverrides {
 
     private final Path localRepository;
 
-    private final boolean forceUpdate;
+    private final SnapshotUpdatePolicy snapshotUpdatePolicy;
+
+    private final ChecksumPolicy checksumPolicy;
 
     private final boolean withUserSettings;
 
-    private final List<Path> settingsXml;
+    private final Path settingsXml;
 
     private final RepositoryListener repositoryListener;
 
@@ -35,7 +49,8 @@ public final class ContextOverrides {
         this.repositories = builder.repositories;
         this.offline = builder.offline;
         this.localRepository = builder.localRepository;
-        this.forceUpdate = builder.forceUpdate;
+        this.snapshotUpdatePolicy = builder.snapshotUpdatePolicy;
+        this.checksumPolicy = builder.checksumPolicy;
         this.withUserSettings = builder.withUserSettings;
         this.settingsXml = builder.settingsXml;
         this.repositoryListener = builder.repositoryListener;
@@ -58,15 +73,19 @@ public final class ContextOverrides {
         return localRepository;
     }
 
-    public boolean isForceUpdate() {
-        return forceUpdate;
+    public SnapshotUpdatePolicy getSnapshotUpdatePolicy() {
+        return snapshotUpdatePolicy;
+    }
+
+    public ChecksumPolicy getChecksumPolicy() {
+        return checksumPolicy;
     }
 
     public boolean isWithUserSettings() {
         return withUserSettings;
     }
 
-    public List<Path> getSettingsXml() {
+    public Path getSettingsXml() {
         return settingsXml;
     }
 
@@ -87,11 +106,13 @@ public final class ContextOverrides {
 
         private Path localRepository;
 
-        private boolean forceUpdate;
+        private SnapshotUpdatePolicy snapshotUpdatePolicy;
+
+        private ChecksumPolicy checksumPolicy;
 
         private boolean withUserSettings;
 
-        private List<Path> settingsXml;
+        private Path settingsXml;
 
         private RepositoryListener repositoryListener;
 
@@ -141,8 +162,13 @@ public final class ContextOverrides {
             return this;
         }
 
-        public Builder forceUpdate(boolean forceUpdate) {
-            this.forceUpdate = forceUpdate;
+        public Builder snapshotUpdatePolicy(SnapshotUpdatePolicy snapshotUpdatePolicy) {
+            this.snapshotUpdatePolicy = snapshotUpdatePolicy;
+            return this;
+        }
+
+        public Builder checksumPolicy(ChecksumPolicy checksumPolicy) {
+            this.checksumPolicy = checksumPolicy;
             return this;
         }
 
@@ -152,17 +178,7 @@ public final class ContextOverrides {
         }
 
         public Builder settingsXml(Path settingsXml) {
-            requireNonNull(settingsXml);
-            if (this.settingsXml == null) {
-                this.settingsXml = new ArrayList<>();
-            }
-            this.settingsXml.add(settingsXml);
-            return this;
-        }
-
-        public Builder settingsXml(List<Path> settingsXml) {
-            requireNonNull(settingsXml);
-            this.settingsXml = new ArrayList<>(settingsXml);
+            this.settingsXml = settingsXml;
             return this;
         }
 

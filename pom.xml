@@ -52,7 +52,7 @@
       </dependency>
       <dependency>
         <groupId>eu.maveniverse.maven.mima.runtime</groupId>
-        <artifactId>standalone</artifactId>
+        <artifactId>standalone-shared</artifactId>
         <version>${project.version}</version>
       </dependency>
 

@@ -1,25 +1,22 @@
 package eu.maveniverse.maven.mima.runtime.standalonesisu.internal;
 
-import static java.util.Objects.requireNonNull;
-
 import com.google.inject.Binder;
 import com.google.inject.Module;
-import java.util.Map;
+import com.google.inject.name.Names;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import org.eclipse.sisu.inject.MutableBeanLocator;
-import org.eclipse.sisu.wire.ParameterKeys;
+import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
+import org.sonatype.plexus.components.sec.dispatcher.SecDispatcher;
 
 public class SisuModule implements Module {
-    private final Map<String, String> configurationProperties;
-
-    public SisuModule(Map<String, String> configurationProperties) {
-        this.configurationProperties = requireNonNull(configurationProperties);
-    }
-
     @Override
     public void configure(final Binder binder) {
-        binder.bind(ParameterKeys.PROPERTIES).toInstance(configurationProperties);
         binder.bind(SisuBooter.class);
+        binder.bind(SecDispatcher.class)
+                .annotatedWith(Names.named("maven"))
+                .to(DefaultSecDispatcher.class)
+                .in(Singleton.class);
         binder.bind(ShutdownThread.class).asEagerSingleton();
     }
 
