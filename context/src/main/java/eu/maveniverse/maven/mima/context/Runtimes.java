@@ -22,7 +22,7 @@ public final class Runtimes {
         }
         if (result == null) {
             ServiceLoader<Runtime> loader = ServiceLoader.load(Runtime.class);
-            loader.stream().forEach(e -> registerRuntime(e.get()));
+            loader.iterator().forEachRemaining(this::registerRuntime);
             if (runtimes.isEmpty()) {
                 throw new IllegalStateException("No Runtime implementation found on classpath");
             }
