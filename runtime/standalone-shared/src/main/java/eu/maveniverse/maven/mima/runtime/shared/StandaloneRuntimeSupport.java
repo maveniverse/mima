@@ -43,7 +43,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
     }
 
     protected static Context buildContext(
-            boolean managedRepositorySystem,
+            StandaloneRuntimeSupport runtime,
             ContextOverrides overrides,
             RepositorySystem repositorySystem,
             SettingsBuilder settingsBuilder,
@@ -59,7 +59,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                         new RemoteRepository.Builder("central", "default", "https://repo.maven.apache.org/maven2/")
                                 .build());
             }
-            return new Context(managedRepositorySystem, repositorySystem, session, remoteRepositories);
+            return new Context(runtime, repositorySystem, session, remoteRepositories);
         } catch (Exception e) {
             throw new IllegalStateException("Cannot create context from scratch", e);
         }

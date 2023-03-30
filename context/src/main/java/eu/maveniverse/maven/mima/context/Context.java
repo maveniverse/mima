@@ -9,7 +9,7 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 
 public class Context implements Closeable {
-    private final boolean managedRepositorySystem;
+    private final RuntimeSupport runtime;
 
     private final RepositorySystem repositorySystem;
 
@@ -18,18 +18,18 @@ public class Context implements Closeable {
     private final List<RemoteRepository> remoteRepositories;
 
     public Context(
-            boolean managedRepositorySystem,
+            RuntimeSupport runtime,
             RepositorySystem repositorySystem,
             RepositorySystemSession repositorySystemSession,
             List<RemoteRepository> remoteRepositories) {
-        this.managedRepositorySystem = managedRepositorySystem;
+        this.runtime = runtime;
         this.repositorySystemSession = requireNonNull(repositorySystemSession);
         this.repositorySystem = requireNonNull(repositorySystem);
         this.remoteRepositories = requireNonNull(remoteRepositories);
     }
 
     public boolean isManagedRepositorySystem() {
-        return managedRepositorySystem;
+        return runtime.managedRepositorySystem();
     }
 
     public RepositorySystemSession repositorySystemSession() {
@@ -44,10 +44,15 @@ public class Context implements Closeable {
         return remoteRepositories;
     }
 
+    public Context customize(ContextOverrides overrides) {
+        return runtime.customizeContext(overrides, this, false);
+    }
+
     @Override
     public void close() {
+        // in the future session may become closeable as well
         // repositorySystemSession.close();
-        if (managedRepositorySystem) {
+        if (isManagedRepositorySystem()) {
             repositorySystem.shutdown();
         }
     }

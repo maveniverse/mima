@@ -43,7 +43,12 @@ public abstract class RuntimeSupport implements Runtime {
     @Override
     public abstract boolean managedRepositorySystem();
 
-    protected static Context customizeContext(ContextOverrides overrides, Context context, boolean reset) {
+    public Context customizeContext(ContextOverrides overrides, Context context, boolean reset) {
+        return customizeContext(this, overrides, context, reset);
+    }
+
+    protected static Context customizeContext(
+            RuntimeSupport runtime, ContextOverrides overrides, Context context, boolean reset) {
         DefaultRepositorySystemSession session = new DefaultRepositorySystemSession(context.repositorySystemSession());
         if (reset) {
             session.setCache(new DefaultRepositoryCache());
@@ -73,7 +78,7 @@ public abstract class RuntimeSupport implements Runtime {
         }
 
         return new Context(
-                context.isManagedRepositorySystem(),
+                runtime,
                 context.repositorySystem(),
                 session,
                 overrides.getRepositories() != null ? overrides.getRepositories() : context.remoteRepositories());

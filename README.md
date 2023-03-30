@@ -68,3 +68,29 @@ MIMA offers following runtimes:
   case you have an application that is already using Sisu for DI, like apps using [Ollie](https://github.com/takari/ollie)
   or Sonatype Nexus2 is.
 
+## Things to be aware of
+
+When your library executes within Maven, the context you get is actually coming from Maven:
+* repositorySystem == provided by Maven
+* repositorySystemSession == provided and preconfigured by Maven (w/ all user whistle and bells)
+* remoteRepositories == the current project remote repositories
+
+The session and remote repositories (and many other things) can be customized via overrides, but
+the "with-user-settings" cannot.
+
+When your library runs outside of Maven, the context you get is created "from the scratch", based
+on initial overrides you provided:
+* repositorySystem == provided by (already existing or booted) Sisu DI
+* repositorySystemSession == provided by MIMA w/ or w/o user env (see overrides)
+* remoteRepositories == "central" or those from overrides
+
+In any case, context is properly set up to support all whistle and bells from latest resolver
+(working outside of Maven, or from inside of Maven if 3.9.x or later is used with it) like
+split repository, extensible checksum algorithms, modern transport (and obeys configuration like
+timeouts or headers, same as Maven would), provided checksums, repository filtering, locking, etc.
+
+MIMA supports all resolver configuration properties from https://maven.apache.org/resolver/configuration.html
+when runs in standalone mode or embedded in Maven 3.9.x (that provides resolver that supports new features).
+
+Note: overrides are "all or nothing", so for example IF there is a list of remote repositories, 
+they REPLACE current repositories, if any.

@@ -31,9 +31,10 @@ public class MavenRuntime extends RuntimeSupport {
     @Override
     public Context create(ContextOverrides overrides) {
         return customizeContext(
+                this,
                 overrides,
                 new Context(
-                        false,
+                        this,
                         repositorySystem,
                         mavenSession.getRepositorySession(),
                         mavenSession.getCurrentProject().getRemoteProjectRepositories()),

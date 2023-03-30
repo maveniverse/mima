@@ -40,9 +40,9 @@ public class StandaloneSisuRuntime extends StandaloneRuntimeSupport {
         if (repositorySystem == null) {
             SisuBooter booter = SisuBooter.newRepositorySystem();
             return buildContext(
-                    true, overrides, booter.repositorySystem, booter.settingsBuilder, booter.settingsDecrypter);
+                    this, overrides, booter.repositorySystem, booter.settingsBuilder, booter.settingsDecrypter);
         } else {
-            return buildContext(false, overrides, repositorySystem, settingsBuilder, settingsDecrypter);
+            return buildContext(this, overrides, repositorySystem, settingsBuilder, settingsDecrypter);
         }
     }
 }
