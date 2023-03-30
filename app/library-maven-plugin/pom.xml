@@ -23,6 +23,7 @@
       <artifactId>library</artifactId>
       <version>${version.mima}</version>
       <exclusions>
+        <!-- Would work without this, but added to prevent maven-plugin-plugin from bitching about wrong scopes of maven bits -->
         <exclusion>
           <groupId>org.cstamas.maven.mima.runtime</groupId>
           <artifactId>standalone-sisu</artifactId>

@@ -17,9 +17,10 @@
       <artifactId>context</artifactId>
       <version>${version.mima}</version>
     </dependency>
+    <!-- Both runtimes present makes this library work anywhere -->
     <dependency>
       <groupId>org.cstamas.maven.mima.runtime</groupId>
-      <artifactId>maven</artifactId>
+      <artifactId>embedded-maven</artifactId>
       <version>${version.mima}</version>
       <scope>runtime</scope>
     </dependency>
@@ -29,6 +30,7 @@
       <version>${version.mima}</version>
       <scope>runtime</scope>
     </dependency>
+
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
