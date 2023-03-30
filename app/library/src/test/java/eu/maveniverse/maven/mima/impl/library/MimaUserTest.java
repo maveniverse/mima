@@ -18,7 +18,7 @@ public class MimaUserTest {
                 .localRepository(Paths.get("target/simple"))
                 .build();
 
-        String cp = classpath.classpath(overrides, "junit:junit:4.13.1");
+        String cp = classpath.classpath(overrides, "junit:junit:4.13.2");
         assertThat(cp, notNullValue());
     }
 
