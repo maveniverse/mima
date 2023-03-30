@@ -25,7 +25,7 @@
     </dependency>
     <dependency>
       <groupId>org.cstamas.maven.mima.runtime</groupId>
-      <artifactId>standalone</artifactId>
+      <artifactId>standalone-sisu</artifactId>
       <version>${version.mima}</version>
       <scope>runtime</scope>
     </dependency>

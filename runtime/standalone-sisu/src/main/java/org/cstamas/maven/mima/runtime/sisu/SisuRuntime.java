@@ -1,4 +1,4 @@
-package org.cstamas.maven.mima.runtime.standalone;
+package org.cstamas.maven.mima.runtime.sisu;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,15 +7,15 @@ import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.cstamas.maven.mima.context.Context;
 import org.cstamas.maven.mima.context.ContextOverrides;
 import org.cstamas.maven.mima.context.RuntimeSupport;
-import org.cstamas.maven.mima.runtime.standalone.internal.StandaloneBooter;
+import org.cstamas.maven.mima.runtime.sisu.internal.SisuBooter;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.RemoteRepository;
 
-public class StandaloneRuntime extends RuntimeSupport {
-    public StandaloneRuntime() {
-        super("standalone", 30, true);
+public class SisuRuntime extends RuntimeSupport {
+    public SisuRuntime() {
+        super("sisu", 30, true);
     }
 
     @Override
@@ -27,7 +27,7 @@ public class StandaloneRuntime extends RuntimeSupport {
             configurationProperties.putAll(overrides.getUserProperties());
         }
 
-        StandaloneBooter booter = StandaloneBooter.newRepositorySystem(configurationProperties);
+        SisuBooter booter = SisuBooter.newRepositorySystem(configurationProperties);
         ArrayList<RemoteRepository> repositories = new ArrayList<>();
         repositories.add(
                 new RemoteRepository.Builder("central", "default", "https://repo.maven.apache.org/maven2/").build());

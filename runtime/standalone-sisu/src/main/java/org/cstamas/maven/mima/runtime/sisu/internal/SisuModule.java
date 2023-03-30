@@ -1,4 +1,4 @@
-package org.cstamas.maven.mima.runtime.standalone.internal;
+package org.cstamas.maven.mima.runtime.sisu.internal;
 
 import static java.util.Objects.requireNonNull;
 
@@ -9,17 +9,17 @@ import javax.inject.Inject;
 import org.eclipse.sisu.inject.MutableBeanLocator;
 import org.eclipse.sisu.wire.ParameterKeys;
 
-public class StandaloneModule implements Module {
+public class SisuModule implements Module {
     private final Map<String, String> configurationProperties;
 
-    public StandaloneModule(Map<String, String> configurationProperties) {
+    public SisuModule(Map<String, String> configurationProperties) {
         this.configurationProperties = requireNonNull(configurationProperties);
     }
 
     @Override
     public void configure(final Binder binder) {
         binder.bind(ParameterKeys.PROPERTIES).toInstance(configurationProperties);
-        binder.bind(StandaloneBooter.class);
+        binder.bind(SisuBooter.class);
         binder.bind(ShutdownThread.class).asEagerSingleton();
     }
 

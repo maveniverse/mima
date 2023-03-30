@@ -1,0 +1,5 @@
+File buildLog = new File( basedir, 'build.log' )
+assert buildLog.exists()
+assert buildLog.text.contains( "[DEBUG] Runtimes.getRuntime: MavenRuntime" )
+assert buildLog.text.contains( "org.eclipse.aether.resolution.DependencyResolutionException: The following artifacts could not be resolved: junit:junit:jar:4.13.2 (absent)" )
+assert buildLog.text.contains( "in offline mode" )
