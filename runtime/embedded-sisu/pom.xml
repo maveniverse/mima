@@ -8,7 +8,7 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>standalone-sisu</artifactId>
+  <artifactId>embedded-sisu</artifactId>
   <name>${project.groupId}:${project.artifactId}</name>
 
   <dependencies>
@@ -65,14 +65,17 @@
     <dependency>
       <groupId>javax.inject</groupId>
       <artifactId>javax.inject</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.eclipse.sisu</groupId>
       <artifactId>org.eclipse.sisu.inject</artifactId>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 </project>

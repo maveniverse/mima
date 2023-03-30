@@ -15,6 +15,7 @@
 
   <modules>
     <module>embedded-maven</module>
+    <module>embedded-sisu</module>
     <module>standalone-sisu</module>
   </modules>
 </project>
