@@ -82,6 +82,7 @@ public abstract class RuntimeSupport implements Runtime {
 
         return new Context(
                 runtime,
+                false, // derived context: close should NOT shut down repositorySystem
                 context.repositorySystem(),
                 session,
                 overrides.getRepositories() != null
