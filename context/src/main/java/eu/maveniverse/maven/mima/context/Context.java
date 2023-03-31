@@ -8,7 +8,7 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 
-public class Context implements Closeable {
+public final class Context implements Closeable {
     private final RuntimeSupport runtime;
 
     private final boolean managedRepositorySystem;

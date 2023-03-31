@@ -3,6 +3,7 @@ package eu.maveniverse.maven.mima.runtime.shared;
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.RuntimeSupport;
+import eu.maveniverse.maven.mima.context.RuntimeVersions;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,8 +39,16 @@ import org.eclipse.aether.util.repository.DefaultProxySelector;
 import org.eclipse.aether.util.repository.SimpleResolutionErrorPolicy;
 
 public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
+    private final RuntimeVersions runtimeVersions;
+
     protected StandaloneRuntimeSupport(String name, int priority) {
         super(name, priority);
+        this.runtimeVersions = discoverVersions();
+    }
+
+    @Override
+    public RuntimeVersions runtimeVersions() {
+        return runtimeVersions;
     }
 
     protected static Context buildContext(

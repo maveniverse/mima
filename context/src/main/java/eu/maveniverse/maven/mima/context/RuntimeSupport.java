@@ -2,11 +2,12 @@ package eu.maveniverse.maven.mima.context;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import org.eclipse.aether.DefaultRepositoryCache;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.DefaultSessionData;
@@ -155,8 +156,46 @@ public abstract class RuntimeSupport implements Runtime {
         }
     }
 
+    protected static RuntimeVersions discoverVersions() {
+        return new RuntimeVersions(
+                discoverMavenInfoVersion("org.apache.maven.resolver", "maven-resolver-api"),
+                discoverMavenInfoVersion("org.apache.maven", "maven-resolver-provider"));
+    }
+
+    protected static String discoverMavenInfoVersion(String groupId, String artifactId) {
+        Map<String, String> mavenInfo = discoverMavenInfo(groupId, artifactId);
+        String versionString = mavenInfo.getOrDefault("version", "").trim();
+        if (!versionString.startsWith("${")) {
+            return versionString;
+        }
+        return null;
+    }
+
+    protected static Map<String, String> discoverMavenInfo(String groupId, String artifactId) {
+        final String resource = "META-INF/maven/" + groupId + "/" + artifactId + "/pom.properties";
+        final Properties props = new Properties();
+        try (InputStream is = RuntimeSupport.class.getResourceAsStream("/" + resource)) {
+            if (is != null) {
+                props.load(is);
+            }
+        } catch (IOException e) {
+            // fall through
+        }
+        return props.entrySet().stream()
+                .collect(toMap(
+                        e -> String.valueOf(e.getKey()),
+                        e -> String.valueOf(e.getValue()),
+                        (prev, next) -> next,
+                        HashMap::new));
+    }
+
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "{name='" + name + '\'' + ", priority=" + priority + "}";
+        RuntimeVersions rt = runtimeVersions();
+        return getClass().getSimpleName() + "{name='"
+                + name + '\'' + ", priority="
+                + priority + ", mavenVersion="
+                + rt.mavenVersion() + ", resolverVersion="
+                + rt.resolverVersion() + '}';
     }
 }

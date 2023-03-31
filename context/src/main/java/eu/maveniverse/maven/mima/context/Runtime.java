@@ -6,4 +6,6 @@ public interface Runtime extends ContextFactory {
     int priority();
 
     boolean managedRepositorySystem();
+
+    RuntimeVersions runtimeVersions();
 }
