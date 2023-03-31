@@ -10,7 +10,7 @@
 
   <groupId>eu.maveniverse.maven.mima</groupId>
   <artifactId>mima</artifactId>
-  <version>1.0.1-SNAPSHOT</version>
+  <version>1.0.1</version>
   <packaging>pom</packaging>
 
   <name>${project.groupId}:${project.artifactId}</name>
@@ -32,7 +32,7 @@
   <scm>
     <connection>scm:git:git@github.com:maveniverse/mima.git</connection>
     <developerConnection>scm:git:git@github.com:maveniverse/mima.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>release-1.0.1</tag>
     <url>https://github.com/maveniverse/mima</url>
   </scm>
 
@@ -47,7 +47,7 @@
   </ciManagement>
 
   <properties>
-    <project.build.outputTimestamp>2023-03-31T08:56:46Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2023-03-31T10:08:25Z</project.build.outputTimestamp>
 
     <!-- Dependency versions -->
     <version.resolver>1.9.7</version.resolver>
