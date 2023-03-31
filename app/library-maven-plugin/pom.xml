@@ -21,7 +21,7 @@
     <dependency>
       <groupId>eu.maveniverse.maven.mima.app</groupId>
       <artifactId>library</artifactId>
-      <version>${version.mima}</version>
+      <version>${project.version}</version>
       <exclusions>
         <!-- Would work without this, but added to prevent maven-plugin-plugin from bitching about wrong scopes of maven bits -->
         <exclusion>
