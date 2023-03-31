@@ -20,7 +20,7 @@
   </modules>
 
   <properties>
-    <version.mima>1.0.1</version.mima>
+    <version.mima>1.0.2-SNAPSHOT</version.mima>
   </properties>
 
 </project>
