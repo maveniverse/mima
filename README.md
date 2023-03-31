@@ -2,6 +2,11 @@
 
 This is an experiment of creating "MIni MAven" reusable library to use Maven Resolver wherever you are.
 
+MIMA makes you be able to:
+* effortlessly reuse Maven Resolver inside and outside of Maven
+* if outside Maven, it prepares you the environment obeying Maven user configuration (if asked for)
+* supports all the latest Resolver features
+
 ## What is this about?
 
 Reusing Maven Resolver is hard, especially if you need same thing to work in a library that may be used
@@ -39,7 +44,7 @@ it "as in Maven but outside of Maven".
 MIMA tries to go one step beyond: It's goal is to make Resolver easily reusable "as a library", outside of Maven
 but inside of it as well. And to do that in transparent way.
 
-## In a nutshell
+## How to use
 
 MIMA provides several artifacts:
 
