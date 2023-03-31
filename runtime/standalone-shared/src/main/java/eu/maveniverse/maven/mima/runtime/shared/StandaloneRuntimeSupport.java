@@ -105,16 +105,25 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
     }
 
     protected static List<Profile> activeProfiles(Settings settings) {
-        ArrayList<Profile> result = new ArrayList<>();
+        HashMap<String, Profile> result = new HashMap<>();
+        Map<String, Profile> profileMap = settings.getProfilesAsMap();
+        // explicitly activated: settings/activeProfiles
+        for (String profileId : settings.getActiveProfiles()) {
+            Profile profile = profileMap.get(profileId);
+            if (profile != null) {
+                result.put(profile.getId(), profile);
+            }
+        }
+        // implicitly activated: currently only activeByDefault
         for (Profile profile : settings.getProfiles()) {
             Activation activation = profile.getActivation();
             if (activation != null) {
                 if (activation.isActiveByDefault()) {
-                    result.add(profile);
+                    result.put(profile.getId(), profile);
                 }
             }
         }
-        return result;
+        return new ArrayList<>(result.values());
     }
 
     protected static DefaultRepositorySystemSession newRepositorySession(
