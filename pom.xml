@@ -29,6 +29,23 @@
     <module>runtime</module>
   </modules>
 
+  <scm>
+    <connection>scm:git:git@github.com:maveniverse/mima.git</connection>
+    <developerConnection>scm:git:git@github.com:maveniverse/mima.git</developerConnection>
+    <tag>HEAD</tag>
+    <url>https://github.com/maveniverse/mima</url>
+  </scm>
+
+  <issueManagement>
+    <system>Github</system>
+    <url>https://github.com/maveniverse/mima/issues</url>
+  </issueManagement>
+
+  <ciManagement>
+    <system>Github</system>
+    <url>https://github.com/maveniverse/mima/actions</url>
+  </ciManagement>
+
   <properties>
     <project.build.outputTimestamp>2023-03-31T08:30:02Z</project.build.outputTimestamp>
 
