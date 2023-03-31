@@ -55,11 +55,13 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             if (overrides.getRepositories() != null) {
                 remoteRepositories.addAll(overrides.getRepositories());
             } else {
-                remoteRepositories.add(
-                        new RemoteRepository.Builder("central", "default", "https://repo.maven.apache.org/maven2/")
-                                .build());
+                remoteRepositories.add(ContextOverrides.CENTRAL);
             }
-            return new Context(runtime, repositorySystem, session, remoteRepositories);
+            return new Context(
+                    runtime,
+                    repositorySystem,
+                    session,
+                    repositorySystem.newResolutionRepositories(session, remoteRepositories));
         } catch (Exception e) {
             throw new IllegalStateException("Cannot create context from scratch", e);
         }

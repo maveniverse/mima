@@ -13,6 +13,9 @@ import org.eclipse.aether.transfer.TransferListener;
 
 public final class ContextOverrides {
 
+    public static final RemoteRepository CENTRAL =
+            new RemoteRepository.Builder("central", "default", "https://repo.maven.apache.org/maven2/").build();
+
     public enum SnapshotUpdatePolicy {
         ALWAYS,
         NEVER
@@ -123,12 +126,15 @@ public final class ContextOverrides {
         }
 
         public Builder userProperties(Map<String, String> userProperties) {
-            requireNonNull(userProperties);
-            this.userProperties = new HashMap<>(userProperties);
+            if (userProperties != null) {
+                this.userProperties = new HashMap<>(userProperties);
+            } else {
+                this.userProperties = null;
+            }
             return this;
         }
 
-        public Builder addUserProperty(String name, String value) {
+        public Builder setUserProperty(String name, String value) {
             requireNonNull(name);
             if (this.userProperties == null) {
                 this.userProperties = new HashMap<>();
@@ -138,8 +144,11 @@ public final class ContextOverrides {
         }
 
         public Builder repositories(List<RemoteRepository> repositories) {
-            requireNonNull(repositories);
-            this.repositories = new ArrayList<>(repositories);
+            if (repositories != null) {
+                this.repositories = new ArrayList<>(repositories);
+            } else {
+                this.repositories = null;
+            }
             return this;
         }
 

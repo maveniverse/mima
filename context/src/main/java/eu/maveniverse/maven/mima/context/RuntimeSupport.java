@@ -81,7 +81,9 @@ public abstract class RuntimeSupport implements Runtime {
                 runtime,
                 context.repositorySystem(),
                 session,
-                overrides.getRepositories() != null ? overrides.getRepositories() : context.remoteRepositories());
+                overrides.getRepositories() != null
+                        ? context.repositorySystem().newResolutionRepositories(session, overrides.getRepositories())
+                        : context.remoteRepositories());
     }
 
     protected static void customizeLocalRepositoryManager(
