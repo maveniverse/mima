@@ -17,8 +17,10 @@ public class MavenSecDispatcherProvider implements Provider<SecDispatcher> {
 
     @Inject
     public MavenSecDispatcherProvider(
-            PlexusCipher plexusCipher, Map<String, PasswordDecryptor> decryptors, String configurationFile) {
-        this.secDispatcher = new DefaultSecDispatcher(plexusCipher, decryptors, configurationFile);
+            PlexusCipher plexusCipher,
+            Map<String, PasswordDecryptor> pds,
+            @Named("${_configurationFile:-~/.settings-security.xml}") String configurationFile) {
+        this.secDispatcher = new DefaultSecDispatcher(plexusCipher, pds, configurationFile);
     }
 
     @Override
