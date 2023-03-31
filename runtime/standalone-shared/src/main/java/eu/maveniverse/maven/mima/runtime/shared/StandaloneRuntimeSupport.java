@@ -249,8 +249,8 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         }
 
         Path localRepoPath = null;
-        if (configProps.get("maven.repo.local") != null) {
-            localRepoPath = Paths.get(String.valueOf(configProps.get("maven.repo.local")));
+        if (configProps.get(MAVEN_REPO_LOCAL) != null) {
+            localRepoPath = Paths.get(String.valueOf(configProps.get(MAVEN_REPO_LOCAL)));
         }
         if (localRepoPath == null && settings.getLocalRepository() != null) {
             localRepoPath = Paths.get(settings.getLocalRepository());

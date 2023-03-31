@@ -18,9 +18,12 @@ import org.eclipse.aether.util.ConfigUtils;
 import org.eclipse.aether.util.repository.ChainedLocalRepositoryManager;
 
 public abstract class RuntimeSupport implements Runtime {
+    protected static final String MAVEN_REPO_LOCAL = "maven.repo.local";
+
     private static final String MAVEN_REPO_LOCAL_TAIL = "maven.repo.local.tail";
 
     private static final String MAVEN_REPO_LOCAL_TAIL_IGNORE_AVAILABILITY = "maven.repo.local.tail.ignoreAvailability";
+
     private final String name;
 
     private final int priority;
