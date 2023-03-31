@@ -3,9 +3,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>eu.maveniverse.maven.mima</groupId>
-    <artifactId>mima</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <groupId>eu.maveniverse.maven.parent</groupId>
+    <artifactId>parent</artifactId>
+    <version>1</version>
+    <relativePath />
   </parent>
 
   <groupId>eu.maveniverse.maven.mima.app</groupId>
@@ -21,6 +22,7 @@
 
   <properties>
     <version.mima>1.0.2-SNAPSHOT</version.mima>
+    <version.slf4j>1.7.36</version.slf4j>
   </properties>
 
 </project>
