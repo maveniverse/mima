@@ -81,7 +81,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             Path settingsFile = overrides.getSettingsXml();
             if (settingsFile == null) {
                 Path userSettings = Paths.get(System.getProperty("user.home"), ".m2", "settings.xml");
-                if (Files.isRegularFile(userSettings)) {
+                if (Files.exists(userSettings)) {
                     settingsFile = userSettings.toAbsolutePath();
                 }
             }
