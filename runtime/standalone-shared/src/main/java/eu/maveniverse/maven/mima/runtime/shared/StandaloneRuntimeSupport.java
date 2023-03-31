@@ -253,9 +253,10 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         if (localRepoPath == null) {
             localRepoPath = Paths.get(System.getProperty("user.home"), ".m2", "repository");
         }
-
+        if (overrides.getLocalRepository() != null) {
+            localRepoPath = overrides.getLocalRepository();
+        }
         newLocalRepositoryManager(localRepoPath, repositorySystem, session);
-        customizeLocalRepositoryManager(overrides, repositorySystem, session);
 
         return session;
     }
