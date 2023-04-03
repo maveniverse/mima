@@ -11,6 +11,9 @@
   <artifactId>standalone-sisu-uber</artifactId>
   <name>${project.groupId}:${project.artifactId}</name>
 
+  <!-- Note: this plugin has no sources, is just shaded :standalone-sisu, 
+  still Central requires presence of soueces/javadocs JARs, so they are faked. -->
+
   <dependencies>
     <dependency>
       <groupId>eu.maveniverse.maven.mima</groupId>
