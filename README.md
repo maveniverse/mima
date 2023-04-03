@@ -72,6 +72,9 @@ MIMA offers following runtimes:
   is not present on classpath, this runtime **will fail** when running within Maven. This runtime may be used in 
   case you have an application that is already using Sisu for DI, like apps using [Ollie](https://github.com/takari/ollie)
   or Sonatype Nexus2 is.
+* [standalone-sisu-uber](runtime/standalone-sisu-uber) - this runtime is same as 
+  [standalone-sisu](runtime/standalone-sisu) with one notable difference: it is repackaged into single JAR for simpler
+  handling.
 
 ## Things to be aware of
 

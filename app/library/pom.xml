@@ -26,7 +26,7 @@
     </dependency>
     <dependency>
       <groupId>eu.maveniverse.maven.mima.runtime</groupId>
-      <artifactId>standalone-sisu</artifactId>
+      <artifactId>standalone-sisu-uber</artifactId>
       <version>${version.mima}</version>
       <scope>runtime</scope>
     </dependency>

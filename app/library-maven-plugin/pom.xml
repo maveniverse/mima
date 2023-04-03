@@ -26,7 +26,7 @@
         <!-- Would work without this, but added to prevent maven-plugin-plugin from bitching about wrong scopes of maven bits -->
         <exclusion>
           <groupId>eu.maveniverse.maven.mima.runtime</groupId>
-          <artifactId>standalone-sisu</artifactId>
+          <artifactId>standalone-sisu-uber</artifactId>
         </exclusion>
       </exclusions>
     </dependency>

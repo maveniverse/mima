@@ -17,5 +17,6 @@
     <module>embedded-maven</module>
     <module>standalone-shared</module>
     <module>standalone-sisu</module>
+    <module>standalone-sisu-uber</module>
   </modules>
 </project>
