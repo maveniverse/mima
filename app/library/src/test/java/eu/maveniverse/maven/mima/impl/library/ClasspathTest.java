@@ -9,7 +9,7 @@ import java.nio.file.Paths;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.junit.jupiter.api.Test;
 
-public class MimaUserTest {
+public class ClasspathTest {
     @Test
     public void simple() throws Exception {
         Classpath classpath = new Classpath();
