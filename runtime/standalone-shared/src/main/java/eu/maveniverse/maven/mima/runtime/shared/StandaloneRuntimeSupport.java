@@ -288,8 +288,8 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
     }
 
     protected static String getUserAgent() {
-        String version = "incubation";
-        return "MIMA/" + version + " (Java " + System.getProperty("java.version") + "; " + System.getProperty("os.name")
+        String version = discoverVersions().mavenVersion();
+        return "Apache-Maven/" + version + " (Java " + System.getProperty("java.version") + "; " + System.getProperty("os.name")
                 + " " + System.getProperty("os.version") + ")";
     }
 }
