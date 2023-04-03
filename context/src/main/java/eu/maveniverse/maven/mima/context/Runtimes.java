@@ -18,6 +18,8 @@ public final class Runtimes {
 
     private final HashSet<String> runtimeNames = new HashSet<>();
 
+    private Runtimes() {}
+
     public synchronized Runtime getRuntime() {
         Runtime result = null;
         if (!runtimes.isEmpty()) {

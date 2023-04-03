@@ -155,6 +155,9 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         if (overrides.getUserProperties() != null) {
             configProps.putAll(overrides.getUserProperties());
         }
+        if (overrides.getConfigProperties() != null) {
+            configProps.putAll(overrides.getConfigProperties());
+        }
 
         session.setOffline(overrides.isOffline());
 

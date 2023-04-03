@@ -29,6 +29,8 @@ public final class ContextOverrides {
 
     private final Map<String, String> userProperties;
 
+    private final Map<String, Object> configProperties;
+
     private final List<RemoteRepository> repositories;
 
     private final boolean offline;
@@ -49,6 +51,7 @@ public final class ContextOverrides {
 
     private ContextOverrides(Builder builder) {
         this.userProperties = builder.userProperties;
+        this.configProperties = builder.configProperties;
         this.repositories = builder.repositories;
         this.offline = builder.offline;
         this.localRepository = builder.localRepository;
@@ -62,6 +65,10 @@ public final class ContextOverrides {
 
     public Map<String, String> getUserProperties() {
         return userProperties;
+    }
+
+    public Map<String, Object> getConfigProperties() {
+        return configProperties;
     }
 
     public List<RemoteRepository> getRepositories() {
@@ -103,6 +110,8 @@ public final class ContextOverrides {
     public static final class Builder {
         private Map<String, String> userProperties;
 
+        private Map<String, Object> configProperties;
+
         private List<RemoteRepository> repositories;
 
         private boolean offline;
@@ -140,6 +149,24 @@ public final class ContextOverrides {
                 this.userProperties = new HashMap<>();
             }
             this.userProperties.put(name, value);
+            return this;
+        }
+
+        public Builder configProperties(Map<String, Object> configProperties) {
+            if (configProperties != null) {
+                this.configProperties = new HashMap<>(configProperties);
+            } else {
+                this.configProperties = null;
+            }
+            return this;
+        }
+
+        public Builder setConfigProperty(String name, Object value) {
+            requireNonNull(name);
+            if (this.configProperties == null) {
+                this.configProperties = new HashMap<>();
+            }
+            this.configProperties.put(name, value);
             return this;
         }
 
