@@ -1,6 +1,6 @@
 # MIMA
 
-This is an experiment of creating "MIni MAven" reusable library to use Maven Resolver wherever you are.
+MIMA goal is creating "MIni MAven", one-shop stop reusable library, to use Maven Resolver wherever you are.
 
 MIMA makes you be able to:
 * effortlessly reuse Maven Resolver inside and outside of Maven
