@@ -20,7 +20,7 @@ public class SisuBooter {
     public SettingsDecrypter settingsDecrypter;
 
     public static SisuBooter newRepositorySystem() {
-        final Module app = Main.wire(BeanScanning.INDEX, new SisuModule());
+        final Module app = Main.wire(BeanScanning.CACHE, new SisuModule());
         return Guice.createInjector(app).getInstance(SisuBooter.class);
     }
 }
