@@ -53,6 +53,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
 
     protected static Context buildContext(
             StandaloneRuntimeSupport runtime,
+            boolean managedRepositorySystem,
             ContextOverrides overrides,
             RepositorySystem repositorySystem,
             SettingsBuilder settingsBuilder,
@@ -68,6 +69,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             }
             return new Context(
                     runtime,
+                    managedRepositorySystem,
                     repositorySystem,
                     session,
                     repositorySystem.newResolutionRepositories(session, remoteRepositories));

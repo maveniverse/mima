@@ -21,14 +21,6 @@ public final class Context implements Closeable {
 
     public Context(
             RuntimeSupport runtime,
-            RepositorySystem repositorySystem,
-            RepositorySystemSession repositorySystemSession,
-            List<RemoteRepository> remoteRepositories) {
-        this(runtime, runtime.managedRepositorySystem(), repositorySystem, repositorySystemSession, remoteRepositories);
-    }
-
-    public Context(
-            RuntimeSupport runtime,
             boolean managedRepositorySystem,
             RepositorySystem repositorySystem,
             RepositorySystemSession repositorySystemSession,
