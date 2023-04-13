@@ -45,10 +45,10 @@ public class MavenRuntime extends RuntimeSupport {
                 overrides,
                 new Context(
                         this,
-                        false,
                         repositorySystem,
                         mavenSession.getRepositorySession(),
-                        mavenSession.getCurrentProject().getRemoteProjectRepositories()),
-                false);
+                        mavenSession.getCurrentProject().getRemoteProjectRepositories(),
+                        null),
+                false); // unmanaged context: close should NOT shut down repositorySystem
     }
 }

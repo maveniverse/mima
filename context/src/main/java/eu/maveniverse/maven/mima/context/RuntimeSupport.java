@@ -86,12 +86,12 @@ public abstract class RuntimeSupport implements Runtime {
 
         return new Context(
                 runtime,
-                false, // derived context: close should NOT shut down repositorySystem
                 context.repositorySystem(),
                 session,
                 overrides.getRepositories() != null
                         ? context.repositorySystem().newResolutionRepositories(session, overrides.getRepositories())
-                        : context.remoteRepositories());
+                        : context.remoteRepositories(),
+                null); // derived context: close should NOT shut down repositorySystem
     }
 
     protected static void customizeLocalRepositoryManager(

@@ -53,11 +53,11 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
 
     protected static Context buildContext(
             StandaloneRuntimeSupport runtime,
-            boolean managedRepositorySystem,
             ContextOverrides overrides,
             RepositorySystem repositorySystem,
             SettingsBuilder settingsBuilder,
-            SettingsDecrypter settingsDecrypter) {
+            SettingsDecrypter settingsDecrypter,
+            Runnable managedCloser) {
         try {
             Settings settings = newEffectiveSettings(overrides, settingsBuilder, settingsDecrypter);
             DefaultRepositorySystemSession session = newRepositorySession(overrides, repositorySystem, settings);
@@ -69,10 +69,10 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             }
             return new Context(
                     runtime,
-                    managedRepositorySystem,
                     repositorySystem,
                     session,
-                    repositorySystem.newResolutionRepositories(session, remoteRepositories));
+                    repositorySystem.newResolutionRepositories(session, remoteRepositories),
+                    managedCloser);
         } catch (Exception e) {
             throw new IllegalStateException("Cannot create context from scratch", e);
         }

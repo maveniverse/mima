@@ -11,25 +11,25 @@ import org.eclipse.aether.repository.RemoteRepository;
 public final class Context implements Closeable {
     private final RuntimeSupport runtime;
 
-    private final boolean managedRepositorySystem;
-
     private final RepositorySystem repositorySystem;
 
     private final RepositorySystemSession repositorySystemSession;
 
     private final List<RemoteRepository> remoteRepositories;
 
+    private final Runnable managedCloser;
+
     public Context(
             RuntimeSupport runtime,
-            boolean managedRepositorySystem,
             RepositorySystem repositorySystem,
             RepositorySystemSession repositorySystemSession,
-            List<RemoteRepository> remoteRepositories) {
+            List<RemoteRepository> remoteRepositories,
+            Runnable managedCloser) {
         this.runtime = runtime;
-        this.managedRepositorySystem = managedRepositorySystem;
         this.repositorySystemSession = requireNonNull(repositorySystemSession);
         this.repositorySystem = requireNonNull(repositorySystem);
         this.remoteRepositories = requireNonNull(remoteRepositories);
+        this.managedCloser = managedCloser;
     }
 
     public RepositorySystemSession repositorySystemSession() {
@@ -52,8 +52,8 @@ public final class Context implements Closeable {
     public void close() {
         // in the future session may become closeable as well
         // repositorySystemSession.close();
-        if (managedRepositorySystem) {
-            repositorySystem.shutdown();
+        if (managedCloser != null) {
+            managedCloser.run();
         }
     }
 }

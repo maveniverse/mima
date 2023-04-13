@@ -37,12 +37,18 @@ public class StandaloneSisuRuntime extends StandaloneRuntimeSupport {
 
     @Override
     public Context create(ContextOverrides overrides) {
+        // managed or unmanaged context: depending on how we booted
         if (repositorySystem == null) {
             SisuBooter booter = SisuBooter.newSisuBooter();
             return buildContext(
-                    this, true, overrides, booter.repositorySystem, booter.settingsBuilder, booter.settingsDecrypter);
+                    this,
+                    overrides,
+                    booter.repositorySystem,
+                    booter.settingsBuilder,
+                    booter.settingsDecrypter,
+                    booter::close);
         } else {
-            return buildContext(this, false, overrides, repositorySystem, settingsBuilder, settingsDecrypter);
+            return buildContext(this, overrides, repositorySystem, settingsBuilder, settingsDecrypter, null);
         }
     }
 }

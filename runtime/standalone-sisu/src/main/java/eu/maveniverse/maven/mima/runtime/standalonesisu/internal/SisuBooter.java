@@ -31,8 +31,9 @@ public class SisuBooter implements Closeable {
     @Override
     public void close() {
         try {
-            lifecycleManager.unmanage();
+            repositorySystem.shutdown();
         } finally {
+            lifecycleManager.unmanage();
             locator.clear();
         }
     }
