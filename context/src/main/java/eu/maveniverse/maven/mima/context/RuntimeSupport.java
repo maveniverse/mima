@@ -14,6 +14,7 @@ import org.eclipse.aether.DefaultSessionData;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.repository.LocalRepository;
 import org.eclipse.aether.repository.LocalRepositoryManager;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.util.ConfigUtils;
 import org.eclipse.aether.util.repository.ChainedLocalRepositoryManager;
@@ -84,13 +85,23 @@ public abstract class RuntimeSupport implements Runtime {
             session.setRepositoryListener(overrides.getRepositoryListener());
         }
 
+        ArrayList<RemoteRepository> remoteRepositories = new ArrayList<>();
+        if (overrides.isAppendRepositories() || overrides.getRepositories() == null) {
+            remoteRepositories.addAll(context.remoteRepositories());
+        }
+        if (overrides.getRepositories() != null) {
+            if (overrides.isAppendRepositories()) {
+                remoteRepositories.addAll(overrides.getRepositories());
+            } else {
+                remoteRepositories = new ArrayList<>(overrides.getRepositories());
+            }
+        }
+
         return new Context(
                 runtime,
                 context.repositorySystem(),
                 session,
-                overrides.getRepositories() != null
-                        ? context.repositorySystem().newResolutionRepositories(session, overrides.getRepositories())
-                        : context.remoteRepositories(),
+                context.repositorySystem().newResolutionRepositories(session, remoteRepositories),
                 null); // derived context: close should NOT shut down repositorySystem
     }
 

@@ -9,12 +9,17 @@ import java.util.List;
 import java.util.Map;
 import org.eclipse.aether.RepositoryListener;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.transfer.TransferListener;
 
 public final class ContextOverrides {
 
-    public static final RemoteRepository CENTRAL =
-            new RemoteRepository.Builder("central", "default", "https://repo.maven.apache.org/maven2/").build();
+    public static final RemoteRepository CENTRAL = new RemoteRepository.Builder(
+                    "central", "default", "https://repo.maven.apache.org/maven2/")
+            .setReleasePolicy(new RepositoryPolicy(
+                    true, RepositoryPolicy.UPDATE_POLICY_DAILY, RepositoryPolicy.CHECKSUM_POLICY_WARN))
+            .setSnapshotPolicy(new RepositoryPolicy(false, null, null))
+            .build();
 
     public enum SnapshotUpdatePolicy {
         ALWAYS,
@@ -32,6 +37,8 @@ public final class ContextOverrides {
     private final Map<String, Object> configProperties;
 
     private final List<RemoteRepository> repositories;
+
+    private final boolean appendRepositories;
 
     private final boolean offline;
 
@@ -53,6 +60,7 @@ public final class ContextOverrides {
         this.userProperties = builder.userProperties;
         this.configProperties = builder.configProperties;
         this.repositories = builder.repositories;
+        this.appendRepositories = builder.appendRepositories;
         this.offline = builder.offline;
         this.localRepository = builder.localRepository;
         this.snapshotUpdatePolicy = builder.snapshotUpdatePolicy;
@@ -73,6 +81,10 @@ public final class ContextOverrides {
 
     public List<RemoteRepository> getRepositories() {
         return repositories;
+    }
+
+    public boolean isAppendRepositories() {
+        return appendRepositories;
     }
 
     public boolean isOffline() {
@@ -113,6 +125,8 @@ public final class ContextOverrides {
         private Map<String, Object> configProperties;
 
         private List<RemoteRepository> repositories;
+
+        private boolean appendRepositories;
 
         private boolean offline;
 
@@ -185,6 +199,11 @@ public final class ContextOverrides {
                 this.repositories = new ArrayList<>();
             }
             this.repositories.add(repository);
+            return this;
+        }
+
+        public Builder appendRepositories(boolean appendRepositories) {
+            this.appendRepositories = appendRepositories;
             return this;
         }
 

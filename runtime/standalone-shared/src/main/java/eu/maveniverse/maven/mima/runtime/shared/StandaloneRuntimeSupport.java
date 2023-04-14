@@ -18,6 +18,7 @@ import org.apache.maven.settings.Activation;
 import org.apache.maven.settings.Mirror;
 import org.apache.maven.settings.Profile;
 import org.apache.maven.settings.Proxy;
+import org.apache.maven.settings.Repository;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.building.DefaultSettingsBuildingRequest;
@@ -32,6 +33,7 @@ import org.eclipse.aether.DefaultRepositoryCache;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.util.repository.AuthenticationBuilder;
 import org.eclipse.aether.util.repository.DefaultAuthenticationSelector;
 import org.eclipse.aether.util.repository.DefaultMirrorSelector;
@@ -62,10 +64,39 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             Settings settings = newEffectiveSettings(overrides, settingsBuilder, settingsDecrypter);
             DefaultRepositorySystemSession session = newRepositorySession(overrides, repositorySystem, settings);
             ArrayList<RemoteRepository> remoteRepositories = new ArrayList<>();
-            if (overrides.getRepositories() != null) {
-                remoteRepositories.addAll(overrides.getRepositories());
-            } else {
+            if (overrides.isAppendRepositories() || overrides.getRepositories() == null) {
                 remoteRepositories.add(ContextOverrides.CENTRAL);
+                List<Profile> activeProfiles = activeProfiles(settings);
+                for (Profile profile : activeProfiles) {
+                    for (Repository repository : profile.getRepositories()) {
+                        RemoteRepository.Builder builder = new RemoteRepository.Builder(
+                                repository.getId(), repository.getLayout(), repository.getUrl());
+                        if (repository.getReleases() != null) {
+                            builder.setReleasePolicy(new RepositoryPolicy(
+                                    repository.getReleases().isEnabled(),
+                                    RepositoryPolicy.UPDATE_POLICY_DAILY,
+                                    RepositoryPolicy.CHECKSUM_POLICY_WARN));
+                        } else {
+                            builder.setReleasePolicy(new RepositoryPolicy());
+                        }
+                        if (repository.getSnapshots() != null) {
+                            builder.setSnapshotPolicy(new RepositoryPolicy(
+                                    repository.getSnapshots().isEnabled(),
+                                    RepositoryPolicy.UPDATE_POLICY_DAILY,
+                                    RepositoryPolicy.CHECKSUM_POLICY_WARN));
+                        } else {
+                            builder.setSnapshotPolicy(new RepositoryPolicy(false, null, null));
+                        }
+                        remoteRepositories.add(builder.build());
+                    }
+                }
+            }
+            if (overrides.getRepositories() != null) {
+                if (overrides.isAppendRepositories()) {
+                    remoteRepositories.addAll(overrides.getRepositories());
+                } else {
+                    remoteRepositories = new ArrayList<>(overrides.getRepositories());
+                }
             }
             return new Context(
                     runtime,
