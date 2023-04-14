@@ -6,7 +6,6 @@ import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.Runtime;
 import eu.maveniverse.maven.mima.context.Runtimes;
-import java.nio.file.Paths;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
@@ -15,8 +14,12 @@ import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Classpath {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public String classpath(ContextOverrides overrides, String artifactStr) throws DependencyResolutionException {
         requireNonNull(artifactStr);
@@ -32,6 +35,7 @@ public class Classpath {
     }
 
     private String doClasspath(Context context, Artifact artifact) throws DependencyResolutionException {
+        logger.info("doClasspath: {}", context.remoteRepositories());
         Dependency dependency = new Dependency(artifact, "runtime");
         CollectRequest collectRequest = new CollectRequest();
         collectRequest.setRoot(dependency);
@@ -55,9 +59,8 @@ public class Classpath {
         }
         Classpath classpath = new Classpath();
         try {
-            ContextOverrides overrides = ContextOverrides.Builder.create()
-                    .localRepository(Paths.get("target/simple"))
-                    .build();
+            ContextOverrides overrides =
+                    ContextOverrides.Builder.create().withUserSettings(true).build();
 
             String cp = classpath.classpath(overrides, args[0]);
             System.out.println("Classpath of " + args[0] + " is:");
