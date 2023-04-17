@@ -171,9 +171,7 @@ public abstract class RuntimeSupport implements Runtime {
     }
 
     protected static RuntimeVersions discoverVersions() {
-        return new RuntimeVersions(
-                discoverMavenInfoVersion("org.apache.maven.resolver", "maven-resolver-api", "n/a"),
-                discoverMavenInfoVersion("org.apache.maven", "maven-resolver-provider", "n/a"));
+        return new RuntimeVersions(discoverMavenInfoVersion("org.apache.maven", "maven-resolver-provider", "n/a"));
     }
 
     protected static String discoverMavenInfoVersion(String groupId, String artifactId, String defVal) {
@@ -208,8 +206,7 @@ public abstract class RuntimeSupport implements Runtime {
         RuntimeVersions rt = runtimeVersions();
         return getClass().getSimpleName() + "{name='"
                 + name + '\'' + ", priority="
-                + priority + ", mavenVersion="
-                + rt.mavenVersion() + ", resolverVersion="
-                + rt.resolverVersion() + '}';
+                + priority + ", runtimeVersions="
+                + rt + '}';
     }
 }
