@@ -8,14 +8,20 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>library</artifactId>
+  <artifactId>library-standalone-static</artifactId>
   <name>${project.groupId}:${project.artifactId}</name>
 
   <dependencies>
     <dependency>
-      <groupId>eu.maveniverse.maven.mima</groupId>
-      <artifactId>context</artifactId>
+      <groupId>eu.maveniverse.maven.mima.app</groupId>
+      <artifactId>library</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>eu.maveniverse.maven.mima.runtime</groupId>
+      <artifactId>standalone-static</artifactId>
       <version>${version.mima}</version>
+      <scope>runtime</scope>
     </dependency>
     <!-- Provide runtime logging: slf4j-api comes only -->
     <dependency>
