@@ -5,7 +5,7 @@
   <parent>
     <groupId>eu.maveniverse.maven.mima.runtime</groupId>
     <artifactId>runtime</artifactId>
-    <version>1.0.6-SNAPSHOT</version>
+    <version>1.0.6</version>
   </parent>
 
   <artifactId>standalone-sisu-uber</artifactId>
