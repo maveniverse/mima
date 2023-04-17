@@ -5,17 +5,16 @@ import static java.util.Objects.requireNonNull;
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.runtime.shared.StandaloneRuntimeSupport;
-import eu.maveniverse.maven.mima.runtime.standalonestatic.internal.FactoryImpl;
 import org.apache.maven.settings.building.SettingsBuilder;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.eclipse.aether.RepositorySystem;
 
-public class StandaloneStaticRuntime extends StandaloneRuntimeSupport {
+public final class StandaloneStaticRuntime extends StandaloneRuntimeSupport {
 
     private final Factory factory;
 
     public StandaloneStaticRuntime() {
-        this("standalone-static", 40, new FactoryImpl());
+        this("standalone-static", 40, new RepositorySystemFactory());
     }
 
     public StandaloneStaticRuntime(String name, int priority, Factory factory) {

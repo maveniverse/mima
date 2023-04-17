@@ -13,7 +13,7 @@ import org.eclipse.aether.RepositorySystem;
 
 @Singleton
 @Named
-public class MavenRuntime extends RuntimeSupport {
+public final class MavenRuntime extends RuntimeSupport {
     private final RepositorySystem repositorySystem;
 
     private final MavenSession mavenSession;

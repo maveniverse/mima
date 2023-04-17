@@ -9,7 +9,7 @@ import org.apache.maven.settings.building.SettingsBuilder;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.eclipse.aether.RepositorySystem;
 
-public class StandaloneSisuRuntime extends StandaloneRuntimeSupport {
+public final class StandaloneSisuRuntime extends StandaloneRuntimeSupport {
 
     private final RepositorySystem repositorySystem;
 

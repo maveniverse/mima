@@ -13,6 +13,13 @@ import org.apache.maven.repository.internal.ModelCacheFactory;
 import org.apache.maven.repository.internal.PluginsMetadataGeneratorFactory;
 import org.apache.maven.repository.internal.SnapshotMetadataGeneratorFactory;
 import org.apache.maven.repository.internal.VersionsMetadataGeneratorFactory;
+import org.apache.maven.settings.building.DefaultSettingsBuilder;
+import org.apache.maven.settings.building.SettingsBuilder;
+import org.apache.maven.settings.crypto.DefaultSettingsDecrypter;
+import org.apache.maven.settings.crypto.SettingsDecrypter;
+import org.apache.maven.settings.io.DefaultSettingsReader;
+import org.apache.maven.settings.io.DefaultSettingsWriter;
+import org.apache.maven.settings.validation.DefaultSettingsValidator;
 import org.eclipse.aether.RepositoryListener;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
@@ -105,8 +112,28 @@ import org.eclipse.aether.transport.http.ChecksumExtractor;
 import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.eclipse.aether.transport.http.Nexus2ChecksumExtractor;
 import org.eclipse.aether.transport.http.XChecksumChecksumExtractor;
+import org.sonatype.plexus.components.cipher.DefaultPlexusCipher;
+import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 
-public class RepositorySystemFactory {
+/**
+ * Override to customize.
+ */
+public class RepositorySystemFactory implements StandaloneStaticRuntime.Factory {
+
+    @Override
+    public SettingsBuilder settingsBuilder() {
+        return new DefaultSettingsBuilder(
+                new DefaultSettingsReader(), new DefaultSettingsWriter(), new DefaultSettingsValidator());
+    }
+
+    @Override
+    public SettingsDecrypter settingsDecrypter() {
+        DefaultPlexusCipher plexusCipher = new DefaultPlexusCipher();
+        DefaultSecDispatcher secDispatcher =
+                new DefaultSecDispatcher(plexusCipher, Collections.emptyMap(), "~/.m2/settings-security.xml");
+        return new DefaultSettingsDecrypter(secDispatcher);
+    }
+
     protected FileProcessor getFileProcessor() {
         return new DefaultFileProcessor();
     }
@@ -517,6 +544,7 @@ public class RepositorySystemFactory {
         return new DefaultModelCacheFactory();
     }
 
+    @Override
     public RepositorySystem repositorySystem() {
         FileProcessor fileProcessor = getFileProcessor();
         TrackingFileManager trackingFileManager = getTrackingFileManager();
