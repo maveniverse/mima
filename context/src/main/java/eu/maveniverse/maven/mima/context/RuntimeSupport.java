@@ -171,7 +171,8 @@ public abstract class RuntimeSupport implements Runtime {
     }
 
     protected static RuntimeVersions discoverVersions() {
-        return new RuntimeVersions(discoverMavenInfoVersion("org.apache.maven", "maven-resolver-provider", "n/a"));
+        return new RuntimeVersions(
+                discoverMavenInfoVersion("org.apache.maven", "maven-resolver-provider", RuntimeVersions.UNKNOWN));
     }
 
     protected static String discoverMavenInfoVersion(String groupId, String artifactId, String defVal) {
