@@ -5,10 +5,14 @@ import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.runtime.shared.StandaloneRuntimeSupport;
 import eu.maveniverse.maven.mima.runtime.standalonesisu.internal.SisuBooter;
 import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import org.apache.maven.settings.building.SettingsBuilder;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.eclipse.aether.RepositorySystem;
 
+@Singleton
+@Named
 public final class StandaloneSisuRuntime extends StandaloneRuntimeSupport {
 
     private final RepositorySystem repositorySystem;
