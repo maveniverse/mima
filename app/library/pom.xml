@@ -17,12 +17,6 @@
       <artifactId>context</artifactId>
       <version>${version.mima}</version>
     </dependency>
-    <!-- Provide runtime logging: slf4j-api comes only -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>${version.slf4j}</version>
-    </dependency>
 
     <dependency>
       <groupId>org.junit.jupiter</groupId>
