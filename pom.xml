@@ -84,6 +84,16 @@
         <artifactId>standalone-sisu-uber</artifactId>
         <version>${project.version}</version>
       </dependency>
+      <dependency>
+        <groupId>eu.maveniverse.maven.mima.runtime</groupId>
+        <artifactId>standalone-static</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>eu.maveniverse.maven.mima.runtime</groupId>
+        <artifactId>standalone-static-uber</artifactId>
+        <version>${project.version}</version>
+      </dependency>
 
       <!-- External -->
       <dependency>

@@ -18,5 +18,7 @@
     <module>standalone-shared</module>
     <module>standalone-sisu</module>
     <module>standalone-sisu-uber</module>
+    <module>standalone-static</module>
+    <module>standalone-static-uber</module>
   </modules>
 </project>

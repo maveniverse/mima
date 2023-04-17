@@ -66,7 +66,7 @@ MIMA offers following runtimes:
   highest priority.
 * [standalone-shared](runtime/standalone-shared) - this is NOT a runtime, but "shared" code for standalone runtimes,
   mostly related to creation of session in "Maven like way".
-* [standalone-sisu](runtime/standalone-sisu) - this runtime may be always present (but in case of Maven Plugin it will 
+* [standalone-sisu](runtime/standalone-sisu) - this runtime may be always present (in case of Maven Plugin it will 
   generate a ton of warnings due wrong Maven artifact scopes), but is best to simply exclude it in Maven Plugin POMs.
   This is a "fallback" runtime, when no other runtime is present, and has the lowest priority. Note: if `embedded-maven`
   is not present on classpath, this runtime **will fail** when running within Maven. This runtime may be used in 
@@ -74,6 +74,14 @@ MIMA offers following runtimes:
   or Sonatype Nexus2 is.
 * [standalone-sisu-uber](runtime/standalone-sisu-uber) - this runtime is same as 
   [standalone-sisu](runtime/standalone-sisu) with one notable difference: it is repackaged into single JAR for simpler
+  handling.
+* [standalone-static](runtime/standalone-static) - this runtime may be always present (but in case of Maven Plugin it will 
+  generate a ton of warnings due wrong Maven artifact scopes), but is best to simply exclude it in Maven Plugin POMs.
+  This is a "fallback" runtime, when no other runtime is present, and has the lowest priority. Note: if `embedded-maven`
+  is not present on classpath, this runtime **will fail** when running within Maven. This runtime may be used in 
+  case you you are scared of Sisu/Guice.
+* [standalone-static-uber](runtime/standalone-static-uber) - this runtime is same as 
+  [standalone-static](runtime/standalone-static) with one notable difference: it is repackaged into single JAR for simpler
   handling.
 
 ## Things to be aware of

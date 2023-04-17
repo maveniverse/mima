@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,10 @@ public final class Runtimes {
         }
         logger.debug("Runtimes.getRuntime: {}", result);
         return result;
+    }
+
+    public synchronized Set<Runtime> getRuntimes() {
+        return new TreeSet<>(runtimes);
     }
 
     public synchronized void registerRuntime(Runtime mimaRuntime) {
