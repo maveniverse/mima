@@ -12,10 +12,18 @@
   <name>${project.groupId}:${project.artifactId}</name>
 
   <dependencies>
+    <!-- compile dependency -->
     <dependency>
       <groupId>eu.maveniverse.maven.mima</groupId>
       <artifactId>context</artifactId>
       <version>${version.mima}</version>
+    </dependency>
+    <!-- runtime dependency (dormant outside of Maven) -->
+    <dependency>
+      <groupId>eu.maveniverse.maven.mima.runtime</groupId>
+      <artifactId>embedded-maven</artifactId>
+      <version>${version.mima}</version>
+      <scope>runtime</scope>
     </dependency>
 
     <dependency>
