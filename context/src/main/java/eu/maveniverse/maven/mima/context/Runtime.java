@@ -1,6 +1,6 @@
 package eu.maveniverse.maven.mima.context;
 
-public interface Runtime extends ContextFactory {
+public interface Runtime {
     String name();
 
     int priority();
@@ -8,4 +8,8 @@ public interface Runtime extends ContextFactory {
     boolean managedRepositorySystem();
 
     RuntimeVersions runtimeVersions();
+
+    Context create();
+
+    Context create(ContextOverrides overrides);
 }

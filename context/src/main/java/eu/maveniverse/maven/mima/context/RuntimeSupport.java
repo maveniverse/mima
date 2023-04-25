@@ -20,8 +20,6 @@ import org.eclipse.aether.util.ConfigUtils;
 import org.eclipse.aether.util.repository.ChainedLocalRepositoryManager;
 
 public abstract class RuntimeSupport implements Runtime {
-    protected static final String MAVEN_REPO_LOCAL = "maven.repo.local";
-
     private static final String MAVEN_REPO_LOCAL_TAIL = "maven.repo.local.tail";
 
     private static final String MAVEN_REPO_LOCAL_TAIL_IGNORE_AVAILABILITY = "maven.repo.local.tail.ignoreAvailability";
@@ -48,11 +46,16 @@ public abstract class RuntimeSupport implements Runtime {
     @Override
     public abstract boolean managedRepositorySystem();
 
+    @Override
+    public Context create() {
+        return create(ContextOverrides.Builder.create().build());
+    }
+
     public Context customizeContext(ContextOverrides overrides, Context context, boolean reset) {
         return customizeContext(this, overrides, context, reset);
     }
 
-    protected static Context customizeContext(
+    protected Context customizeContext(
             RuntimeSupport runtime, ContextOverrides overrides, Context context, boolean reset) {
         DefaultRepositorySystemSession session = new DefaultRepositorySystemSession(context.repositorySystemSession());
         if (reset) {
@@ -105,7 +108,7 @@ public abstract class RuntimeSupport implements Runtime {
                 null); // derived context: close should NOT shut down repositorySystem
     }
 
-    protected static void customizeLocalRepositoryManager(
+    protected void customizeLocalRepositoryManager(
             ContextOverrides overrides, RepositorySystem repositorySystem, DefaultRepositorySystemSession session) {
         if (overrides.getLocalRepository() == null) {
             return;
@@ -117,7 +120,7 @@ public abstract class RuntimeSupport implements Runtime {
         newLocalRepositoryManager(overrides.getLocalRepository().toAbsolutePath(), repositorySystem, session);
     }
 
-    protected static void newLocalRepositoryManager(
+    protected void newLocalRepositoryManager(
             Path localRepoPath, RepositorySystem repositorySystem, DefaultRepositorySystemSession session) {
         LocalRepository localRepo =
                 new LocalRepository(localRepoPath.toAbsolutePath().toString());
@@ -140,7 +143,7 @@ public abstract class RuntimeSupport implements Runtime {
         }
     }
 
-    protected static void customizeChecksumPolicy(ContextOverrides overrides, DefaultRepositorySystemSession session) {
+    protected void customizeChecksumPolicy(ContextOverrides overrides, DefaultRepositorySystemSession session) {
         if (overrides.getChecksumPolicy() != null) {
             switch (overrides.getChecksumPolicy()) {
                 case FAIL:
@@ -156,8 +159,7 @@ public abstract class RuntimeSupport implements Runtime {
         }
     }
 
-    protected static void customizeSnapshotUpdatePolicy(
-            ContextOverrides overrides, DefaultRepositorySystemSession session) {
+    protected void customizeSnapshotUpdatePolicy(ContextOverrides overrides, DefaultRepositorySystemSession session) {
         if (overrides.getSnapshotUpdatePolicy() != null) {
             switch (overrides.getSnapshotUpdatePolicy()) {
                 case ALWAYS:
@@ -170,12 +172,12 @@ public abstract class RuntimeSupport implements Runtime {
         }
     }
 
-    protected static RuntimeVersions discoverVersions() {
+    protected RuntimeVersions discoverVersions() {
         return new RuntimeVersions(
                 discoverMavenInfoVersion("org.apache.maven", "maven-resolver-provider", RuntimeVersions.UNKNOWN));
     }
 
-    protected static String discoverMavenInfoVersion(String groupId, String artifactId, String defVal) {
+    protected String discoverMavenInfoVersion(String groupId, String artifactId, String defVal) {
         Map<String, String> mavenInfo = discoverMavenInfo(groupId, artifactId);
         String versionString = mavenInfo.getOrDefault("version", "").trim();
         if (!versionString.startsWith("${")) {
@@ -184,7 +186,7 @@ public abstract class RuntimeSupport implements Runtime {
         return defVal;
     }
 
-    protected static Map<String, String> discoverMavenInfo(String groupId, String artifactId) {
+    protected Map<String, String> discoverMavenInfo(String groupId, String artifactId) {
         final String resource = "META-INF/maven/" + groupId + "/" + artifactId + "/pom.properties";
         final Properties props = new Properties();
         try (InputStream is = RuntimeSupport.class.getResourceAsStream("/" + resource)) {

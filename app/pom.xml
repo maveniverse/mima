@@ -23,7 +23,7 @@
   </modules>
 
   <properties>
-    <version.mima>1.0.6</version.mima>
+    <version.mima>1.0.7-SNAPSHOT</version.mima>
     <version.slf4j>1.7.36</version.slf4j>
   </properties>
 

@@ -1,5 +1,6 @@
 package eu.maveniverse.maven.mima.runtime.standalonestatic;
 
+import eu.maveniverse.maven.mima.context.ContextOverrides;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -129,20 +130,18 @@ public class RepositorySystemFactory implements StandaloneStaticRuntime.Factory 
     @Override
     public SettingsDecrypter settingsDecrypter() {
         DefaultPlexusCipher plexusCipher = new DefaultPlexusCipher();
-        DefaultSecDispatcher secDispatcher =
-                new DefaultSecDispatcher(plexusCipher, Collections.emptyMap(), "~/.m2/settings-security.xml");
+        DefaultSecDispatcher secDispatcher = new DefaultSecDispatcher(
+                plexusCipher, Collections.emptyMap(), ContextOverrides.USER_SETTINGS_SECURITY_XML.toString());
         return new DefaultSettingsDecrypter(secDispatcher);
     }
 
     protected FileProcessor getFileProcessor() {
         return new DefaultFileProcessor();
     }
-    ;
 
     protected TrackingFileManager getTrackingFileManager() {
         return new DefaultTrackingFileManager();
     }
-    ;
 
     protected LocalPathComposer getLocalPathComposer() {
         return new DefaultLocalPathComposer();

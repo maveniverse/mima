@@ -4,7 +4,6 @@ import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.RuntimeSupport;
 import eu.maveniverse.maven.mima.context.RuntimeVersions;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -41,7 +40,7 @@ import org.eclipse.aether.util.repository.DefaultProxySelector;
 import org.eclipse.aether.util.repository.SimpleResolutionErrorPolicy;
 
 public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
-    private final RuntimeVersions runtimeVersions;
+    protected final RuntimeVersions runtimeVersions;
 
     protected StandaloneRuntimeSupport(String name, int priority) {
         super(name, priority);
@@ -53,7 +52,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         return runtimeVersions;
     }
 
-    protected static Context buildContext(
+    protected Context buildContext(
             StandaloneRuntimeSupport runtime,
             ContextOverrides overrides,
             RepositorySystem repositorySystem,
@@ -109,7 +108,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         }
     }
 
-    protected static Settings newEffectiveSettings(
+    protected Settings newEffectiveSettings(
             ContextOverrides overrides, SettingsBuilder settingsBuilder, SettingsDecrypter settingsDecrypter)
             throws SettingsBuildingException {
         DefaultSettingsBuildingRequest settingsBuilderRequest = new DefaultSettingsBuildingRequest();
@@ -119,16 +118,11 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         }
 
         if (overrides.isWithUserSettings()) {
-            // find the settings
-            Path settingsFile = overrides.getSettingsXml();
-            if (settingsFile == null) {
-                Path userSettings = Paths.get(System.getProperty("user.home"), ".m2", "settings.xml");
-                if (Files.exists(userSettings)) {
-                    settingsFile = userSettings.toAbsolutePath();
-                }
-            }
-            if (settingsFile != null) {
-                settingsBuilderRequest.setGlobalSettingsFile(settingsFile.toFile());
+            if (overrides.getSettingsXml() != null) {
+                settingsBuilderRequest.setUserSettingsFile(
+                        overrides.getSettingsXml().toFile());
+            } else {
+                settingsBuilderRequest.setUserSettingsFile(ContextOverrides.USER_SETTINGS_XML.toFile());
             }
         }
         Settings effectiveSettings =
@@ -146,7 +140,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         return effectiveSettings;
     }
 
-    protected static List<Profile> activeProfiles(Settings settings) {
+    protected List<Profile> activeProfiles(Settings settings) {
         HashMap<String, Profile> result = new HashMap<>();
         Map<String, Profile> profileMap = settings.getProfilesAsMap();
         // explicitly activated: settings/activeProfiles
@@ -168,7 +162,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         return new ArrayList<>(result.values());
     }
 
-    protected static DefaultRepositorySystemSession newRepositorySession(
+    protected DefaultRepositorySystemSession newRepositorySession(
             ContextOverrides overrides, RepositorySystem repositorySystem, Settings settings) {
         DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 
@@ -302,25 +296,20 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             session.setRepositoryListener(overrides.getRepositoryListener());
         }
 
-        Path localRepoPath = null;
-        if (configProps.get(MAVEN_REPO_LOCAL) != null) {
-            localRepoPath = Paths.get(String.valueOf(configProps.get(MAVEN_REPO_LOCAL)));
-        }
-        if (localRepoPath == null && settings.getLocalRepository() != null) {
-            localRepoPath = Paths.get(settings.getLocalRepository());
-        }
-        if (localRepoPath == null) {
-            localRepoPath = Paths.get(System.getProperty("user.home"), ".m2", "repository");
-        }
+        Path localRepoPath;
         if (overrides.getLocalRepository() != null) {
             localRepoPath = overrides.getLocalRepository();
+        } else if (settings.getLocalRepository() != null) {
+            localRepoPath = Paths.get(settings.getLocalRepository());
+        } else {
+            localRepoPath = ContextOverrides.USER_LOCAL_REPOSITORY;
         }
         newLocalRepositoryManager(localRepoPath, repositorySystem, session);
 
         return session;
     }
 
-    protected static String getUserAgent() {
+    protected String getUserAgent() {
         String version = discoverVersions().mavenVersion();
         return "Apache-Maven/" + version + " (Java " + System.getProperty("java.version") + "; "
                 + System.getProperty("os.name") + " " + System.getProperty("os.version") + ")";

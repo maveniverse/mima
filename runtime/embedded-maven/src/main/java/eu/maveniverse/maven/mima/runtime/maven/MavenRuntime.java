@@ -6,6 +6,7 @@ import eu.maveniverse.maven.mima.context.RuntimeSupport;
 import eu.maveniverse.maven.mima.context.RuntimeVersions;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.rtinfo.RuntimeInformation;
@@ -16,15 +17,16 @@ import org.eclipse.aether.RepositorySystem;
 public final class MavenRuntime extends RuntimeSupport {
     private final RepositorySystem repositorySystem;
 
-    private final MavenSession mavenSession;
+    private final Provider<MavenSession> mavenSessionProvider;
 
     private final RuntimeVersions runtimeVersions;
 
     @Inject
-    public MavenRuntime(RepositorySystem repositorySystem, MavenSession mavenSession, RuntimeInformation rt) {
+    public MavenRuntime(
+            RepositorySystem repositorySystem, Provider<MavenSession> mavenSessionProvider, RuntimeInformation rt) {
         super("embedded-maven", 10);
         this.repositorySystem = repositorySystem;
-        this.mavenSession = mavenSession;
+        this.mavenSessionProvider = mavenSessionProvider;
         this.runtimeVersions = new RuntimeVersions(rt.getMavenVersion());
     }
 
@@ -40,6 +42,7 @@ public final class MavenRuntime extends RuntimeSupport {
 
     @Override
     public Context create(ContextOverrides overrides) {
+        MavenSession mavenSession = mavenSessionProvider.get();
         return customizeContext(
                 this,
                 overrides,

@@ -3,6 +3,7 @@ package eu.maveniverse.maven.mima.context;
 import static java.util.Objects.requireNonNull;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,8 +19,17 @@ public final class ContextOverrides {
                     "central", "default", "https://repo.maven.apache.org/maven2/")
             .setReleasePolicy(new RepositoryPolicy(
                     true, RepositoryPolicy.UPDATE_POLICY_DAILY, RepositoryPolicy.CHECKSUM_POLICY_WARN))
-            .setSnapshotPolicy(new RepositoryPolicy(false, null, null))
+            .setSnapshotPolicy(new RepositoryPolicy(
+                    false, RepositoryPolicy.UPDATE_POLICY_DAILY, RepositoryPolicy.CHECKSUM_POLICY_WARN))
             .build();
+
+    public static final Path MAVEN_USER_HOME = Paths.get(System.getProperty("user.home"), ".m2");
+
+    public static final Path USER_SETTINGS_XML = MAVEN_USER_HOME.resolve("settings.xml");
+
+    public static final Path USER_SETTINGS_SECURITY_XML = MAVEN_USER_HOME.resolve("settings-security.xml");
+
+    public static final Path USER_LOCAL_REPOSITORY = MAVEN_USER_HOME.resolve("repository");
 
     public enum SnapshotUpdatePolicy {
         ALWAYS,
@@ -248,6 +258,12 @@ public final class ContextOverrides {
         }
 
         public ContextOverrides build() {
+            if (localRepository == null && userProperties != null) {
+                String localRepoPath = userProperties.get("maven.repo.local");
+                if (localRepoPath != null) {
+                    localRepository = Paths.get(localRepoPath);
+                }
+            }
             return new ContextOverrides(this);
         }
     }
