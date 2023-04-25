@@ -1,9 +1,9 @@
 package eu.maveniverse.maven.mima.runtime.standalonestatic;
 
-import eu.maveniverse.maven.mima.context.ContextOverrides;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 import org.apache.maven.model.building.DefaultModelBuilderFactory;
 import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.repository.internal.DefaultArtifactDescriptorReader;
@@ -14,13 +14,6 @@ import org.apache.maven.repository.internal.ModelCacheFactory;
 import org.apache.maven.repository.internal.PluginsMetadataGeneratorFactory;
 import org.apache.maven.repository.internal.SnapshotMetadataGeneratorFactory;
 import org.apache.maven.repository.internal.VersionsMetadataGeneratorFactory;
-import org.apache.maven.settings.building.DefaultSettingsBuilder;
-import org.apache.maven.settings.building.SettingsBuilder;
-import org.apache.maven.settings.crypto.DefaultSettingsDecrypter;
-import org.apache.maven.settings.crypto.SettingsDecrypter;
-import org.apache.maven.settings.io.DefaultSettingsReader;
-import org.apache.maven.settings.io.DefaultSettingsWriter;
-import org.apache.maven.settings.validation.DefaultSettingsValidator;
 import org.eclipse.aether.RepositoryListener;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
@@ -113,28 +106,11 @@ import org.eclipse.aether.transport.http.ChecksumExtractor;
 import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.eclipse.aether.transport.http.Nexus2ChecksumExtractor;
 import org.eclipse.aether.transport.http.XChecksumChecksumExtractor;
-import org.sonatype.plexus.components.cipher.DefaultPlexusCipher;
-import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
 
 /**
  * Override to customize.
  */
-public class RepositorySystemFactory implements StandaloneStaticRuntime.Factory {
-
-    @Override
-    public SettingsBuilder settingsBuilder() {
-        return new DefaultSettingsBuilder(
-                new DefaultSettingsReader(), new DefaultSettingsWriter(), new DefaultSettingsValidator());
-    }
-
-    @Override
-    public SettingsDecrypter settingsDecrypter() {
-        DefaultPlexusCipher plexusCipher = new DefaultPlexusCipher();
-        DefaultSecDispatcher secDispatcher = new DefaultSecDispatcher(
-                plexusCipher, Collections.emptyMap(), ContextOverrides.USER_SETTINGS_SECURITY_XML.toString());
-        return new DefaultSettingsDecrypter(secDispatcher);
-    }
-
+public class RepositorySystemSupplier implements Supplier<RepositorySystem> {
     protected FileProcessor getFileProcessor() {
         return new DefaultFileProcessor();
     }
@@ -544,7 +520,7 @@ public class RepositorySystemFactory implements StandaloneStaticRuntime.Factory 
     }
 
     @Override
-    public RepositorySystem repositorySystem() {
+    public RepositorySystem get() {
         FileProcessor fileProcessor = getFileProcessor();
         TrackingFileManager trackingFileManager = getTrackingFileManager();
         LocalPathComposer localPathComposer = getLocalPathComposer();
