@@ -111,19 +111,20 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
     protected Settings newEffectiveSettings(
             ContextOverrides overrides, SettingsBuilder settingsBuilder, SettingsDecrypter settingsDecrypter)
             throws SettingsBuildingException {
+        if (!overrides.isWithUserSettings()) {
+            return new Settings();
+        }
         DefaultSettingsBuildingRequest settingsBuilderRequest = new DefaultSettingsBuildingRequest();
         settingsBuilderRequest.setSystemProperties(System.getProperties());
         if (overrides.getUserProperties() != null) {
             settingsBuilderRequest.getUserProperties().putAll(overrides.getUserProperties());
         }
 
-        if (overrides.isWithUserSettings()) {
-            if (overrides.getSettingsXml() != null) {
-                settingsBuilderRequest.setUserSettingsFile(
-                        overrides.getSettingsXml().toFile());
-            } else {
-                settingsBuilderRequest.setUserSettingsFile(ContextOverrides.USER_SETTINGS_XML.toFile());
-            }
+        if (overrides.getSettingsXml() != null) {
+            settingsBuilderRequest.setUserSettingsFile(
+                    overrides.getSettingsXml().toFile());
+        } else {
+            settingsBuilderRequest.setUserSettingsFile(ContextOverrides.USER_SETTINGS_XML.toFile());
         }
         Settings effectiveSettings =
                 settingsBuilder.build(settingsBuilderRequest).getEffectiveSettings();
