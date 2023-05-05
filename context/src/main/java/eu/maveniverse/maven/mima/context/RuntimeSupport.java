@@ -63,12 +63,16 @@ public abstract class RuntimeSupport implements Runtime {
             session.setData(new DefaultSessionData());
         }
 
-        if (overrides.getUserProperties() != null) {
-            session.getConfigProperties().putAll(overrides.getUserProperties());
-            session.setUserProperties(overrides.getUserProperties());
-        }
-        if (overrides.getConfigProperties() != null) {
-            session.getConfigProperties().putAll(overrides.getConfigProperties());
+        if (managedRepositorySystem()) {
+            if (overrides.getSystemProperties() != null) {
+                session.setSystemProperties(overrides.getSystemProperties());
+            }
+            if (overrides.getUserProperties() != null) {
+                session.setUserProperties(overrides.getUserProperties());
+            }
+            if (overrides.getConfigProperties() != null) {
+                session.setConfigProperties(overrides.getConfigProperties());
+            }
         }
 
         session.setOffline(overrides.isOffline());

@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.apache.maven.settings.Activation;
 import org.apache.maven.settings.Mirror;
@@ -115,9 +116,15 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             return new Settings();
         }
         DefaultSettingsBuildingRequest settingsBuilderRequest = new DefaultSettingsBuildingRequest();
-        settingsBuilderRequest.setSystemProperties(System.getProperties());
+        if (overrides.getSystemProperties() != null) {
+            Properties systemProperties = new Properties();
+            systemProperties.putAll(overrides.getSystemProperties());
+            settingsBuilderRequest.setSystemProperties(systemProperties);
+        }
         if (overrides.getUserProperties() != null) {
-            settingsBuilderRequest.getUserProperties().putAll(overrides.getUserProperties());
+            Properties userProperties = new Properties();
+            userProperties.putAll(overrides.getUserProperties());
+            settingsBuilderRequest.setUserProperties(userProperties);
         }
 
         if (overrides.getSettingsXml() != null) {
@@ -171,21 +178,26 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
 
         LinkedHashMap<Object, Object> configProps = new LinkedHashMap<>();
         configProps.put(ConfigurationProperties.USER_AGENT, getUserAgent());
-        configProps.put(ConfigurationProperties.INTERACTIVE, false);
-        configProps.put("maven.startTime", new Date());
+
         // First add properties populated from settings.xml
         List<Profile> activeProfiles = activeProfiles(settings);
         for (Profile profile : activeProfiles) {
             configProps.putAll(profile.getProperties());
         }
         // Resolver's ConfigUtils solely rely on config properties, that is why we need to add both here as well.
-        configProps.putAll(System.getProperties());
+        if (overrides.getSystemProperties() != null) {
+            configProps.putAll(overrides.getSystemProperties());
+        }
         if (overrides.getUserProperties() != null) {
             configProps.putAll(overrides.getUserProperties());
         }
         if (overrides.getConfigProperties() != null) {
             configProps.putAll(overrides.getConfigProperties());
         }
+
+        // internal things, these should not be overridden
+        configProps.put(ConfigurationProperties.INTERACTIVE, false);
+        configProps.put("maven.startTime", new Date());
 
         session.setOffline(overrides.isOffline());
 
@@ -285,9 +297,10 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         }
         session.setAuthenticationSelector(authSelector);
 
+        session.setSystemProperties(
+                overrides.getSystemProperties() != null ? overrides.getSystemProperties() : new HashMap<>());
         session.setUserProperties(
                 overrides.getUserProperties() != null ? overrides.getUserProperties() : new HashMap<>());
-        session.setSystemProperties(System.getProperties());
         session.setConfigProperties(configProps);
 
         if (overrides.getTransferListener() != null) {

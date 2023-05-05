@@ -1,9 +1,11 @@
 package eu.maveniverse.maven.mima.context;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toMap;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +44,8 @@ public final class ContextOverrides {
         IGNORE
     }
 
+    private final Map<String, String> systemProperties;
+
     private final Map<String, String> userProperties;
 
     private final Map<String, Object> configProperties;
@@ -67,6 +71,7 @@ public final class ContextOverrides {
     private final TransferListener transferListener;
 
     private ContextOverrides(Builder builder) {
+        this.systemProperties = builder.systemProperties;
         this.userProperties = builder.userProperties;
         this.configProperties = builder.configProperties;
         this.repositories = builder.repositories;
@@ -79,6 +84,10 @@ public final class ContextOverrides {
         this.settingsXml = builder.settingsXml;
         this.repositoryListener = builder.repositoryListener;
         this.transferListener = builder.transferListener;
+    }
+
+    public Map<String, String> getSystemProperties() {
+        return systemProperties;
     }
 
     public Map<String, String> getUserProperties() {
@@ -130,6 +139,8 @@ public final class ContextOverrides {
     }
 
     public static final class Builder {
+        private Map<String, String> systemProperties;
+
         private Map<String, String> userProperties;
 
         private Map<String, Object> configProperties;
@@ -158,6 +169,15 @@ public final class ContextOverrides {
             return new Builder();
         }
 
+        public Builder systemProperties(Map<String, String> systemProperties) {
+            if (systemProperties != null) {
+                this.systemProperties = new HashMap<>(systemProperties);
+            } else {
+                this.systemProperties = null;
+            }
+            return this;
+        }
+
         public Builder userProperties(Map<String, String> userProperties) {
             if (userProperties != null) {
                 this.userProperties = new HashMap<>(userProperties);
@@ -167,30 +187,12 @@ public final class ContextOverrides {
             return this;
         }
 
-        public Builder setUserProperty(String name, String value) {
-            requireNonNull(name);
-            if (this.userProperties == null) {
-                this.userProperties = new HashMap<>();
-            }
-            this.userProperties.put(name, value);
-            return this;
-        }
-
         public Builder configProperties(Map<String, Object> configProperties) {
             if (configProperties != null) {
                 this.configProperties = new HashMap<>(configProperties);
             } else {
                 this.configProperties = null;
             }
-            return this;
-        }
-
-        public Builder setConfigProperty(String name, Object value) {
-            requireNonNull(name);
-            if (this.configProperties == null) {
-                this.configProperties = new HashMap<>();
-            }
-            this.configProperties.put(name, value);
             return this;
         }
 
@@ -258,13 +260,42 @@ public final class ContextOverrides {
         }
 
         public ContextOverrides build() {
-            if (localRepository == null && userProperties != null) {
-                String localRepoPath = userProperties.get("maven.repo.local");
+            if (systemProperties == null) {
+                systemProperties = defaultSystemProperties();
+            }
+
+            if (configProperties == null) {
+                configProperties = new HashMap<>();
+                configProperties.putAll(systemProperties);
+                if (userProperties != null) {
+                    configProperties.putAll(userProperties);
+                }
+            }
+
+            if (localRepository == null) {
+                String localRepoPath = (String) configProperties.get("maven.repo.local");
                 if (localRepoPath != null) {
                     localRepository = Paths.get(localRepoPath);
                 }
             }
             return new ContextOverrides(this);
+        }
+
+        /**
+         * Collects (Maven) system properties as Maven does: it is a mixture of {@link System#getenv()} prefixed with
+         * {@code "env."} and Java System properties.
+         */
+        public Map<String, String> defaultSystemProperties() {
+            HashMap<String, String> result = new HashMap<>();
+            // Env variables prefixed with "env."
+            result.putAll(System.getenv().entrySet().stream()
+                    .map(e -> new AbstractMap.SimpleEntry<>("env." + e.getKey(), e.getValue()))
+                    .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
+            // Java System properties
+            result.putAll(System.getProperties().entrySet().stream()
+                    .collect(toMap(e -> (String) e.getKey(), e -> (String) e.getValue())));
+
+            return result;
         }
     }
 }
