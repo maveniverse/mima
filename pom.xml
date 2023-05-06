@@ -27,8 +27,6 @@
   <modules>
     <module>context</module>
     <module>runtime</module>
-    <!-- not deployed -->
-    <module>demo</module>
   </modules>
 
   <scm>
