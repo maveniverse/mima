@@ -1,9 +1,12 @@
-package eu.maveniverse.maven.mima.context;
+package eu.maveniverse.maven.mima.context.internal;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
+import eu.maveniverse.maven.mima.context.Context;
+import eu.maveniverse.maven.mima.context.ContextOverrides;
+import eu.maveniverse.maven.mima.context.Runtime;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -19,6 +22,9 @@ import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.util.ConfigUtils;
 import org.eclipse.aether.util.repository.ChainedLocalRepositoryManager;
 
+/**
+ * Support class for {@link Runtime} implementations.
+ */
 public abstract class RuntimeSupport implements Runtime {
     private static final String UNKNOWN = "(unknown)";
 

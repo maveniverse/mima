@@ -2,7 +2,7 @@ package eu.maveniverse.maven.mima.runtime.shared;
 
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
-import eu.maveniverse.maven.mima.context.RuntimeSupport;
+import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;

@@ -2,7 +2,7 @@ package eu.maveniverse.maven.mima.runtime.maven;
 
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
-import eu.maveniverse.maven.mima.context.RuntimeSupport;
+import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;

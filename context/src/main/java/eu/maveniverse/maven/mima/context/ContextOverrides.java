@@ -1,6 +1,5 @@
 package eu.maveniverse.maven.mima.context;
 
-import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
 
 import java.nio.file.Path;
@@ -15,8 +14,16 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.transfer.TransferListener;
 
+/**
+ * Overrides applicable to {@link Context} creation. To create instances, use the {@link Builder}.
+ * <p>
+ * Values set in overrides are "ultimate overrides", they override everything, if set.
+ */
 public final class ContextOverrides {
 
+    /**
+     * Default Maven Central repository.
+     */
     public static final RemoteRepository CENTRAL = new RemoteRepository.Builder(
                     "central", "default", "https://repo.maven.apache.org/maven2/")
             .setReleasePolicy(new RepositoryPolicy(
@@ -25,12 +32,24 @@ public final class ContextOverrides {
                     false, RepositoryPolicy.UPDATE_POLICY_DAILY, RepositoryPolicy.CHECKSUM_POLICY_WARN))
             .build();
 
+    /**
+     * Default path of Maven User Home.
+     */
     public static final Path MAVEN_USER_HOME = Paths.get(System.getProperty("user.home"), ".m2");
 
+    /**
+     * Default path of Maven User Settings.
+     */
     public static final Path USER_SETTINGS_XML = MAVEN_USER_HOME.resolve("settings.xml");
 
+    /**
+     * Default path of Maven User Settings Security.
+     */
     public static final Path USER_SETTINGS_SECURITY_XML = MAVEN_USER_HOME.resolve("settings-security.xml");
 
+    /**
+     * Default path of Maven User Local Repository.
+     */
     public static final Path USER_LOCAL_REPOSITORY = MAVEN_USER_HOME.resolve("repository");
 
     public enum SnapshotUpdatePolicy {
@@ -165,10 +184,21 @@ public final class ContextOverrides {
 
         private TransferListener transferListener;
 
+        /**
+         * Creates a "default" builder instance (that will NOT discover {@code settings.xml}).
+         * <p>
+         * Note: if you want to obey "Maven environment", you must invoke {@link #withUserSettings(boolean)} with
+         * {@code true} parameter at least.
+         */
         public static Builder create() {
             return new Builder();
         }
 
+        /**
+         * Sets Maven System Properties to be used. Users usually don't want to tamper with this.
+         * <p>
+         * For defaults see {@link #defaultSystemProperties()}.
+         */
         public Builder systemProperties(Map<String, String> systemProperties) {
             if (systemProperties != null) {
                 this.systemProperties = new HashMap<>(systemProperties);
@@ -178,6 +208,9 @@ public final class ContextOverrides {
             return this;
         }
 
+        /**
+         * Sets Maven User Properties to be used. These override the Maven System Properties.
+         */
         public Builder userProperties(Map<String, String> userProperties) {
             if (userProperties != null) {
                 this.userProperties = new HashMap<>(userProperties);
@@ -187,6 +220,13 @@ public final class ContextOverrides {
             return this;
         }
 
+        /**
+         * Sets Maven Configuration Properties to be used. These accept {@link Object} values, and may be used for
+         * advanced configuration of some Resolver aspect. Usually users don't want to tamper with these.
+         * <p>
+         * In case you want to tamper with these, you must ensure you create config properties the "right way":
+         * <pre>config properties = system properties + user properties</pre>
+         */
         public Builder configProperties(Map<String, Object> configProperties) {
             if (configProperties != null) {
                 this.configProperties = new HashMap<>(configProperties);
@@ -196,6 +236,14 @@ public final class ContextOverrides {
             return this;
         }
 
+        /**
+         * Sets the list of {@link RemoteRepository} instance you want to use. The list may replace or append the
+         * list of repositories coming from Maven, see {@link #appendRepositories(boolean)}.
+         * <p>
+         * If {@link #withUserSettings(boolean)} invoked with {@code true}, the {@code settings.xml} discovered
+         * repositories (and many more) will be used to create context. Also, in case when MIMA runs within Maven,
+         * the current project repositories will be provided.
+         */
         public Builder repositories(List<RemoteRepository> repositories) {
             if (repositories != null) {
                 this.repositories = new ArrayList<>(repositories);
@@ -205,60 +253,87 @@ public final class ContextOverrides {
             return this;
         }
 
-        public Builder addRepository(RemoteRepository repository) {
-            requireNonNull(repository);
-            if (this.repositories == null) {
-                this.repositories = new ArrayList<>();
-            }
-            this.repositories.add(repository);
-            return this;
-        }
-
+        /**
+         * If {@code true}, the {@link #repositories(List)} provided non-null list will be appended to repositories
+         * coming from Maven (read from user {@code settings.xml} or current project), otherwise they are replacing
+         * them. Default is {@code false}.
+         */
         public Builder appendRepositories(boolean appendRepositories) {
             this.appendRepositories = appendRepositories;
             return this;
         }
 
+        /**
+         * Sets session offline.
+         */
         public Builder offline(boolean offline) {
             this.offline = offline;
             return this;
         }
 
+        /**
+         * Overrides the (default ot discovered) location of local repository. This path "wins" always, even if
+         * {@link #withUserSettings(boolean)} was invoked with {@code true} and it contains alternate local repository
+         * path.
+         */
         public Builder localRepository(Path localRepository) {
             this.localRepository = localRepository;
             return this;
         }
 
+        /**
+         * Sets the snapshot update policy.
+         */
         public Builder snapshotUpdatePolicy(SnapshotUpdatePolicy snapshotUpdatePolicy) {
             this.snapshotUpdatePolicy = snapshotUpdatePolicy;
             return this;
         }
 
+        /**
+         * Sets the checksum update policy.
+         */
         public Builder checksumPolicy(ChecksumPolicy checksumPolicy) {
             this.checksumPolicy = checksumPolicy;
             return this;
         }
 
+        /**
+         * Enables or disables use of {@code settings.xml}, used to find out location of local repository,
+         * authentication, remote repositories and many more.
+         */
         public Builder withUserSettings(boolean withUserSettings) {
             this.withUserSettings = withUserSettings;
             return this;
         }
 
+        /**
+         * Overrides the default location of {@code settings.xml}. Setting this method only, without invoking
+         * {@link #withUserSettings(boolean)} with {@code true}, makes the passed in path to this method ignored.
+         */
         public Builder settingsXml(Path settingsXml) {
             this.settingsXml = settingsXml;
             return this;
         }
 
+        /**
+         * Sets {@link RepositoryListener} instance to be used.
+         */
         public Builder repositoryListener(RepositoryListener repositoryListener) {
             this.repositoryListener = repositoryListener;
             return this;
         }
 
+        /**
+         * Sets {@link TransferListener} instance to be used.
+         */
         public Builder transferListener(TransferListener transferListener) {
             this.transferListener = transferListener;
             return this;
         }
 
+        /**
+         * Builds an immutable instance of {@link ContextOverrides} using so far applied settings and configuration.
+         */
         public ContextOverrides build() {
             if (systemProperties == null) {
                 systemProperties = defaultSystemProperties();
