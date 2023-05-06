@@ -22,6 +22,9 @@ import org.eclipse.aether.repository.RemoteRepository;
  * closed in opposite order as they were obtained. Creating customized contexts can be considered "light" operation,
  * as they merely alter the {@link RepositorySystemSession} instance and repositories, while the
  * {@link RepositorySystem} is just inherited from this instance (is not reconstructed).
+ *
+ * @see Runtimes#getRuntime()
+ * @see Runtime#create(ContextOverrides)
  */
 public final class Context implements Closeable {
     private final RuntimeSupport runtime;
