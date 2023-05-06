@@ -24,6 +24,7 @@ public class Classpath {
     public String classpath(ContextOverrides overrides, String artifactStr) throws DependencyResolutionException {
         requireNonNull(artifactStr);
         Runtime runtime = Runtimes.INSTANCE.getRuntime();
+        logger.debug("Runtimes.getRuntime: {}", runtime);
 
         // ad-hoc: create context w/ or w/o overrides
         // other way is to make this class manage context or manage context outside it

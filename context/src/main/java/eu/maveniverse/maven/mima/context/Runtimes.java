@@ -7,13 +7,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.ServiceLoader;
 import java.util.TreeSet;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public final class Runtimes {
     public static final Runtimes INSTANCE = new Runtimes();
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final TreeSet<Runtime> runtimes = new TreeSet<>(Comparator.comparing(Runtime::priority));
 
@@ -32,7 +28,6 @@ public final class Runtimes {
             }
             result = runtimes.first();
         }
-        logger.debug("Runtimes.getRuntime: {}", result);
         return result;
     }
 
@@ -45,13 +40,11 @@ public final class Runtimes {
     public synchronized void registerRuntime(Runtime mimaRuntime) {
         requireNonNull(mimaRuntime);
         if (runtimes.stream().map(Runtime::name).noneMatch(n -> n.equals(mimaRuntime.name()))) {
-            logger.debug("Runtimes.registerEngine: {}", mimaRuntime);
             runtimes.add(mimaRuntime);
         }
     }
 
     public synchronized void resetRuntimes() {
-        logger.debug("Runtimes.resetRuntimes");
         runtimes.clear();
     }
 }
