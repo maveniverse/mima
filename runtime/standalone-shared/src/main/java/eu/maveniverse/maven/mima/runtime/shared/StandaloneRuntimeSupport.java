@@ -3,7 +3,6 @@ package eu.maveniverse.maven.mima.runtime.shared;
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.RuntimeSupport;
-import eu.maveniverse.maven.mima.context.RuntimeVersions;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -41,16 +40,8 @@ import org.eclipse.aether.util.repository.DefaultProxySelector;
 import org.eclipse.aether.util.repository.SimpleResolutionErrorPolicy;
 
 public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
-    protected final RuntimeVersions runtimeVersions;
-
     protected StandaloneRuntimeSupport(String name, int priority) {
-        super(name, priority);
-        this.runtimeVersions = discoverVersions();
-    }
-
-    @Override
-    public RuntimeVersions runtimeVersions() {
-        return runtimeVersions;
+        super(name, priority, discoverMavenVersion());
     }
 
     protected Context buildContext(
@@ -324,8 +315,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
     }
 
     protected String getUserAgent() {
-        String version = discoverVersions().mavenVersion();
-        return "Apache-Maven/" + version + " (Java " + System.getProperty("java.version") + "; "
+        return "Apache-Maven/" + mavenVersion() + " (Java " + System.getProperty("java.version") + "; "
                 + System.getProperty("os.name") + " " + System.getProperty("os.version") + ")";
     }
 }

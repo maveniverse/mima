@@ -3,7 +3,6 @@ package eu.maveniverse.maven.mima.runtime.maven;
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.RuntimeSupport;
-import eu.maveniverse.maven.mima.context.RuntimeVersions;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -19,25 +18,17 @@ public final class MavenRuntime extends RuntimeSupport {
 
     private final Provider<MavenSession> mavenSessionProvider;
 
-    private final RuntimeVersions runtimeVersions;
-
     @Inject
     public MavenRuntime(
             RepositorySystem repositorySystem, Provider<MavenSession> mavenSessionProvider, RuntimeInformation rt) {
-        super("embedded-maven", 10);
+        super("embedded-maven", 10, rt.getMavenVersion());
         this.repositorySystem = repositorySystem;
         this.mavenSessionProvider = mavenSessionProvider;
-        this.runtimeVersions = new RuntimeVersions(rt.getMavenVersion());
     }
 
     @Override
     public boolean managedRepositorySystem() {
         return false;
-    }
-
-    @Override
-    public RuntimeVersions runtimeVersions() {
-        return runtimeVersions;
     }
 
     @Override

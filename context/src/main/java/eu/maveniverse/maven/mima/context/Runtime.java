@@ -5,9 +5,9 @@ public interface Runtime {
 
     int priority();
 
-    boolean managedRepositorySystem();
+    String mavenVersion();
 
-    RuntimeVersions runtimeVersions();
+    boolean managedRepositorySystem();
 
     Context create();
 
