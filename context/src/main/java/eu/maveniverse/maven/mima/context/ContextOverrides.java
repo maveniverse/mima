@@ -280,22 +280,22 @@ public final class ContextOverrides {
             }
             return new ContextOverrides(this);
         }
+    }
 
-        /**
-         * Collects (Maven) system properties as Maven does: it is a mixture of {@link System#getenv()} prefixed with
-         * {@code "env."} and Java System properties.
-         */
-        public Map<String, String> defaultSystemProperties() {
-            HashMap<String, String> result = new HashMap<>();
-            // Env variables prefixed with "env."
-            result.putAll(System.getenv().entrySet().stream()
-                    .map(e -> new AbstractMap.SimpleEntry<>("env." + e.getKey(), e.getValue()))
-                    .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
-            // Java System properties
-            result.putAll(System.getProperties().entrySet().stream()
-                    .collect(toMap(e -> (String) e.getKey(), e -> (String) e.getValue())));
+    /**
+     * Collects (Maven) system properties as Maven does: it is a mixture of {@link System#getenv()} prefixed with
+     * {@code "env."} and Java System properties.
+     */
+    public static Map<String, String> defaultSystemProperties() {
+        HashMap<String, String> result = new HashMap<>();
+        // Env variables prefixed with "env."
+        result.putAll(System.getenv().entrySet().stream()
+                .map(e -> new AbstractMap.SimpleEntry<>("env." + e.getKey(), e.getValue()))
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
+        // Java System properties
+        result.putAll(System.getProperties().entrySet().stream()
+                .collect(toMap(e -> (String) e.getKey(), e -> (String) e.getValue())));
 
-            return result;
-        }
+        return result;
     }
 }
