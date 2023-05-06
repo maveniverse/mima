@@ -49,6 +49,12 @@
   <properties>
     <project.build.outputTimestamp>2023-05-06T20:18:39Z</project.build.outputTimestamp>
 
+<!--
+    Build time: latest Maven and LTS Java.
+    -->
+    <requireBuildtimeMavenVersion.version>[3.9.1,)</requireBuildtimeMavenVersion.version>
+    <requireBuildtimeJavaVersion.version>[17.0.6,)</requireBuildtimeJavaVersion.version>
+
     <!-- Dependency versions -->
     <version.resolver>1.9.10</version.resolver>
     <version.maven>3.9.1</version.maven>
