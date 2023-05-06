@@ -1,7 +1,6 @@
 package eu.maveniverse.maven.mima.impl.library;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import eu.maveniverse.maven.mima.context.ContextOverrides;
@@ -19,7 +18,7 @@ public class ClasspathTest {
                 .build();
 
         String cp = classpath.classpath(overrides, "junit:junit:4.13.2");
-        assertThat(cp, notNullValue());
+        assertNotNull(cp);
     }
 
     @Test

@@ -52,11 +52,11 @@ MIMA provides several artifacts:
   environment, customize it, etc.
 * [runtime](runtime/) - Various runtimes for different purposes and use cases, these should be in `runtime` scope.
 
-To demonstrate, an example [app](app/) "demo project" is provided: it creates a "library" artifact, that contains
+To demonstrate, an example [demo](demo/) "demo project" is provided: it creates a "library" artifact, that contains
 some business logic that needs Resolver (to calculate classpath for given artifact) and it works as "plain library"
 as UTs demonstrate. But, to introduce a twist, this same library is then used as dependency in "library-maven-plugin",
 a Maven Plugin that does the same thing by reusing the "library". Here also, Invoker ITs prove that the Mojo works
-as expected. The `app` subproject has been tested with Maven 3.9.x and Maven 3.8.x to behave as expected.
+as expected. The `demo` subproject has been tested with Maven 3.9.x and Maven 3.8.x to behave as expected.
 
 ## Runtimes
 
