@@ -35,5 +35,5 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
       - run: ./mvnw -Dmaven=${{ matrix.maven }} wrapper:wrapper
-      - run: ./mvnw -f demo verify -e -B -V
+      - run: ./mvnw -f demo install -e -B -V
     

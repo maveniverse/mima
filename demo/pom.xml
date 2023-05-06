@@ -35,7 +35,7 @@
     <dependencies>
       <!-- library (from reactor) -->
       <dependency>
-        <groupId>eu.maveniverse.maven.mima.app</groupId>
+        <groupId>eu.maveniverse.maven.mima.demo</groupId>
         <artifactId>library</artifactId>
         <version>${project.version}</version>
       </dependency>
