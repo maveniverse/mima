@@ -9,7 +9,5 @@ public interface Runtime {
 
     boolean managedRepositorySystem();
 
-    Context create();
-
     Context create(ContextOverrides overrides);
 }

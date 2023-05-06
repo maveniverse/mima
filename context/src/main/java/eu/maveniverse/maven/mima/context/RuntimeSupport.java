@@ -55,11 +55,6 @@ public abstract class RuntimeSupport implements Runtime {
     @Override
     public abstract boolean managedRepositorySystem();
 
-    @Override
-    public Context create() {
-        return create(ContextOverrides.Builder.create().build());
-    }
-
     public Context customizeContext(ContextOverrides overrides, Context context, boolean reset) {
         return customizeContext(this, overrides, context, reset);
     }
