@@ -1,6 +1,6 @@
 # MIMA
 
-MIMA goal is creating "MIni MAven", one-shop stop reusable library, to use Maven Resolver wherever you are.
+MIMA goal is creating "MIni MAven", one-shop stop reusable Java 8 library, to use Maven Resolver wherever you are.
 
 MIMA makes you be able to:
 * effortlessly reuse Maven Resolver inside and outside of Maven
@@ -110,3 +110,11 @@ when runs in standalone mode or embedded in Maven 3.9.x (that provides resolver 
 
 Note: overrides are "all or nothing", so for example IF there is a list of remote repositories, 
 they REPLACE current repositories, if any.
+
+## Requirements
+
+Build time:
+* Java LTS (currently 17.0.6+)
+* Maven 3.9.x
+Runtime:
+* Java 8+
