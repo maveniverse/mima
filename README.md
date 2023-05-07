@@ -116,5 +116,6 @@ they REPLACE current repositories, if any.
 Build time:
 * Java LTS (currently 17.0.6+)
 * Maven 3.9.x
+
 Runtime:
 * Java 8+
