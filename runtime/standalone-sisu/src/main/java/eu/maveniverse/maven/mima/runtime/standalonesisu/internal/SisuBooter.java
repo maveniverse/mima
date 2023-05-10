@@ -1,7 +1,9 @@
 package eu.maveniverse.maven.mima.runtime.standalonesisu.internal;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Module;
+import eu.maveniverse.maven.mima.context.ContextOverrides;
 import java.io.Closeable;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -42,8 +44,14 @@ public class SisuBooter implements Closeable {
         }
     }
 
-    public static SisuBooter newSisuBooter() {
+    public static SisuBooter newSisuBooter(ContextOverrides contextOverrides) {
         final Module app = Main.wire(BeanScanning.CACHE);
-        return Guice.createInjector(app).getInstance(SisuBooter.class);
+        final Module overrides = new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(ContextOverrides.class).toInstance(contextOverrides);
+            }
+        };
+        return Guice.createInjector(app, overrides).getInstance(SisuBooter.class);
     }
 }

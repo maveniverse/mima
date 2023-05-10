@@ -39,6 +39,7 @@ public final class MavenRuntime extends RuntimeSupport {
                 overrides,
                 new Context(
                         this,
+                        overrides,
                         repositorySystem,
                         mavenSession.getRepositorySession(),
                         mavenSession.getCurrentProject().getRemoteProjectRepositories(),

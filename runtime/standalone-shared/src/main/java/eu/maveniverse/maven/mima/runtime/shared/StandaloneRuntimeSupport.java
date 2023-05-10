@@ -3,8 +3,6 @@ package eu.maveniverse.maven.mima.runtime.shared;
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -91,6 +89,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             }
             return new Context(
                     runtime,
+                    overrides,
                     repositorySystem,
                     session,
                     repositorySystem.newResolutionRepositories(session, remoteRepositories),
@@ -118,12 +117,8 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             settingsBuilderRequest.setUserProperties(userProperties);
         }
 
-        if (overrides.getSettingsXml() != null) {
-            settingsBuilderRequest.setUserSettingsFile(
-                    overrides.getSettingsXml().toFile());
-        } else {
-            settingsBuilderRequest.setUserSettingsFile(ContextOverrides.USER_SETTINGS_XML.toFile());
-        }
+        settingsBuilderRequest.setUserSettingsFile(
+                overrides.getMavenUserHome().settingsXml().toFile());
         Settings effectiveSettings =
                 settingsBuilder.build(settingsBuilderRequest).getEffectiveSettings();
 
@@ -301,15 +296,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             session.setRepositoryListener(overrides.getRepositoryListener());
         }
 
-        Path localRepoPath;
-        if (overrides.getLocalRepository() != null) {
-            localRepoPath = overrides.getLocalRepository();
-        } else if (settings.getLocalRepository() != null) {
-            localRepoPath = Paths.get(settings.getLocalRepository());
-        } else {
-            localRepoPath = ContextOverrides.USER_LOCAL_REPOSITORY;
-        }
-        newLocalRepositoryManager(localRepoPath, repositorySystem, session);
+        newLocalRepositoryManager(overrides.getMavenUserHome().localRepository(), repositorySystem, session);
 
         return session;
     }

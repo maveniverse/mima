@@ -116,6 +116,7 @@ public abstract class RuntimeSupport implements Runtime {
 
         return new Context(
                 runtime,
+                overrides,
                 context.repositorySystem(),
                 session,
                 context.repositorySystem().newResolutionRepositories(session, remoteRepositories),
@@ -124,20 +125,16 @@ public abstract class RuntimeSupport implements Runtime {
 
     protected void customizeLocalRepositoryManager(
             ContextOverrides overrides, RepositorySystem repositorySystem, DefaultRepositorySystemSession session) {
-        if (overrides.getLocalRepository() == null) {
+        Path localRepoPath = session.getLocalRepository().getBasedir().toPath();
+        if (overrides.getMavenUserHome().localRepository().equals(localRepoPath)) {
             return;
         }
-        Path localRepoPath = session.getLocalRepository().getBasedir().toPath().toAbsolutePath();
-        if (overrides.getLocalRepository().toAbsolutePath().equals(localRepoPath)) {
-            return;
-        }
-        newLocalRepositoryManager(overrides.getLocalRepository().toAbsolutePath(), repositorySystem, session);
+        newLocalRepositoryManager(overrides.getMavenUserHome().localRepository(), repositorySystem, session);
     }
 
     protected void newLocalRepositoryManager(
             Path localRepoPath, RepositorySystem repositorySystem, DefaultRepositorySystemSession session) {
-        LocalRepository localRepo =
-                new LocalRepository(localRepoPath.toAbsolutePath().toString());
+        LocalRepository localRepo = new LocalRepository(localRepoPath.toFile());
         LocalRepositoryManager lrm = repositorySystem.newLocalRepositoryManager(session, localRepo);
 
         String localRepoTail = ConfigUtils.getString(session, null, MAVEN_REPO_LOCAL_TAIL);
