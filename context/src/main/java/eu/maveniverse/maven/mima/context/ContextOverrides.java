@@ -244,6 +244,14 @@ public final class ContextOverrides {
         return offline;
     }
 
+    /**
+     * @deprecated Use {@link #getMavenUserHome()} instead.
+     */
+    @Deprecated
+    public Path getLocalRepository() {
+        return getMavenUserHome().localRepository();
+    }
+
     public SnapshotUpdatePolicy getSnapshotUpdatePolicy() {
         return snapshotUpdatePolicy;
     }
@@ -254,6 +262,14 @@ public final class ContextOverrides {
 
     public boolean isWithUserSettings() {
         return withUserSettings;
+    }
+
+    /**
+     * @deprecated Use {@link #getMavenUserHome()} instead.
+     */
+    @Deprecated
+    public Path getSettingsXml() {
+        return getMavenUserHome().settingsXml();
     }
 
     public RepositoryListener getRepositoryListener() {
@@ -457,7 +473,7 @@ public final class ContextOverrides {
         }
 
         /**
-         * Overrides Maven User Home.
+         * Overrides Maven User Home, does not accept {@code null}.
          *
          * @since 2.1.0
          */
@@ -574,10 +590,8 @@ public final class ContextOverrides {
 
     /**
      * Helper to safely make nullable {@link Path} instances absolute.
-     *
-     * @since 2.1.0
      */
-    public static Path safeAbsolute(Path path) {
+    private static Path safeAbsolute(Path path) {
         if (path == null) {
             return null;
         }
