@@ -29,6 +29,8 @@ import org.eclipse.aether.repository.RemoteRepository;
 public final class Context implements Closeable {
     private final RuntimeSupport runtime;
 
+    private final ContextOverrides contextOverrides;
+
     private final RepositorySystem repositorySystem;
 
     private final RepositorySystemSession repositorySystemSession;
@@ -39,15 +41,44 @@ public final class Context implements Closeable {
 
     public Context(
             RuntimeSupport runtime,
+            ContextOverrides contextOverrides,
             RepositorySystem repositorySystem,
             RepositorySystemSession repositorySystemSession,
             List<RemoteRepository> remoteRepositories,
             Runnable managedCloser) {
         this.runtime = requireNonNull(runtime);
+        this.contextOverrides = requireNonNull(contextOverrides);
         this.repositorySystemSession = requireNonNull(repositorySystemSession);
         this.repositorySystem = requireNonNull(repositorySystem);
         this.remoteRepositories = requireNonNull(remoteRepositories);
         this.managedCloser = managedCloser;
+    }
+
+    /**
+     * Returns the {@link ContextOverrides}, never {@code null}.
+     *
+     * @since 2.1.0
+     */
+    public ContextOverrides contextOverrides() {
+        return contextOverrides;
+    }
+
+    /**
+     * Returns effective {@link ContextOverrides.MavenUserHome}, never {@code null}.
+     *
+     * @since 2.1.0
+     */
+    public ContextOverrides.MavenUserHome mavenUserHome() {
+        return contextOverrides.getMavenUserHome();
+    }
+
+    /**
+     * Returns effective {@link ContextOverrides.MavenSystemHome}, may be {@code null}, if no Maven Home discovered.
+     *
+     * @since 2.1.0
+     */
+    public ContextOverrides.MavenSystemHome mavenSystemHome() {
+        return contextOverrides.getMavenSystemHome();
     }
 
     /**

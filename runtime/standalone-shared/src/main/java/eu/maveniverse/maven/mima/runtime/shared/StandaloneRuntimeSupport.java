@@ -3,8 +3,6 @@ package eu.maveniverse.maven.mima.runtime.shared;
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -55,7 +53,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             Settings settings = newEffectiveSettings(overrides, settingsBuilder, settingsDecrypter);
             DefaultRepositorySystemSession session = newRepositorySession(overrides, repositorySystem, settings);
             ArrayList<RemoteRepository> remoteRepositories = new ArrayList<>();
-            if (overrides.isAppendRepositories() || overrides.getRepositories() == null) {
+            if (overrides.isAppendRepositories() || overrides.getRepositories().isEmpty()) {
                 remoteRepositories.add(ContextOverrides.CENTRAL);
                 List<Profile> activeProfiles = activeProfiles(settings);
                 for (Profile profile : activeProfiles) {
@@ -82,7 +80,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                     }
                 }
             }
-            if (overrides.getRepositories() != null) {
+            if (!overrides.getRepositories().isEmpty()) {
                 if (overrides.isAppendRepositories()) {
                     remoteRepositories.addAll(overrides.getRepositories());
                 } else {
@@ -91,6 +89,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             }
             return new Context(
                     runtime,
+                    overrides,
                     repositorySystem,
                     session,
                     repositorySystem.newResolutionRepositories(session, remoteRepositories),
@@ -107,23 +106,16 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             return new Settings();
         }
         DefaultSettingsBuildingRequest settingsBuilderRequest = new DefaultSettingsBuildingRequest();
-        if (overrides.getSystemProperties() != null) {
-            Properties systemProperties = new Properties();
-            systemProperties.putAll(overrides.getSystemProperties());
-            settingsBuilderRequest.setSystemProperties(systemProperties);
-        }
-        if (overrides.getUserProperties() != null) {
-            Properties userProperties = new Properties();
-            userProperties.putAll(overrides.getUserProperties());
-            settingsBuilderRequest.setUserProperties(userProperties);
-        }
 
-        if (overrides.getSettingsXml() != null) {
-            settingsBuilderRequest.setUserSettingsFile(
-                    overrides.getSettingsXml().toFile());
-        } else {
-            settingsBuilderRequest.setUserSettingsFile(ContextOverrides.USER_SETTINGS_XML.toFile());
-        }
+        Properties systemProperties = new Properties();
+        systemProperties.putAll(overrides.getSystemProperties());
+        settingsBuilderRequest.setSystemProperties(systemProperties);
+        Properties userProperties = new Properties();
+        userProperties.putAll(overrides.getUserProperties());
+        settingsBuilderRequest.setUserProperties(userProperties);
+
+        settingsBuilderRequest.setUserSettingsFile(
+                overrides.getMavenUserHome().settingsXml().toFile());
         Settings effectiveSettings =
                 settingsBuilder.build(settingsBuilderRequest).getEffectiveSettings();
 
@@ -167,23 +159,13 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
 
         session.setCache(new DefaultRepositoryCache());
 
-        LinkedHashMap<Object, Object> configProps = new LinkedHashMap<>();
+        LinkedHashMap<Object, Object> configProps = new LinkedHashMap<>(overrides.getConfigProperties());
         configProps.put(ConfigurationProperties.USER_AGENT, getUserAgent());
 
         // First add properties populated from settings.xml
         List<Profile> activeProfiles = activeProfiles(settings);
         for (Profile profile : activeProfiles) {
             configProps.putAll(profile.getProperties());
-        }
-        // Resolver's ConfigUtils solely rely on config properties, that is why we need to add both here as well.
-        if (overrides.getSystemProperties() != null) {
-            configProps.putAll(overrides.getSystemProperties());
-        }
-        if (overrides.getUserProperties() != null) {
-            configProps.putAll(overrides.getUserProperties());
-        }
-        if (overrides.getConfigProperties() != null) {
-            configProps.putAll(overrides.getConfigProperties());
         }
 
         // internal things, these should not be overridden
@@ -288,10 +270,8 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         }
         session.setAuthenticationSelector(authSelector);
 
-        session.setSystemProperties(
-                overrides.getSystemProperties() != null ? overrides.getSystemProperties() : new HashMap<>());
-        session.setUserProperties(
-                overrides.getUserProperties() != null ? overrides.getUserProperties() : new HashMap<>());
+        session.setSystemProperties(overrides.getSystemProperties());
+        session.setUserProperties(overrides.getUserProperties());
         session.setConfigProperties(configProps);
 
         if (overrides.getTransferListener() != null) {
@@ -301,15 +281,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             session.setRepositoryListener(overrides.getRepositoryListener());
         }
 
-        Path localRepoPath;
-        if (overrides.getLocalRepository() != null) {
-            localRepoPath = overrides.getLocalRepository();
-        } else if (settings.getLocalRepository() != null) {
-            localRepoPath = Paths.get(settings.getLocalRepository());
-        } else {
-            localRepoPath = ContextOverrides.USER_LOCAL_REPOSITORY;
-        }
-        newLocalRepositoryManager(localRepoPath, repositorySystem, session);
+        newLocalRepositoryManager(overrides.getMavenUserHome().localRepository(), repositorySystem, session);
 
         return session;
     }

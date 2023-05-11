@@ -74,15 +74,9 @@ public abstract class RuntimeSupport implements Runtime {
         }
 
         if (managedRepositorySystem()) {
-            if (overrides.getSystemProperties() != null) {
-                session.setSystemProperties(overrides.getSystemProperties());
-            }
-            if (overrides.getUserProperties() != null) {
-                session.setUserProperties(overrides.getUserProperties());
-            }
-            if (overrides.getConfigProperties() != null) {
-                session.setConfigProperties(overrides.getConfigProperties());
-            }
+            session.setSystemProperties(overrides.getSystemProperties());
+            session.setUserProperties(overrides.getUserProperties());
+            session.setConfigProperties(overrides.getConfigProperties());
         }
 
         session.setOffline(overrides.isOffline());
@@ -103,10 +97,10 @@ public abstract class RuntimeSupport implements Runtime {
         }
 
         ArrayList<RemoteRepository> remoteRepositories = new ArrayList<>();
-        if (overrides.isAppendRepositories() || overrides.getRepositories() == null) {
+        if (overrides.isAppendRepositories() || overrides.getRepositories().isEmpty()) {
             remoteRepositories.addAll(context.remoteRepositories());
         }
-        if (overrides.getRepositories() != null) {
+        if (!overrides.getRepositories().isEmpty()) {
             if (overrides.isAppendRepositories()) {
                 remoteRepositories.addAll(overrides.getRepositories());
             } else {
@@ -116,6 +110,7 @@ public abstract class RuntimeSupport implements Runtime {
 
         return new Context(
                 runtime,
+                overrides,
                 context.repositorySystem(),
                 session,
                 context.repositorySystem().newResolutionRepositories(session, remoteRepositories),
@@ -124,20 +119,16 @@ public abstract class RuntimeSupport implements Runtime {
 
     protected void customizeLocalRepositoryManager(
             ContextOverrides overrides, RepositorySystem repositorySystem, DefaultRepositorySystemSession session) {
-        if (overrides.getLocalRepository() == null) {
+        Path localRepoPath = session.getLocalRepository().getBasedir().toPath();
+        if (overrides.getMavenUserHome().localRepository().equals(localRepoPath)) {
             return;
         }
-        Path localRepoPath = session.getLocalRepository().getBasedir().toPath().toAbsolutePath();
-        if (overrides.getLocalRepository().toAbsolutePath().equals(localRepoPath)) {
-            return;
-        }
-        newLocalRepositoryManager(overrides.getLocalRepository().toAbsolutePath(), repositorySystem, session);
+        newLocalRepositoryManager(overrides.getMavenUserHome().localRepository(), repositorySystem, session);
     }
 
     protected void newLocalRepositoryManager(
             Path localRepoPath, RepositorySystem repositorySystem, DefaultRepositorySystemSession session) {
-        LocalRepository localRepo =
-                new LocalRepository(localRepoPath.toAbsolutePath().toString());
+        LocalRepository localRepo = new LocalRepository(localRepoPath.toFile());
         LocalRepositoryManager lrm = repositorySystem.newLocalRepositoryManager(session, localRepo);
 
         String localRepoTail = ConfigUtils.getString(session, null, MAVEN_REPO_LOCAL_TAIL);

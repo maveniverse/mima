@@ -5,38 +5,18 @@ import static java.util.Objects.requireNonNull;
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.runtime.shared.StandaloneRuntimeSupport;
-import java.util.function.Supplier;
 import org.apache.maven.settings.building.SettingsBuilder;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.eclipse.aether.RepositorySystem;
 
-public final class StandaloneStaticRuntime extends StandaloneRuntimeSupport {
-
-    private final Supplier<RepositorySystem> repositorySystemSupplier;
-
-    private final Supplier<SettingsBuilder> settingsBuilderSupplier;
-
-    private final Supplier<SettingsDecrypter> settingsDecrypterSupplier;
+public class StandaloneStaticRuntime extends StandaloneRuntimeSupport {
 
     public StandaloneStaticRuntime() {
-        this(
-                "standalone-static",
-                40,
-                new RepositorySystemSupplier(),
-                new SettingsBuilderSupplier(),
-                new SettingsDecrypterSupplier());
+        this("standalone-static", 40);
     }
 
-    public StandaloneStaticRuntime(
-            String name,
-            int priority,
-            Supplier<RepositorySystem> repositorySystemSupplier,
-            Supplier<SettingsBuilder> settingsBuilderSupplier,
-            Supplier<SettingsDecrypter> settingsDecrypterSupplier) {
+    public StandaloneStaticRuntime(String name, int priority) {
         super(name, priority);
-        this.repositorySystemSupplier = requireNonNull(repositorySystemSupplier);
-        this.settingsBuilderSupplier = requireNonNull(settingsBuilderSupplier);
-        this.settingsDecrypterSupplier = requireNonNull(settingsDecrypterSupplier);
     }
 
     @Override
@@ -46,10 +26,22 @@ public final class StandaloneStaticRuntime extends StandaloneRuntimeSupport {
 
     @Override
     public Context create(ContextOverrides overrides) {
-        RepositorySystem repositorySystem = requireNonNull(repositorySystemSupplier.get());
-        SettingsBuilder settingsBuilder = requireNonNull(settingsBuilderSupplier.get());
-        SettingsDecrypter settingsDecrypter = requireNonNull(settingsDecrypterSupplier.get());
+        RepositorySystem repositorySystem = requireNonNull(createRepositorySystem(overrides));
+        SettingsBuilder settingsBuilder = requireNonNull(createSettingsBuilder(overrides));
+        SettingsDecrypter settingsDecrypter = requireNonNull(createSettingsDecrypter(overrides));
         return buildContext(
                 this, overrides, repositorySystem, settingsBuilder, settingsDecrypter, repositorySystem::shutdown);
+    }
+
+    protected RepositorySystem createRepositorySystem(ContextOverrides contextOverrides) {
+        return new RepositorySystemSupplier().get();
+    }
+
+    protected SettingsBuilder createSettingsBuilder(ContextOverrides contextOverrides) {
+        return new SettingsBuilderSupplier().get();
+    }
+
+    protected SettingsDecrypter createSettingsDecrypter(ContextOverrides contextOverrides) {
+        return new SettingsDecrypterSupplier(contextOverrides).get();
     }
 }

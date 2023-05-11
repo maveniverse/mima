@@ -10,7 +10,7 @@
 
   <groupId>eu.maveniverse.maven.mima</groupId>
   <artifactId>mima</artifactId>
-  <version>2.0.1-SNAPSHOT</version>
+  <version>2.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>${project.groupId}:${project.artifactId}</name>
@@ -47,7 +47,7 @@
   </ciManagement>
 
   <properties>
-    <project.build.outputTimestamp>2023-05-06T20:18:39Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2023-05-11T09:32:44Z</project.build.outputTimestamp>
 
     <!--
     Build time: latest Maven and LTS Java.
@@ -99,6 +99,18 @@
         <groupId>eu.maveniverse.maven.mima.runtime</groupId>
         <artifactId>standalone-static-uber</artifactId>
         <version>${project.version}</version>
+      </dependency>
+
+      <!-- Logging (runtime only) -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${version.slf4j}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${version.slf4j}</version>
       </dependency>
 
       <!-- External -->
