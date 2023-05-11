@@ -62,7 +62,8 @@ public class ClasspathTest {
     @Test
     public void simpleEncryptedNoMaster() {
         ContextOverrides overrides = ContextOverrides.Builder.create()
-                .withMavenUserHome(Paths.get("target/test-classes/encrypted-no-master"))
+                .withMavenUserHome(Paths.get("target/test-classes/encrypted"))
+                .withSettingsSecurityXmlOverride(Paths.get("no-such-file"))
                 .withUserSettings(true)
                 .withLocalRepositoryOverride(Paths.get("target/simpleEncrypted"))
                 .build();
