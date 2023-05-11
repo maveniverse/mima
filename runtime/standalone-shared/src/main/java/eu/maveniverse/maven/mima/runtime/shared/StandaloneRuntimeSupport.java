@@ -21,6 +21,7 @@ import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.building.DefaultSettingsBuildingRequest;
 import org.apache.maven.settings.building.SettingsBuilder;
 import org.apache.maven.settings.building.SettingsBuildingException;
+import org.apache.maven.settings.building.SettingsProblem;
 import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
@@ -36,8 +37,12 @@ import org.eclipse.aether.util.repository.DefaultAuthenticationSelector;
 import org.eclipse.aether.util.repository.DefaultMirrorSelector;
 import org.eclipse.aether.util.repository.DefaultProxySelector;
 import org.eclipse.aether.util.repository.SimpleResolutionErrorPolicy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
+
     protected StandaloneRuntimeSupport(String name, int priority) {
         super(name, priority, discoverMavenVersion());
     }
@@ -50,8 +55,9 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             SettingsDecrypter settingsDecrypter,
             Runnable managedCloser) {
         try {
-            Settings settings = newEffectiveSettings(overrides, settingsBuilder, settingsDecrypter);
-            DefaultRepositorySystemSession session = newRepositorySession(overrides, repositorySystem, settings);
+            Settings settings = newEffectiveSettings(overrides, settingsBuilder);
+            DefaultRepositorySystemSession session =
+                    newRepositorySession(overrides, repositorySystem, settings, settingsDecrypter);
             ArrayList<RemoteRepository> remoteRepositories = new ArrayList<>();
             if (overrides.isAppendRepositories() || overrides.getRepositories().isEmpty()) {
                 remoteRepositories.add(ContextOverrides.CENTRAL);
@@ -99,8 +105,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         }
     }
 
-    protected Settings newEffectiveSettings(
-            ContextOverrides overrides, SettingsBuilder settingsBuilder, SettingsDecrypter settingsDecrypter)
+    protected Settings newEffectiveSettings(ContextOverrides overrides, SettingsBuilder settingsBuilder)
             throws SettingsBuildingException {
         if (!overrides.isWithUserSettings()) {
             return new Settings();
@@ -113,22 +118,9 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         Properties userProperties = new Properties();
         userProperties.putAll(overrides.getUserProperties());
         settingsBuilderRequest.setUserProperties(userProperties);
-
         settingsBuilderRequest.setUserSettingsFile(
                 overrides.getMavenUserHome().settingsXml().toFile());
-        Settings effectiveSettings =
-                settingsBuilder.build(settingsBuilderRequest).getEffectiveSettings();
-
-        DefaultSettingsDecryptionRequest decrypt = new DefaultSettingsDecryptionRequest();
-        decrypt.setProxies(effectiveSettings.getProxies());
-        decrypt.setServers(effectiveSettings.getServers());
-        SettingsDecryptionResult decrypted = settingsDecrypter.decrypt(decrypt);
-
-        if (!decrypted.getProblems().isEmpty()) {
-            throw new SettingsBuildingException(decrypted.getProblems());
-        }
-
-        return effectiveSettings;
+        return settingsBuilder.build(settingsBuilderRequest).getEffectiveSettings();
     }
 
     protected List<Profile> activeProfiles(Settings settings) {
@@ -154,7 +146,10 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
     }
 
     protected DefaultRepositorySystemSession newRepositorySession(
-            ContextOverrides overrides, RepositorySystem repositorySystem, Settings settings) {
+            ContextOverrides overrides,
+            RepositorySystem repositorySystem,
+            Settings settings,
+            SettingsDecrypter settingsDecrypter) {
         DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 
         session.setCache(new DefaultRepositoryCache());
@@ -181,6 +176,17 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         // we should not interfere with "real Maven"
         session.setResolutionErrorPolicy(new SimpleResolutionErrorPolicy(false, false));
 
+        DefaultSettingsDecryptionRequest decrypt = new DefaultSettingsDecryptionRequest();
+        decrypt.setProxies(settings.getProxies());
+        decrypt.setServers(settings.getServers());
+        SettingsDecryptionResult decrypted = settingsDecrypter.decrypt(decrypt);
+
+        if (logger.isDebugEnabled()) {
+            for (SettingsProblem problem : decrypted.getProblems()) {
+                logger.debug(problem.getMessage(), problem.getException());
+            }
+        }
+
         DefaultMirrorSelector mirrorSelector = new DefaultMirrorSelector();
         for (Mirror mirror : settings.getMirrors()) {
             mirrorSelector.add(
@@ -195,7 +201,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         session.setMirrorSelector(mirrorSelector);
 
         DefaultProxySelector proxySelector = new DefaultProxySelector();
-        for (Proxy proxy : settings.getProxies()) {
+        for (Proxy proxy : decrypted.getProxies()) {
             AuthenticationBuilder authBuilder = new AuthenticationBuilder();
             authBuilder.addUsername(proxy.getUsername()).addPassword(proxy.getPassword());
             proxySelector.add(
@@ -206,7 +212,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         session.setProxySelector(proxySelector);
 
         DefaultAuthenticationSelector authSelector = new DefaultAuthenticationSelector();
-        for (Server server : settings.getServers()) {
+        for (Server server : decrypted.getServers()) {
             AuthenticationBuilder authBuilder = new AuthenticationBuilder();
             authBuilder.addUsername(server.getUsername()).addPassword(server.getPassword());
             authBuilder.addPrivateKey(server.getPrivateKey(), server.getPassphrase());
