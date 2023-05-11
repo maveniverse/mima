@@ -45,13 +45,13 @@ public class SisuBooter implements Closeable {
     }
 
     public static SisuBooter newSisuBooter(ContextOverrides contextOverrides) {
-        final Module app = Main.wire(BeanScanning.CACHE);
         final Module overrides = new AbstractModule() {
             @Override
             protected void configure() {
                 bind(ContextOverrides.class).toInstance(contextOverrides);
             }
         };
+        final Module app = Main.wire(BeanScanning.CACHE, overrides);
         return Guice.createInjector(app, overrides).getInstance(SisuBooter.class);
     }
 }

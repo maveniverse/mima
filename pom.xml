@@ -101,6 +101,18 @@
         <version>${project.version}</version>
       </dependency>
 
+      <!-- Logging (runtime only) -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${version.slf4j}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${version.slf4j}</version>
+      </dependency>
+
       <!-- External -->
       <dependency>
         <groupId>org.apache.maven.resolver</groupId>
