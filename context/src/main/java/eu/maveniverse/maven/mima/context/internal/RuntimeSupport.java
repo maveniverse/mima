@@ -74,15 +74,9 @@ public abstract class RuntimeSupport implements Runtime {
         }
 
         if (managedRepositorySystem()) {
-            if (overrides.getSystemProperties() != null) {
-                session.setSystemProperties(overrides.getSystemProperties());
-            }
-            if (overrides.getUserProperties() != null) {
-                session.setUserProperties(overrides.getUserProperties());
-            }
-            if (overrides.getConfigProperties() != null) {
-                session.setConfigProperties(overrides.getConfigProperties());
-            }
+            session.setSystemProperties(overrides.getSystemProperties());
+            session.setUserProperties(overrides.getUserProperties());
+            session.setConfigProperties(overrides.getConfigProperties());
         }
 
         session.setOffline(overrides.isOffline());
@@ -103,10 +97,10 @@ public abstract class RuntimeSupport implements Runtime {
         }
 
         ArrayList<RemoteRepository> remoteRepositories = new ArrayList<>();
-        if (overrides.isAppendRepositories() || overrides.getRepositories() == null) {
+        if (overrides.isAppendRepositories() || overrides.getRepositories().isEmpty()) {
             remoteRepositories.addAll(context.remoteRepositories());
         }
-        if (overrides.getRepositories() != null) {
+        if (!overrides.getRepositories().isEmpty()) {
             if (overrides.isAppendRepositories()) {
                 remoteRepositories.addAll(overrides.getRepositories());
             } else {

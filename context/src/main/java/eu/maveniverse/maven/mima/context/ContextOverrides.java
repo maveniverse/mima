@@ -34,6 +34,11 @@ public final class ContextOverrides {
                     false, RepositoryPolicy.UPDATE_POLICY_DAILY, RepositoryPolicy.CHECKSUM_POLICY_WARN))
             .build();
 
+    /**
+     * Layout of Maven User Home, by default {@code $HOME/.m2}.
+     *
+     * @since 2.1.0
+     */
     public static final class MavenUserHome {
         private final Path mavenUserHome;
 
@@ -62,28 +67,38 @@ public final class ContextOverrides {
             this.localRepositoryOverride = localRepositoryOverride;
         }
 
+        public Path basedir() {
+            return mavenUserHome;
+        }
+
         public Path settingsXml() {
             if (settingsXmlOverride != null) {
                 return settingsXmlOverride;
             }
-            return mavenUserHome.resolve("settings.xml");
+            return basedir().resolve("settings.xml");
         }
 
         public Path settingsSecurityXml() {
             if (settingsSecurityXmlOverride != null) {
                 return settingsSecurityXmlOverride;
             }
-            return mavenUserHome.resolve("settings-security.xml");
+            return basedir().resolve("settings-security.xml");
         }
 
         public Path localRepository() {
             if (localRepositoryOverride != null) {
                 return localRepositoryOverride;
             }
-            return mavenUserHome.resolve("repository");
+            return basedir().resolve("repository");
         }
     }
 
+    /**
+     * Layout of Maven System Home, usually set with {@code $MAVEN_HOME} environment variable, or {@code maven.home}
+     * Java System Property (by Maven).
+     *
+     * @since 2.1.0
+     */
     public static final class MavenSystemHome {
         private final Path mavenSystemHome;
 
@@ -91,20 +106,24 @@ public final class ContextOverrides {
             this.mavenSystemHome = requireNonNull(mavenSystemHome);
         }
 
+        public Path basedir() {
+            return mavenSystemHome;
+        }
+
         public Path bin() {
-            return mavenSystemHome.resolve("bin");
+            return basedir().resolve("bin");
         }
 
         public Path boot() {
-            return mavenSystemHome.resolve("boot");
+            return basedir().resolve("boot");
         }
 
         public Path conf() {
-            return mavenSystemHome.resolve("conf");
+            return basedir().resolve("conf");
         }
 
         public Path lib() {
-            return mavenSystemHome.resolve("lib");
+            return basedir().resolve("lib");
         }
 
         public Path m2Conf() {
@@ -205,10 +224,10 @@ public final class ContextOverrides {
             final MavenUserHome mavenUserHome,
             final MavenSystemHome mavenSystemHome) {
 
-        this.systemProperties = systemProperties;
-        this.userProperties = userProperties;
-        this.configProperties = configProperties;
-        this.repositories = repositories;
+        this.systemProperties = Collections.unmodifiableMap(systemProperties);
+        this.userProperties = Collections.unmodifiableMap(userProperties);
+        this.configProperties = Collections.unmodifiableMap(configProperties);
+        this.repositories = Collections.unmodifiableList(repositories);
         this.appendRepositories = appendRepositories;
         this.offline = offline;
         this.snapshotUpdatePolicy = snapshotUpdatePolicy;
@@ -220,26 +239,44 @@ public final class ContextOverrides {
         this.mavenSystemHome = mavenSystemHome;
     }
 
+    /**
+     * Maven System Properties map, never {@code null}.
+     */
     public Map<String, String> getSystemProperties() {
         return systemProperties;
     }
 
+    /**
+     * Maven User Properties map, never {@code null}.
+     */
     public Map<String, String> getUserProperties() {
         return userProperties;
     }
 
+    /**
+     * Maven Config properties, never {@code null}.
+     */
     public Map<String, Object> getConfigProperties() {
         return configProperties;
     }
 
+    /**
+     * User added list of repositories, never {@code null}.
+     */
     public List<RemoteRepository> getRepositories() {
         return repositories;
     }
 
+    /**
+     * Whether {@link #getRepositories()} appends discovered repositories or replaces.
+     */
     public boolean isAppendRepositories() {
         return appendRepositories;
     }
 
+    /**
+     * Is session offline?
+     */
     public boolean isOffline() {
         return offline;
     }
@@ -252,14 +289,23 @@ public final class ContextOverrides {
         return getMavenUserHome().localRepository();
     }
 
+    /**
+     * Snapshot update policy, {@code null} is to use Resolver default.
+     */
     public SnapshotUpdatePolicy getSnapshotUpdatePolicy() {
         return snapshotUpdatePolicy;
     }
 
+    /**
+     * Checksum policy, {@code null} is to use Resolver default.
+     */
     public ChecksumPolicy getChecksumPolicy() {
         return checksumPolicy;
     }
 
+    /**
+     * Whether user {@code settings.xml} should be picked up while configuring Resolver or not.
+     */
     public boolean isWithUserSettings() {
         return withUserSettings;
     }
@@ -272,18 +318,30 @@ public final class ContextOverrides {
         return getMavenUserHome().settingsXml();
     }
 
+    /**
+     * Repository listener, {@code null} if none.
+     */
     public RepositoryListener getRepositoryListener() {
         return repositoryListener;
     }
 
+    /**
+     * Transfer listener, {@code null} if none.
+     */
     public TransferListener getTransferListener() {
         return transferListener;
     }
 
+    /**
+     * Maven User Home layout, never {@code null}.
+     */
     public MavenUserHome getMavenUserHome() {
         return mavenUserHome;
     }
 
+    /**
+     * Maven System Home layout, {@code null} if Maven Home not known.
+     */
     public MavenSystemHome getMavenSystemHome() {
         return mavenSystemHome;
     }
@@ -360,9 +418,6 @@ public final class ContextOverrides {
         /**
          * Sets Maven Configuration Properties to be used. These accept {@link Object} values, and may be used for
          * advanced configuration of some Resolver aspect. Usually users don't want to tamper with these.
-         * <p>
-         * In case you want to tamper with these, you must ensure you create config properties the "right way":
-         * <pre>config properties = system properties + user properties</pre>
          */
         public Builder configProperties(Map<String, Object> configProperties) {
             if (configProperties != null) {
@@ -385,7 +440,7 @@ public final class ContextOverrides {
             if (repositories != null) {
                 this.repositories = new ArrayList<>(repositories);
             } else {
-                this.repositories = null;
+                this.repositories = Collections.emptyList();
             }
             return this;
         }

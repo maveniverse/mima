@@ -53,7 +53,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             Settings settings = newEffectiveSettings(overrides, settingsBuilder, settingsDecrypter);
             DefaultRepositorySystemSession session = newRepositorySession(overrides, repositorySystem, settings);
             ArrayList<RemoteRepository> remoteRepositories = new ArrayList<>();
-            if (overrides.isAppendRepositories() || overrides.getRepositories() == null) {
+            if (overrides.isAppendRepositories() || overrides.getRepositories().isEmpty()) {
                 remoteRepositories.add(ContextOverrides.CENTRAL);
                 List<Profile> activeProfiles = activeProfiles(settings);
                 for (Profile profile : activeProfiles) {
@@ -80,7 +80,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                     }
                 }
             }
-            if (overrides.getRepositories() != null) {
+            if (!overrides.getRepositories().isEmpty()) {
                 if (overrides.isAppendRepositories()) {
                     remoteRepositories.addAll(overrides.getRepositories());
                 } else {
@@ -106,16 +106,13 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             return new Settings();
         }
         DefaultSettingsBuildingRequest settingsBuilderRequest = new DefaultSettingsBuildingRequest();
-        if (overrides.getSystemProperties() != null) {
-            Properties systemProperties = new Properties();
-            systemProperties.putAll(overrides.getSystemProperties());
-            settingsBuilderRequest.setSystemProperties(systemProperties);
-        }
-        if (overrides.getUserProperties() != null) {
-            Properties userProperties = new Properties();
-            userProperties.putAll(overrides.getUserProperties());
-            settingsBuilderRequest.setUserProperties(userProperties);
-        }
+
+        Properties systemProperties = new Properties();
+        systemProperties.putAll(overrides.getSystemProperties());
+        settingsBuilderRequest.setSystemProperties(systemProperties);
+        Properties userProperties = new Properties();
+        userProperties.putAll(overrides.getUserProperties());
+        settingsBuilderRequest.setUserProperties(userProperties);
 
         settingsBuilderRequest.setUserSettingsFile(
                 overrides.getMavenUserHome().settingsXml().toFile());
@@ -162,23 +159,13 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
 
         session.setCache(new DefaultRepositoryCache());
 
-        LinkedHashMap<Object, Object> configProps = new LinkedHashMap<>();
+        LinkedHashMap<Object, Object> configProps = new LinkedHashMap<>(overrides.getConfigProperties());
         configProps.put(ConfigurationProperties.USER_AGENT, getUserAgent());
 
         // First add properties populated from settings.xml
         List<Profile> activeProfiles = activeProfiles(settings);
         for (Profile profile : activeProfiles) {
             configProps.putAll(profile.getProperties());
-        }
-        // Resolver's ConfigUtils solely rely on config properties, that is why we need to add both here as well.
-        if (overrides.getSystemProperties() != null) {
-            configProps.putAll(overrides.getSystemProperties());
-        }
-        if (overrides.getUserProperties() != null) {
-            configProps.putAll(overrides.getUserProperties());
-        }
-        if (overrides.getConfigProperties() != null) {
-            configProps.putAll(overrides.getConfigProperties());
         }
 
         // internal things, these should not be overridden
@@ -283,10 +270,8 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         }
         session.setAuthenticationSelector(authSelector);
 
-        session.setSystemProperties(
-                overrides.getSystemProperties() != null ? overrides.getSystemProperties() : new HashMap<>());
-        session.setUserProperties(
-                overrides.getUserProperties() != null ? overrides.getUserProperties() : new HashMap<>());
+        session.setSystemProperties(overrides.getSystemProperties());
+        session.setUserProperties(overrides.getUserProperties());
         session.setConfigProperties(configProps);
 
         if (overrides.getTransferListener() != null) {
