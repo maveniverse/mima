@@ -17,7 +17,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-#          cache: 'maven'
+          cache: 'maven'
       - run: ./mvnw install -e -B -V
   test:
     name: Test
@@ -33,7 +33,7 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           distribution: 'temurin'
-#          cache: 'maven'
+          cache: 'maven'
       - run: ./mvnw -Dmaven=${{ matrix.maven }} wrapper:wrapper
       - run: ./mvnw -f demo install -e -B -V
     
