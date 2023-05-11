@@ -15,7 +15,7 @@
 
   <name>${project.groupId}:${project.artifactId}</name>
 
-  <url>http://www.maveniverse.eu/mima</url>
+  <url>https://www.maveniverse.eu/mima</url>
 
   <licenses>
     <license>
