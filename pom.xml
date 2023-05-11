@@ -57,8 +57,8 @@
 
     <!-- Dependency versions -->
     <version.resolver>1.9.10</version.resolver>
-    <version.maven>3.9.1</version.maven>
-    <version.sisu>0.3.5</version.sisu>
+    <version.maven>3.9.2</version.maven>
+    <version.sisu>0.9.0.M2</version.sisu>
     <version.slf4j>1.7.36</version.slf4j>
   </properties>
 
