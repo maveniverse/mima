@@ -1,5 +1,11 @@
 name: CI
 
+# Two distinct steps:
+# 1st: build and install it with reuired Java LTS and Maven
+# 2nd: matrix(java, maven) run tests w/ artifacts built in 1st step
+#
+# To achieve this, we use short lived cache that shares 1st build output with 2nd
+
 on:
   push:
     branches: [ main ]
@@ -17,7 +23,10 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: 'maven'
+      - uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ github.sha }}
       - run: ./mvnw install -e -B -V
   test:
     name: Test
@@ -33,7 +42,10 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           distribution: 'temurin'
-          cache: 'maven'
+      - uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ github.sha }}
       - run: ./mvnw -Dmaven=${{ matrix.maven }} wrapper:wrapper
       - run: ./mvnw -f demo install -e -B -V
     
