@@ -50,11 +50,11 @@ In short, compile and code against [context](context/) artifact (make it `compil
 Resolver API available as transitive dependency as well. Next, pick one or more non-conflicting [runtime](runtime/) 
 artifact (make it `runtime` scope in project) that will provide implementation(s) at runtime.
 
-"Non-conflicting runtime" means,  you should have only one "embedded-*" and only one "standalone-*" prefixed runtime 
+"Non-conflicting runtime" means,  you should have only one `embedded-` and only one `standalone-` prefixed runtime 
 artifact coexisting at classpath, at any time.
 
 Furthermore, as Resolver uses [SLF4J](https://www.slf4j.org/) for logging, it is your responsibility is to provide a 
-"backend" for logging facade, as MIMA does not pull in any by default, the choice is left at users of MIMA.
+"backend" for logging facade, as MIMA does not pull in any by default.
 
 Complete example of using MIMA in some project intended to be used standalone only:
 
@@ -85,7 +85,7 @@ Complete example of using MIMA in some project intended to be used standalone on
   </dependencies>
 ```
 
-To demonstrate, an example [demo](demo/) "demo project" is provided: it contains the "library" artifact, that contains
+To demonstrate, an example ["demo project"](demo/) is provided: it contains the "library" artifact, that contains
 some business logic that needs Resolver (to calculate classpath for given artifact) and it works as "plain library"
 as UTs demonstrate. But, to introduce a twist, this same library is then used as dependency in "library-maven-plugin",
 a Maven Plugin that does the same thing by reusing the "library". Here also, Invoker ITs prove that the Mojo works
@@ -110,7 +110,7 @@ highest priority.
 ```
 
 To use MIMA from within Maven, this is the only dependency needed. Logging backend is not needed either, it is 
-provided by Maven itself. This runtime activates **only when runs within Maven** and remains dormant when standalone,
+provided by Maven itself. This runtime activates **only when runs within Maven**, remains dormant otherwise,
 and has no transitive dependencies. In case of libraries intended to work in both modes, inside but outside of Maven 
 as well, this dependency may be always present.
 
@@ -138,10 +138,10 @@ This runtime brings in all dependencies needed for MIMA standalone runtime, and 
 is not needed during compile. The runtime uses [Eclipse Sisu](https://www.eclipse.org/sisu/) DI, same engine used 
 by Maven itself.
 
-This runtime may be used in case you already have an application that is using Sisu for DI, like apps 
+This runtime may be used in case you already have an application that is using Sisu for DI as well, like apps 
 using [Ollie](https://github.com/takari/ollie) or alike.
 
-You also need to provide SLF4J backend as well.
+You are also required to provide SLF4J backend.
 
 ### Standalone Static
 
@@ -167,7 +167,7 @@ dependencies like Guava) is unwanted. This runtime has the lowest priority.
 This runtime is similar to Resolver's deprecated `ServiceLocator`, as it does not use DI but "manually" wires 
 things up. 
 
-You also need to provide some SLF4J backend as well.
+You are also required to provide SLF4J backend.
 
 ### Uber Standalone Runtimes
 
@@ -184,7 +184,8 @@ at runtime**. Required binary compatible SLF4J artifacts at classpath are:
 * SLF4J backend of choice (that is compatible with used SLF4J API)
 
 The `jcl-over-slf4j` is required for 
-[Apache HttpClient 4.x](https://hc.apache.org/httpcomponents-client-4.5.x/index.html) logging purposes.
+[Apache HttpClient 4.x](https://hc.apache.org/httpcomponents-client-4.5.x/index.html) logging purposes, as it uses
+JCL logging.
 
 ## Things to be aware of
 
