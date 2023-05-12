@@ -46,43 +46,145 @@ but inside of it as well. And to do that in transparent way.
 
 ## How to use
 
-MIMA provides several artifacts:
+In short, compile and code against [context](context/) artifact (make it `compile` scope in project), this makes
+Resolver API available as transitive dependency as well. Next, pick one or more non-conflicting [runtime](runtime/) 
+artifact (make it `runtime` scope in project) that will provide implementation(s) at runtime.
 
-* [context](context/) - This is the artifact you should depend on in `compile` scope, and use to get Resolver 
-  environment, customize it, etc.
-* [runtime](runtime/) - Various runtimes for different purposes and use cases, these should be in `runtime` scope.
+"Non-conflicting runtime" means,  you should have only one "embedded-*" and only one "standalone-*" prefixed runtime 
+artifact coexisting at classpath, at any time.
 
-To demonstrate, an example [demo](demo/) "demo project" is provided: it creates a "library" artifact, that contains
+Furthermore, as Resolver uses [SLF4J](https://www.slf4j.org/) for logging, it is your responsibility is to provide a 
+"backend" for logging facade, as MIMA does not pull in any by default, the choice is left at users of MIMA.
+
+Complete example of using MIMA in some project intended to be used standalone only:
+
+```
+  <dependencies>
+  ...
+    <!-- context: compile scope -->
+    <dependency>
+      <groupId>eu.maveniverse.maven.mima</groupId>
+      <artifactId>context</artifactId>
+      <version>${version.mima}</version>
+    </dependency>
+    <!-- runtime: runtime scope -->
+    <dependency>
+      <groupId>eu.maveniverse.maven.mima.runtime</groupId>
+      <artifactId>standalone-static</artifactId>
+      <version>${version.mima}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <!-- logging: runtime scope -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${version.slf4j}</version>
+      <scope>runtime</scope>
+    </dependency>
+  ...
+  </dependencies>
+```
+
+To demonstrate, an example [demo](demo/) "demo project" is provided: it contains the "library" artifact, that contains
 some business logic that needs Resolver (to calculate classpath for given artifact) and it works as "plain library"
 as UTs demonstrate. But, to introduce a twist, this same library is then used as dependency in "library-maven-plugin",
 a Maven Plugin that does the same thing by reusing the "library". Here also, Invoker ITs prove that the Mojo works
-as expected. The `demo` subproject has been tested with Maven 3.9.x and Maven 3.8.x to behave as expected.
+as expected. The `demo` subproject is being tested with Maven 3.9.x and Maven 3.8.x for correct behavior.
 
 ## Runtimes
 
-MIMA offers following runtimes:
-* [embedded-maven](runtime/embedded-maven) - this runtime should be always present (is dependency-free, all are in 
-  `provided` scope). It "activates" when runtime finds itself inside a Maven instance, and installs itself with
-  highest priority.
-* [standalone-shared](runtime/standalone-shared) - this is NOT a runtime, but "shared" code for standalone runtimes,
-  mostly related to creation of session in "Maven like way".
-* [standalone-sisu](runtime/standalone-sisu) - this runtime may be always present (in case of Maven Plugin it will 
-  generate a ton of warnings due wrong Maven artifact scopes), but is best to simply exclude it in Maven Plugin POMs.
-  This is a "fallback" runtime, when no other runtime is present, and has the lowest priority. Note: if `embedded-maven`
-  is not present on classpath, this runtime **will fail** when running within Maven. This runtime may be used in 
-  case you have an application that is already using Sisu for DI, like apps using [Ollie](https://github.com/takari/ollie)
-  or Sonatype Nexus2 is.
-* [standalone-sisu-uber](runtime/standalone-sisu-uber) - this runtime is same as 
-  [standalone-sisu](runtime/standalone-sisu) with one notable difference: it is repackaged into single JAR for simpler
-  handling.
-* [standalone-static](runtime/standalone-static) - this runtime may be always present (but in case of Maven Plugin it will 
-  generate a ton of warnings due wrong Maven artifact scopes), but is best to simply exclude it in Maven Plugin POMs.
-  This is a "fallback" runtime, when no other runtime is present, and has the lowest priority. Note: if `embedded-maven`
-  is not present on classpath, this runtime **will fail** when running within Maven. This runtime may be used in 
-  case you you are scared of Sisu/Guice.
-* [standalone-static-uber](runtime/standalone-static-uber) - this runtime is same as 
-  [standalone-static](runtime/standalone-static) with one notable difference: it is repackaged into single JAR for simpler
-  handling.
+MIMA offers several runtime options for several use cases.
+
+### Embedded Maven
+
+To be used when library using MIMA runs within Maven (for example within a Maven Plugin). This runtime has the 
+highest priority.
+
+```
+    <dependency>
+      <groupId>eu.maveniverse.maven.mima.runtime</groupId>
+      <artifactId>embedded-maven</artifactId>
+      <version>${version.mima}</version>
+      <scope>runtime</scope>
+    </dependency>
+```
+
+To use MIMA from within Maven, this is the only dependency needed. Logging backend is not needed either, it is 
+provided by Maven itself. This runtime activates **only when runs within Maven** and remains dormant when standalone,
+and has no transitive dependencies. In case of libraries intended to work in both modes, inside but outside of Maven 
+as well, this dependency may be always present.
+
+### Standalone Sisu
+
+To be used when library using MIMA runs standalone. In this case you need to provide backend for SLF4J facade as well.
+
+```
+    <dependency>
+      <groupId>eu.maveniverse.maven.mima.runtime</groupId>
+      <artifactId>standalone-sisu</artifactId>
+      <version>${version.mima}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <!-- logging: runtime scope -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${version.slf4j}</version>
+      <scope>runtime</scope>
+    </dependency>
+```
+
+This runtime brings in all dependencies needed for MIMA standalone runtime, and best is to have it in `runtine` scope, 
+is not needed during compile. The runtime uses [Eclipse Sisu](https://www.eclipse.org/sisu/) DI, same engine used 
+by Maven itself.
+
+This runtime may be used in case you already have an application that is using Sisu for DI, like apps 
+using [Ollie](https://github.com/takari/ollie) or alike.
+
+You also need to provide SLF4J backend as well.
+
+### Standalone Static
+
+To be used when library using MIMA runs standalone, and presence of Eclipse Sisu DI (and Google Guice and transitive 
+dependencies like Guava) is unwanted. This runtime has the lowest priority.
+
+```
+    <dependency>
+      <groupId>eu.maveniverse.maven.mima.runtime</groupId>
+      <artifactId>standalone-static</artifactId>
+      <version>${version.mima}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <!-- logging: runtime scope -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${version.slf4j}</version>
+      <scope>runtime</scope>
+    </dependency>
+```
+
+This runtime is similar to Resolver's deprecated `ServiceLocator`, as it does not use DI but "manually" wires 
+things up. 
+
+You also need to provide some SLF4J backend as well.
+
+### Uber Standalone Runtimes
+
+Both standalone runtimes provide `-uber` artifacts, that as name implies, are artifacts that contains all the needed
+classes shaded (but not relocated) into one JAR and POM modified for dependencies (removed). These artifacts are 
+added to simplify use of non-trivial transitive dependencies of Resolver.
+
+**One big difference exists**: `-uber` artifacts of standalone runtimes does not include SLF4J API, it is 
+you (integrator) who should provide **binary compatible SLF4J API (baseline is version 1.7.36) and SLF4J backend
+at runtime**. Required binary compatible SLF4J artifacts at classpath are:
+
+* SLF4J API [baseline](https://repo.maven.apache.org/maven2/org/slf4j/slf4j-api/1.7.36/)
+* SLF4J jcl-over-slf4j [baseline](https://repo.maven.apache.org/maven2/org/slf4j/jcl-over-slf4j/1.7.36/)
+* SLF4J backend of choice (that is compatible with used SLF4J API)
+
+The `jcl-over-slf4j` is required for 
+[Apache HttpClient 4.x](https://hc.apache.org/httpcomponents-client-4.5.x/index.html) logging purposes.
 
 ## Things to be aware of
 
@@ -119,3 +221,4 @@ Build time:
 
 Runtime:
 * Java 8+
+* SLF4J backend should be provided

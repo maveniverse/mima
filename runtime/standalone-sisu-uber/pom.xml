@@ -33,6 +33,11 @@
         <artifactId>maven-shade-plugin</artifactId>
         <configuration>
           <dependencyReducedPomLocation>${project.build.directory}/dependency-reduced-pom.xml</dependencyReducedPomLocation>
+          <artifactSet>
+            <excludes>
+              <exclude>org.slf4j:*</exclude>
+            </excludes>
+          </artifactSet>
           <filters>
             <filter>
               <artifact>*:*</artifact>
