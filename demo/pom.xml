@@ -2,14 +2,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>eu.maveniverse.maven.mima</groupId>
-    <artifactId>mima</artifactId>
-    <version>2.1.1-SNAPSHOT</version>
-  </parent>
-
   <groupId>eu.maveniverse.maven.mima.demo</groupId>
   <artifactId>demo</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>${project.groupId}:${project.artifactId}</name>
 
@@ -21,22 +16,81 @@
   </modules>
 
   <properties>
-    <version.mima>${project.version}</version.mima>
+    <version.mima>2.2.0</version.mima>
+    <version.slf4j>1.7.36</version.slf4j>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
     <!-- This is just a demo -->
     <maven.deploy.skip>true</maven.deploy.skip>
+
     <!-- Allow much broader range of Maven and Java -->
     <requireBuildtimeMavenVersion.version>[3.8.4,)</requireBuildtimeMavenVersion.version>
     <requireBuildtimeJavaVersion.version>[8,)</requireBuildtimeJavaVersion.version>
+
+    <!-- Demo is Java 8 -->
+    <maven.compiler.source>8</maven.compiler.source>
+    <maven.compiler.target>8</maven.compiler.target>
+    <!--
+    Test defaults.
+    -->
+    <maven.test.redirectTestOutputToFile>true</maven.test.redirectTestOutputToFile>
+    <surefire.failIfNoSpecifiedTests>false</surefire.failIfNoSpecifiedTests>
+    <failsafe.timeout>600</failsafe.timeout>
+    <it.failIfNoSpecifiedTests>false</it.failIfNoSpecifiedTests>
   </properties>
 
   <dependencyManagement>
     <dependencies>
-      <!-- library (from reactor) -->
+      <!-- reactor -->
       <dependency>
         <groupId>eu.maveniverse.maven.mima.demo</groupId>
         <artifactId>library</artifactId>
         <version>${project.version}</version>
+      </dependency>
+      <!-- MIMA -->
+      <dependency>
+        <groupId>eu.maveniverse.maven.mima</groupId>
+        <artifactId>context</artifactId>
+        <version>${version.mima}</version>
+      </dependency>
+      <dependency>
+        <groupId>eu.maveniverse.maven.mima.runtime</groupId>
+        <artifactId>embedded-maven</artifactId>
+        <version>${version.mima}</version>
+      </dependency>
+      <dependency>
+        <groupId>eu.maveniverse.maven.mima.runtime</groupId>
+        <artifactId>standalone-sisu</artifactId>
+        <version>${version.mima}</version>
+      </dependency>
+      <dependency>
+        <groupId>eu.maveniverse.maven.mima.runtime</groupId>
+        <artifactId>standalone-static</artifactId>
+        <version>${version.mima}</version>
+      </dependency>
+      <!-- logging -->
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${version.slf4j}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
+        <version>${version.slf4j}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${version.slf4j}</version>
+      </dependency>
+      <!-- test -->
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.9.2</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -48,16 +102,6 @@
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
         <version>2.30.0</version>
-      </plugin>
-      <plugin>
-        <!-- no release to keep Java 8 -->
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.5.1</version>
-        <configuration>
-          <target>${maven.compiler.target}</target>
-          <source>${maven.compiler.source}</source>
-        </configuration>
       </plugin>
     </plugins>
   </build>
