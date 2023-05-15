@@ -222,4 +222,5 @@ Build time:
 
 Runtime:
 * Java 8+
-* SLF4J backend should be provided
+* Standalone: SLF4J backend (1.7.36 baseline) should be provided.
+* Standalone Uber: SLF4J API and backend (1.7.36 baseline) should be provided, and for Apache HttpClient 4.x logging, ideally `jcl-over-slf4j` as well.
