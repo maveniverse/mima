@@ -16,15 +16,27 @@
       <groupId>eu.maveniverse.maven.mima.demo</groupId>
       <artifactId>library</artifactId>
     </dependency>
+    <!-- selected runtime -->
     <dependency>
       <groupId>eu.maveniverse.maven.mima.runtime</groupId>
-      <artifactId>standalone-sisu</artifactId>
+      <artifactId>standalone-sisu-uber</artifactId>
       <scope>runtime</scope>
     </dependency>
-    <!-- Provide runtime logging: slf4j-api comes only -->
+    <!-- Provide runtime logging -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <scope>runtime</scope>
+    </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
+      <scope>runtime</scope>
     </dependency>
 
     <dependency>
