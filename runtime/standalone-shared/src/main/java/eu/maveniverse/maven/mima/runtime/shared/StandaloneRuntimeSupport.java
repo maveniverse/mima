@@ -50,7 +50,17 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected StandaloneRuntimeSupport(String name, int priority) {
-        super(name, priority, discoverMavenVersion());
+        super(name, discoverVersion(), priority, discoverMavenVersion());
+    }
+
+    private static String discoverVersion() {
+        Map<String, String> version =
+                loadClasspathProperties("/eu/maveniverse/maven/mima/runtime/shared/internal/version.properties");
+        String result = version.get("version");
+        if (result == null || result.trim().isEmpty() || result.startsWith("${")) {
+            return UNKNOWN;
+        }
+        return result;
     }
 
     protected Context buildContext(
@@ -338,6 +348,6 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
 
     protected String getUserAgent() {
         return "Apache-Maven/" + mavenVersion() + " (Java " + System.getProperty("java.version") + "; "
-                + System.getProperty("os.name") + " " + System.getProperty("os.version") + ")";
+                + System.getProperty("os.name") + " " + System.getProperty("os.version") + "; MIMA " + version() + ")";
     }
 }

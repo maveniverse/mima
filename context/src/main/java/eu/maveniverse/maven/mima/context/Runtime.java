@@ -11,6 +11,11 @@ public interface Runtime {
     String name();
 
     /**
+     * The runtime version, never {@code null}.
+     */
+    String version();
+
+    /**
      * The priority of runtime instance. Priorities use natural integer ordering.
      */
     int priority();
