@@ -3,6 +3,7 @@ package eu.maveniverse.maven.mima.context;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.AbstractMap;
@@ -29,10 +30,27 @@ public final class ContextOverrides {
     public static final RemoteRepository CENTRAL = new RemoteRepository.Builder(
                     "central", "default", "https://repo.maven.apache.org/maven2/")
             .setReleasePolicy(new RepositoryPolicy(
-                    true, RepositoryPolicy.UPDATE_POLICY_DAILY, RepositoryPolicy.CHECKSUM_POLICY_WARN))
+                    true, RepositoryPolicy.UPDATE_POLICY_NEVER, RepositoryPolicy.CHECKSUM_POLICY_WARN))
             .setSnapshotPolicy(new RepositoryPolicy(
-                    false, RepositoryPolicy.UPDATE_POLICY_DAILY, RepositoryPolicy.CHECKSUM_POLICY_WARN))
+                    false, RepositoryPolicy.UPDATE_POLICY_NEVER, RepositoryPolicy.CHECKSUM_POLICY_WARN))
             .build();
+
+    /**
+     * Default basedir (used when no override).
+     */
+    public static final Path DEFAULT_BASEDIR =
+            Paths.get(System.getProperty("user.dir")).toAbsolutePath();
+
+    /**
+     * Default user home (used when no override).
+     */
+    public static final Path DEFAULT_USER_HOME =
+            Paths.get(System.getProperty("user.home")).toAbsolutePath();
+
+    /**
+     * Default path of Maven User Home (used when no override).
+     */
+    public static final Path DEFAULT_MAVEN_USER_HOME = DEFAULT_USER_HOME.resolve(".m2");
 
     /**
      * Layout of Maven User Home, by default {@code $HOME/.m2}.
@@ -167,11 +185,6 @@ public final class ContextOverrides {
         }
     }
 
-    /**
-     * Default path of Maven User Home.
-     */
-    public static final Path DEFAULT_MAVEN_USER_HOME = Paths.get(System.getProperty("user.home"), ".m2");
-
     public enum SnapshotUpdatePolicy {
         ALWAYS,
         NEVER
@@ -182,6 +195,8 @@ public final class ContextOverrides {
         WARN,
         IGNORE
     }
+
+    private final Path basedir;
 
     private final Map<String, String> systemProperties;
 
@@ -214,6 +229,7 @@ public final class ContextOverrides {
     private final Object effectiveSettings;
 
     private ContextOverrides(
+            final Path basedir,
             final Map<String, String> systemProperties,
             final Map<String, String> userProperties,
             final Map<String, Object> configProperties,
@@ -230,6 +246,7 @@ public final class ContextOverrides {
             final MavenSystemHome mavenSystemHome,
             final Object effectiveSettings) {
 
+        this.basedir = requireNonNull(basedir);
         this.systemProperties = Collections.unmodifiableMap(systemProperties);
         this.userProperties = Collections.unmodifiableMap(userProperties);
         this.configProperties = Collections.unmodifiableMap(configProperties);
@@ -245,6 +262,13 @@ public final class ContextOverrides {
         this.globalSettingsXmlOverride = globalSettingsXmlOverride;
         this.mavenSystemHome = mavenSystemHome;
         this.effectiveSettings = effectiveSettings;
+    }
+
+    /**
+     * Returns the basedir, never {@code null}. It is an existing directory.
+     */
+    public Path getBasedir() {
+        return basedir;
     }
 
     /**
@@ -373,6 +397,7 @@ public final class ContextOverrides {
     }
 
     public static final class Builder {
+        private Path basedir = DEFAULT_BASEDIR;
         private Map<String, String> systemProperties = defaultSystemProperties();
 
         private Map<String, String> userProperties = new HashMap<>();
@@ -417,6 +442,20 @@ public final class ContextOverrides {
          */
         public static Builder create() {
             return new Builder();
+        }
+
+        /**
+         * Sets basedir path, it must be an existing directory.
+         *
+         * @since 2.2.1
+         */
+        public Builder withBasedir(Path basedir) {
+            if (basedir != null) {
+                this.basedir = basedir;
+            } else {
+                this.basedir = DEFAULT_BASEDIR;
+            }
+            return this;
         }
 
         /**
@@ -652,6 +691,10 @@ public final class ContextOverrides {
          * Builds an immutable instance of {@link ContextOverrides} using so far applied settings and configuration.
          */
         public ContextOverrides build() {
+            if (!Files.isDirectory(basedir)) {
+                throw new IllegalArgumentException("basedir must be existing directory: " + basedir);
+            }
+
             Map<String, Object> effectiveConfigProperties = new HashMap<>(systemProperties);
             effectiveConfigProperties.putAll(userProperties);
             effectiveConfigProperties.putAll(configProperties);
@@ -676,6 +719,7 @@ public final class ContextOverrides {
             }
 
             return new ContextOverrides(
+                    basedir,
                     systemProperties,
                     userProperties,
                     effectiveConfigProperties,

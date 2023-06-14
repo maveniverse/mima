@@ -4,7 +4,6 @@ import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
 import eu.maveniverse.maven.mima.runtime.shared.internal.SettingsUtils;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -147,8 +146,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             return activeProfiles(settings);
         } else {
             DefaultProfileActivationContext context = new DefaultProfileActivationContext();
-            context.setProjectDirectory(
-                    Paths.get(System.getProperty("user.dir")).toFile());
+            context.setProjectDirectory(overrides.getBasedir().toFile());
             context.setActiveProfileIds(settings.getActiveProfiles());
             context.setSystemProperties(overrides.getSystemProperties());
             context.setUserProperties(overrides.getUserProperties());
