@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.maven.model.building.ModelProblemCollector;
 import org.apache.maven.model.building.ModelProblemCollectorRequest;
 import org.apache.maven.model.profile.DefaultProfileActivationContext;
@@ -157,7 +158,11 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         } else {
             DefaultProfileActivationContext context = new DefaultProfileActivationContext();
             context.setProjectDirectory(overrides.getBasedir().toFile());
-            context.setActiveProfileIds(settings.getActiveProfiles());
+            context.setActiveProfileIds(
+                    Stream.concat(settings.getActiveProfiles().stream(), overrides.getActiveProfileIds().stream())
+                            .distinct()
+                            .collect(Collectors.toList()));
+            context.setInactiveProfileIds(overrides.getInactiveProfileIds());
             context.setSystemProperties(overrides.getSystemProperties());
             context.setUserProperties(overrides.getUserProperties());
             ModelProblemCollector collector = new ModelProblemCollector() {

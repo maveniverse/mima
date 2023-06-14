@@ -216,6 +216,10 @@ public final class ContextOverrides {
 
     private final boolean withUserSettings;
 
+    private final List<String> activeProfileIds;
+
+    private final List<String> inactiveProfileIds;
+
     private final RepositoryListener repositoryListener;
 
     private final TransferListener transferListener;
@@ -239,6 +243,8 @@ public final class ContextOverrides {
             final SnapshotUpdatePolicy snapshotUpdatePolicy,
             final ChecksumPolicy checksumPolicy,
             final boolean withUserSettings,
+            final List<String> activeProfileIds,
+            final List<String> inactiveProfileIds,
             final RepositoryListener repositoryListener,
             final TransferListener transferListener,
             final MavenUserHome mavenUserHome,
@@ -256,6 +262,8 @@ public final class ContextOverrides {
         this.snapshotUpdatePolicy = snapshotUpdatePolicy;
         this.checksumPolicy = checksumPolicy;
         this.withUserSettings = withUserSettings;
+        this.activeProfileIds = Collections.unmodifiableList(activeProfileIds);
+        this.inactiveProfileIds = Collections.unmodifiableList(inactiveProfileIds);
         this.repositoryListener = repositoryListener;
         this.transferListener = transferListener;
         this.mavenUserHome = mavenUserHome;
@@ -343,6 +351,24 @@ public final class ContextOverrides {
     }
 
     /**
+     * Returns the list of explicitly enabled profile IDs, never {@code null}.
+     *
+     * @since 2.2.1
+     */
+    public List<String> getActiveProfileIds() {
+        return activeProfileIds;
+    }
+
+    /**
+     * Returns the list of explicitly disabled profile IDs, never {@code null}.
+     *
+     * @since 2.2.1
+     */
+    public List<String> getInactiveProfileIds() {
+        return inactiveProfileIds;
+    }
+
+    /**
      * @deprecated Use {@link #getMavenUserHome()} instead.
      */
     @Deprecated
@@ -416,6 +442,10 @@ public final class ContextOverrides {
         private ChecksumPolicy checksumPolicy = null;
 
         private boolean withUserSettings = false;
+
+        private List<String> activeProfileIds = Collections.emptyList();
+
+        private List<String> inactiveProfileIds = Collections.emptyList();
 
         private RepositoryListener repositoryListener = null;
 
@@ -567,6 +597,34 @@ public final class ContextOverrides {
          */
         public Builder withUserSettings(boolean withUserSettings) {
             this.withUserSettings = withUserSettings;
+            return this;
+        }
+
+        /**
+         * Sets explicitly activated profile IDs.
+         *
+         * @since 2.2.1
+         */
+        public Builder withActiveProfileIds(List<String> activeProfileIds) {
+            if (activeProfileIds != null) {
+                this.activeProfileIds = activeProfileIds;
+            } else {
+                this.activeProfileIds = Collections.emptyList();
+            }
+            return this;
+        }
+
+        /**
+         * Sets explicitly inactivated profile IDs.
+         *
+         * @since 2.2.1
+         */
+        public Builder withInactiveProfileIds(List<String> inactiveProfileIds) {
+            if (inactiveProfileIds != null) {
+                this.inactiveProfileIds = inactiveProfileIds;
+            } else {
+                this.inactiveProfileIds = Collections.emptyList();
+            }
             return this;
         }
 
@@ -730,6 +788,8 @@ public final class ContextOverrides {
                     snapshotUpdatePolicy,
                     checksumPolicy,
                     withUserSettings,
+                    activeProfileIds,
+                    inactiveProfileIds,
                     repositoryListener,
                     transferListener,
                     new MavenUserHome(
