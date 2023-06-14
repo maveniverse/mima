@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -76,9 +77,9 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             Settings settings = newEffectiveSettings(overrides, settingsBuilder);
             DefaultRepositorySystemSession session =
                     newRepositorySession(overrides, repositorySystem, settings, settingsDecrypter);
-            ArrayList<RemoteRepository> remoteRepositories = new ArrayList<>();
+            final ArrayList<RemoteRepository> remoteRepositories = new ArrayList<>();
             if (overrides.isAppendRepositories() || overrides.getRepositories().isEmpty()) {
-                remoteRepositories.add(ContextOverrides.CENTRAL);
+                remoteRepositories.add(ContextOverrides.CENTRAL); // first: best practice
                 List<Profile> activeProfiles = activeProfilesByActivation(overrides, settings, profileSelector);
                 for (Profile profile : activeProfiles) {
                     for (Repository repository : profile.getRepositories()) {
@@ -100,16 +101,15 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                         } else {
                             builder.setSnapshotPolicy(new RepositoryPolicy(false, null, null));
                         }
-                        remoteRepositories.add(builder.build());
+                        addReplace(remoteRepositories, builder.build());
                     }
                 }
             }
             if (!overrides.getRepositories().isEmpty()) {
-                if (overrides.isAppendRepositories()) {
-                    remoteRepositories.addAll(overrides.getRepositories());
-                } else {
-                    remoteRepositories = new ArrayList<>(overrides.getRepositories());
+                if (!overrides.isAppendRepositories()) {
+                    remoteRepositories.clear();
                 }
+                overrides.getRepositories().forEach(r -> addReplace(remoteRepositories, r));
             }
             return new Context(
                     runtime,
@@ -121,6 +121,11 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         } catch (Exception e) {
             throw new IllegalStateException("Cannot create context from scratch", e);
         }
+    }
+
+    protected void addReplace(List<RemoteRepository> remoteRepositories, RemoteRepository repository) {
+        remoteRepositories.removeIf(r -> Objects.equals(repository.getId(), r.getId()));
+        remoteRepositories.add(repository);
     }
 
     protected Settings newEffectiveSettings(ContextOverrides overrides, SettingsBuilder settingsBuilder)
