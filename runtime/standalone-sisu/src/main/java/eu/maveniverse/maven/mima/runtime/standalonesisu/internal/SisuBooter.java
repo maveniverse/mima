@@ -8,6 +8,7 @@ import java.io.Closeable;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import org.apache.maven.model.profile.ProfileSelector;
 import org.apache.maven.settings.building.SettingsBuilder;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.eclipse.aether.RepositorySystem;
@@ -27,6 +28,9 @@ public class SisuBooter implements Closeable {
 
     @Inject
     public SettingsDecrypter settingsDecrypter;
+
+    @Inject
+    public ProfileSelector profileSelector;
 
     @Inject
     public LifecycleManager lifecycleManager;

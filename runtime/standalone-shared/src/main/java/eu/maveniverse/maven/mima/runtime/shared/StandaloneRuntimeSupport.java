@@ -3,6 +3,8 @@ package eu.maveniverse.maven.mima.runtime.shared;
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
+import eu.maveniverse.maven.mima.runtime.shared.internal.SettingsUtils;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -10,6 +12,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
+import org.apache.maven.model.building.ModelProblemCollector;
+import org.apache.maven.model.building.ModelProblemCollectorRequest;
+import org.apache.maven.model.profile.DefaultProfileActivationContext;
+import org.apache.maven.model.profile.ProfileSelector;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.apache.maven.settings.Activation;
 import org.apache.maven.settings.Mirror;
@@ -53,6 +60,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             RepositorySystem repositorySystem,
             SettingsBuilder settingsBuilder,
             SettingsDecrypter settingsDecrypter,
+            ProfileSelector profileSelector,
             Runnable managedCloser) {
         try {
             Settings settings = newEffectiveSettings(overrides, settingsBuilder);
@@ -61,7 +69,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             ArrayList<RemoteRepository> remoteRepositories = new ArrayList<>();
             if (overrides.isAppendRepositories() || overrides.getRepositories().isEmpty()) {
                 remoteRepositories.add(ContextOverrides.CENTRAL);
-                List<Profile> activeProfiles = activeProfiles(settings);
+                List<Profile> activeProfiles = activeProfilesByActivation(overrides, settings, profileSelector);
                 for (Profile profile : activeProfiles) {
                     for (Repository repository : profile.getRepositories()) {
                         RemoteRepository.Builder builder = new RemoteRepository.Builder(
@@ -110,6 +118,9 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         if (!overrides.isWithUserSettings()) {
             return new Settings();
         }
+        if (overrides.getEffectiveSettings() != null) {
+            return (Settings) overrides.getEffectiveSettings();
+        }
         DefaultSettingsBuildingRequest settingsBuilderRequest = new DefaultSettingsBuildingRequest();
 
         Properties systemProperties = new Properties();
@@ -118,9 +129,44 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         Properties userProperties = new Properties();
         userProperties.putAll(overrides.getUserProperties());
         settingsBuilderRequest.setUserProperties(userProperties);
+        if (overrides.getGlobalSettingsXmlOverride() != null) {
+            settingsBuilderRequest.setGlobalSettingsFile(
+                    overrides.getGlobalSettingsXmlOverride().toFile());
+        } else if (overrides.getMavenSystemHome() != null) {
+            settingsBuilderRequest.setGlobalSettingsFile(
+                    overrides.getMavenSystemHome().settingsXml().toFile());
+        }
         settingsBuilderRequest.setUserSettingsFile(
                 overrides.getMavenUserHome().settingsXml().toFile());
         return settingsBuilder.build(settingsBuilderRequest).getEffectiveSettings();
+    }
+
+    protected List<Profile> activeProfilesByActivation(
+            ContextOverrides overrides, Settings settings, ProfileSelector profileSelector) {
+        if (profileSelector == null) {
+            return activeProfiles(settings);
+        } else {
+            DefaultProfileActivationContext context = new DefaultProfileActivationContext();
+            context.setProjectDirectory(
+                    Paths.get(System.getProperty("user.dir")).toFile());
+            context.setActiveProfileIds(settings.getActiveProfiles());
+            context.setSystemProperties(overrides.getSystemProperties());
+            context.setUserProperties(overrides.getUserProperties());
+            ModelProblemCollector collector = new ModelProblemCollector() {
+                @Override
+                public void add(ModelProblemCollectorRequest req) {}
+            };
+            return profileSelector
+                    .getActiveProfiles(
+                            settings.getProfiles().stream()
+                                    .map(SettingsUtils::convertFromSettingsProfile)
+                                    .collect(Collectors.toList()),
+                            context,
+                            collector)
+                    .stream()
+                    .map(SettingsUtils::convertToSettingsProfile)
+                    .collect(Collectors.toList());
+        }
     }
 
     protected List<Profile> activeProfiles(Settings settings) {

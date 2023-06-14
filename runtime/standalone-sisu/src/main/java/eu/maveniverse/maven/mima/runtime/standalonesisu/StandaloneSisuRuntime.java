@@ -7,6 +7,7 @@ import eu.maveniverse.maven.mima.runtime.standalonesisu.internal.SisuBooter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import org.apache.maven.model.profile.ProfileSelector;
 import org.apache.maven.settings.building.SettingsBuilder;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.eclipse.aether.RepositorySystem;
@@ -21,17 +22,23 @@ public final class StandaloneSisuRuntime extends StandaloneRuntimeSupport {
 
     private final SettingsDecrypter settingsDecrypter;
 
+    private final ProfileSelector profileSelector;
+
     public StandaloneSisuRuntime() {
-        this(null, null, null);
+        this(null, null, null, null);
     }
 
     @Inject
     public StandaloneSisuRuntime(
-            RepositorySystem repositorySystem, SettingsBuilder settingsBuilder, SettingsDecrypter settingsDecrypter) {
+            RepositorySystem repositorySystem,
+            SettingsBuilder settingsBuilder,
+            SettingsDecrypter settingsDecrypter,
+            ProfileSelector profileSelector) {
         super("standalone-sisu", 30);
         this.repositorySystem = repositorySystem;
         this.settingsBuilder = settingsBuilder;
         this.settingsDecrypter = settingsDecrypter;
+        this.profileSelector = profileSelector;
     }
 
     @Override
@@ -50,9 +57,11 @@ public final class StandaloneSisuRuntime extends StandaloneRuntimeSupport {
                     booter.repositorySystem,
                     booter.settingsBuilder,
                     booter.settingsDecrypter,
+                    booter.profileSelector,
                     booter::close);
         } else {
-            return buildContext(this, overrides, repositorySystem, settingsBuilder, settingsDecrypter, null);
+            return buildContext(
+                    this, overrides, repositorySystem, settingsBuilder, settingsDecrypter, profileSelector, null);
         }
     }
 }

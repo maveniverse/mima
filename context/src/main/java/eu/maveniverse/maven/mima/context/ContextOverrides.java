@@ -207,7 +207,11 @@ public final class ContextOverrides {
 
     private final MavenUserHome mavenUserHome;
 
+    private final Path globalSettingsXmlOverride;
+
     private final MavenSystemHome mavenSystemHome;
+
+    private final Object effectiveSettings;
 
     private ContextOverrides(
             final Map<String, String> systemProperties,
@@ -222,7 +226,9 @@ public final class ContextOverrides {
             final RepositoryListener repositoryListener,
             final TransferListener transferListener,
             final MavenUserHome mavenUserHome,
-            final MavenSystemHome mavenSystemHome) {
+            final Path globalSettingsXmlOverride,
+            final MavenSystemHome mavenSystemHome,
+            final Object effectiveSettings) {
 
         this.systemProperties = Collections.unmodifiableMap(systemProperties);
         this.userProperties = Collections.unmodifiableMap(userProperties);
@@ -236,7 +242,9 @@ public final class ContextOverrides {
         this.repositoryListener = repositoryListener;
         this.transferListener = transferListener;
         this.mavenUserHome = mavenUserHome;
+        this.globalSettingsXmlOverride = globalSettingsXmlOverride;
         this.mavenSystemHome = mavenSystemHome;
+        this.effectiveSettings = effectiveSettings;
     }
 
     /**
@@ -340,10 +348,28 @@ public final class ContextOverrides {
     }
 
     /**
+     * Maven Global Settings override, or {@code null}.
+     *
+     * @since 2.2.1
+     */
+    public Path getGlobalSettingsXmlOverride() {
+        return globalSettingsXmlOverride;
+    }
+
+    /**
      * Maven System Home layout, {@code null} if Maven Home not known.
      */
     public MavenSystemHome getMavenSystemHome() {
         return mavenSystemHome;
+    }
+
+    /**
+     * The built, effective settings, or {@code null}.
+     *
+     * @since 2.2.1
+     */
+    public Object getEffectiveSettings() {
+        return effectiveSettings;
     }
 
     public static final class Builder {
@@ -371,13 +397,17 @@ public final class ContextOverrides {
 
         private Path mavenUserHome = DEFAULT_MAVEN_USER_HOME;
 
-        private Path settingsXmlOverride = null;
+        private Path userSettingsXmlOverride = null;
 
-        private Path settingsSecurityXmlOverride = null;
+        private Path userSettingsSecurityXmlOverride = null;
 
         private Path localRepositoryOverride = null;
 
+        private Path globalSettingsXmlOverride = null;
+
         private Path mavenSystemHome = null;
+
+        private Object effectiveSettings = null;
 
         /**
          * Creates a "default" builder instance (that will NOT discover {@code settings.xml}).
@@ -542,9 +572,19 @@ public final class ContextOverrides {
          * Overrides Maven User settings.xml location.
          *
          * @since 2.1.0
+         * @deprecated See {@link #withUserSettingsXmlOverride(Path)}
          */
         public Builder withSettingsXmlOverride(Path settingsXmlOverride) {
-            this.settingsXmlOverride = settingsXmlOverride;
+            return withUserSettingsXmlOverride(settingsXmlOverride);
+        }
+
+        /**
+         * Overrides Maven User settings.xml location.
+         *
+         * @since 2.2.1
+         */
+        public Builder withUserSettingsXmlOverride(Path userSettingsXmlOverride) {
+            this.userSettingsXmlOverride = userSettingsXmlOverride;
             return this;
         }
 
@@ -552,9 +592,19 @@ public final class ContextOverrides {
          * Overrides Maven User settings-security.xml location.
          *
          * @since 2.1.0
+         * @deprecated See {@link #withUserSettingsSecurityXmlOverride(Path)}
          */
         public Builder withSettingsSecurityXmlOverride(Path settingsSecurityXmlOverride) {
-            this.settingsSecurityXmlOverride = settingsSecurityXmlOverride;
+            return withUserSettingsSecurityXmlOverride(settingsSecurityXmlOverride);
+        }
+
+        /**
+         * Overrides Maven User settings-security.xml location.
+         *
+         * @since 2.2.1
+         */
+        public Builder withUserSettingsSecurityXmlOverride(Path userSettingsSecurityXmlOverride) {
+            this.userSettingsSecurityXmlOverride = userSettingsSecurityXmlOverride;
             return this;
         }
 
@@ -569,12 +619,32 @@ public final class ContextOverrides {
         }
 
         /**
+         * Overrides Maven Global settings.xml location.
+         *
+         * @since 2.2.1
+         */
+        public Builder withGlobalSettingsXmlOverride(Path globalSettingsXmlOverride) {
+            this.globalSettingsXmlOverride = globalSettingsXmlOverride;
+            return this;
+        }
+
+        /**
          * Sets Maven System Home location.
          *
          * @since 2.1.0
          */
         public Builder withMavenSystemHome(Path mavenSystemHome) {
             this.mavenSystemHome = mavenSystemHome;
+            return this;
+        }
+
+        /**
+         * Sets Maven Effective Settings.
+         *
+         * @since 2.2.1
+         */
+        public Builder withEffectiveSettings(Object effectiveSettings) {
+            this.effectiveSettings = effectiveSettings;
             return this;
         }
 
@@ -619,10 +689,12 @@ public final class ContextOverrides {
                     transferListener,
                     new MavenUserHome(
                             mavenUserHome.toAbsolutePath(),
-                            safeAbsolute(settingsXmlOverride),
-                            safeAbsolute(settingsSecurityXmlOverride),
+                            safeAbsolute(userSettingsXmlOverride),
+                            safeAbsolute(userSettingsSecurityXmlOverride),
                             effectiveLocalRepository),
-                    effectiveMavenSystemHome == null ? null : new MavenSystemHome(effectiveMavenSystemHome));
+                    globalSettingsXmlOverride,
+                    effectiveMavenSystemHome == null ? null : new MavenSystemHome(effectiveMavenSystemHome),
+                    effectiveSettings);
         }
     }
 
