@@ -398,6 +398,7 @@ public final class ContextOverrides {
 
     public static final class Builder {
         private Path basedir = DEFAULT_BASEDIR;
+
         private Map<String, String> systemProperties = defaultSystemProperties();
 
         private Map<String, String> userProperties = new HashMap<>();
