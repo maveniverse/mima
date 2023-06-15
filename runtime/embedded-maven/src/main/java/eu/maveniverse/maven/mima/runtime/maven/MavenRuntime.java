@@ -21,9 +21,21 @@ public final class MavenRuntime extends RuntimeSupport {
     @Inject
     public MavenRuntime(
             RepositorySystem repositorySystem, Provider<MavenSession> mavenSessionProvider, RuntimeInformation rt) {
-        super("embedded-maven", 10, rt.getMavenVersion());
+        super(
+                "embedded-maven",
+                discoverArtifactVersion("eu.maveniverse.maven.mima.runtime", "embedded-maven", UNKNOWN),
+                10,
+                mavenVersion(rt));
         this.repositorySystem = repositorySystem;
         this.mavenSessionProvider = mavenSessionProvider;
+    }
+
+    private static String mavenVersion(RuntimeInformation runtimeInformation) {
+        String mavenVersion = runtimeInformation.getMavenVersion();
+        if (mavenVersion == null || mavenVersion.trim().isEmpty()) {
+            return UNKNOWN;
+        }
+        return mavenVersion;
     }
 
     @Override

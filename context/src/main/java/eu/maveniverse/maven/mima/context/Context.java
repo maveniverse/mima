@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
 import java.io.Closeable;
+import java.nio.file.Path;
 import java.util.List;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -61,6 +62,15 @@ public final class Context implements Closeable {
      */
     public ContextOverrides contextOverrides() {
         return contextOverrides;
+    }
+
+    /**
+     * Shortcut for {@link ContextOverrides#getBasedir()}, never {@code null}.
+     *
+     * @since 2.3.0
+     */
+    public Path basedir() {
+        return contextOverrides.getBasedir();
     }
 
     /**

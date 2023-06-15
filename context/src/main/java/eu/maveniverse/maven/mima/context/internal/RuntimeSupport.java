@@ -26,7 +26,7 @@ import org.eclipse.aether.util.repository.ChainedLocalRepositoryManager;
  * Support class for {@link Runtime} implementations.
  */
 public abstract class RuntimeSupport implements Runtime {
-    private static final String UNKNOWN = "(unknown)";
+    public static final String UNKNOWN = "(unknown)";
 
     private static final String MAVEN_REPO_LOCAL_TAIL = "maven.repo.local.tail";
 
@@ -34,19 +34,27 @@ public abstract class RuntimeSupport implements Runtime {
 
     private final String name;
 
+    private final String version;
+
     private final int priority;
 
     private final String mavenVersion;
 
-    protected RuntimeSupport(String name, int priority, String mavenVersion) {
+    protected RuntimeSupport(String name, String version, int priority, String mavenVersion) {
         this.name = requireNonNull(name);
+        this.version = requireNonNull(version);
         this.priority = priority;
-        this.mavenVersion = mavenVersion == null || mavenVersion.trim().isEmpty() ? UNKNOWN : mavenVersion;
+        this.mavenVersion = requireNonNull(mavenVersion);
     }
 
     @Override
     public String name() {
         return name;
+    }
+
+    @Override
+    public String version() {
+        return version;
     }
 
     @Override
@@ -178,22 +186,25 @@ public abstract class RuntimeSupport implements Runtime {
     }
 
     protected static String discoverMavenVersion() {
-        return discoverArtifactVersion("org.apache.maven", "maven-resolver-provider", null);
+        return discoverArtifactVersion("org.apache.maven", "maven-resolver-provider", UNKNOWN);
     }
 
     protected static String discoverArtifactVersion(String groupId, String artifactId, String defVal) {
-        Map<String, String> mavenInfo = discoverMavenInfo(groupId, artifactId);
-        String versionString = mavenInfo.getOrDefault("version", "").trim();
+        Map<String, String> mavenPomProperties = loadPomProperties(groupId, artifactId);
+        String versionString = mavenPomProperties.getOrDefault("version", "").trim();
         if (!versionString.startsWith("${")) {
             return versionString;
         }
         return defVal;
     }
 
-    protected static Map<String, String> discoverMavenInfo(String groupId, String artifactId) {
-        final String resource = "META-INF/maven/" + groupId + "/" + artifactId + "/pom.properties";
+    protected static Map<String, String> loadPomProperties(String groupId, String artifactId) {
+        return loadClasspathProperties("/META-INF/maven/" + groupId + "/" + artifactId + "/pom.properties");
+    }
+
+    protected static Map<String, String> loadClasspathProperties(String resource) {
         final Properties props = new Properties();
-        try (InputStream is = RuntimeSupport.class.getResourceAsStream("/" + resource)) {
+        try (InputStream is = RuntimeSupport.class.getResourceAsStream(resource)) {
             if (is != null) {
                 props.load(is);
             }
@@ -211,7 +222,8 @@ public abstract class RuntimeSupport implements Runtime {
     @Override
     public String toString() {
         return getClass().getSimpleName() + "{name='"
-                + name + "', priority="
+                + name + "', version="
+                + version + ", priority="
                 + priority + ", mavenVersion="
                 + mavenVersion + ", managedRepositorySystem="
                 + managedRepositorySystem() + "}";

@@ -3,6 +3,7 @@ package eu.maveniverse.maven.mima.context;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.AbstractMap;
@@ -29,10 +30,27 @@ public final class ContextOverrides {
     public static final RemoteRepository CENTRAL = new RemoteRepository.Builder(
                     "central", "default", "https://repo.maven.apache.org/maven2/")
             .setReleasePolicy(new RepositoryPolicy(
-                    true, RepositoryPolicy.UPDATE_POLICY_DAILY, RepositoryPolicy.CHECKSUM_POLICY_WARN))
+                    true, RepositoryPolicy.UPDATE_POLICY_NEVER, RepositoryPolicy.CHECKSUM_POLICY_WARN))
             .setSnapshotPolicy(new RepositoryPolicy(
-                    false, RepositoryPolicy.UPDATE_POLICY_DAILY, RepositoryPolicy.CHECKSUM_POLICY_WARN))
+                    false, RepositoryPolicy.UPDATE_POLICY_NEVER, RepositoryPolicy.CHECKSUM_POLICY_WARN))
             .build();
+
+    /**
+     * Default basedir (used when no override).
+     */
+    public static final Path DEFAULT_BASEDIR =
+            Paths.get(System.getProperty("user.dir")).toAbsolutePath();
+
+    /**
+     * Default user home (used when no override).
+     */
+    public static final Path DEFAULT_USER_HOME =
+            Paths.get(System.getProperty("user.home")).toAbsolutePath();
+
+    /**
+     * Default path of Maven User Home (used when no override).
+     */
+    public static final Path DEFAULT_MAVEN_USER_HOME = DEFAULT_USER_HOME.resolve(".m2");
 
     /**
      * Layout of Maven User Home, by default {@code $HOME/.m2}.
@@ -167,11 +185,6 @@ public final class ContextOverrides {
         }
     }
 
-    /**
-     * Default path of Maven User Home.
-     */
-    public static final Path DEFAULT_MAVEN_USER_HOME = Paths.get(System.getProperty("user.home"), ".m2");
-
     public enum SnapshotUpdatePolicy {
         ALWAYS,
         NEVER
@@ -182,6 +195,8 @@ public final class ContextOverrides {
         WARN,
         IGNORE
     }
+
+    private final Path basedir;
 
     private final Map<String, String> systemProperties;
 
@@ -201,15 +216,24 @@ public final class ContextOverrides {
 
     private final boolean withUserSettings;
 
+    private final List<String> activeProfileIds;
+
+    private final List<String> inactiveProfileIds;
+
     private final RepositoryListener repositoryListener;
 
     private final TransferListener transferListener;
 
     private final MavenUserHome mavenUserHome;
 
+    private final Path globalSettingsXmlOverride;
+
     private final MavenSystemHome mavenSystemHome;
 
+    private final Object effectiveSettings;
+
     private ContextOverrides(
+            final Path basedir,
             final Map<String, String> systemProperties,
             final Map<String, String> userProperties,
             final Map<String, Object> configProperties,
@@ -219,11 +243,16 @@ public final class ContextOverrides {
             final SnapshotUpdatePolicy snapshotUpdatePolicy,
             final ChecksumPolicy checksumPolicy,
             final boolean withUserSettings,
+            final List<String> activeProfileIds,
+            final List<String> inactiveProfileIds,
             final RepositoryListener repositoryListener,
             final TransferListener transferListener,
             final MavenUserHome mavenUserHome,
-            final MavenSystemHome mavenSystemHome) {
+            final Path globalSettingsXmlOverride,
+            final MavenSystemHome mavenSystemHome,
+            final Object effectiveSettings) {
 
+        this.basedir = requireNonNull(basedir);
         this.systemProperties = Collections.unmodifiableMap(systemProperties);
         this.userProperties = Collections.unmodifiableMap(userProperties);
         this.configProperties = Collections.unmodifiableMap(configProperties);
@@ -233,10 +262,21 @@ public final class ContextOverrides {
         this.snapshotUpdatePolicy = snapshotUpdatePolicy;
         this.checksumPolicy = checksumPolicy;
         this.withUserSettings = withUserSettings;
+        this.activeProfileIds = Collections.unmodifiableList(activeProfileIds);
+        this.inactiveProfileIds = Collections.unmodifiableList(inactiveProfileIds);
         this.repositoryListener = repositoryListener;
         this.transferListener = transferListener;
         this.mavenUserHome = mavenUserHome;
+        this.globalSettingsXmlOverride = globalSettingsXmlOverride;
         this.mavenSystemHome = mavenSystemHome;
+        this.effectiveSettings = effectiveSettings;
+    }
+
+    /**
+     * Returns the basedir, never {@code null}. It is an existing directory.
+     */
+    public Path getBasedir() {
+        return basedir;
     }
 
     /**
@@ -311,6 +351,24 @@ public final class ContextOverrides {
     }
 
     /**
+     * Returns the list of explicitly enabled profile IDs, never {@code null}.
+     *
+     * @since 2.3.0
+     */
+    public List<String> getActiveProfileIds() {
+        return activeProfileIds;
+    }
+
+    /**
+     * Returns the list of explicitly disabled profile IDs, never {@code null}.
+     *
+     * @since 2.3.0
+     */
+    public List<String> getInactiveProfileIds() {
+        return inactiveProfileIds;
+    }
+
+    /**
      * @deprecated Use {@link #getMavenUserHome()} instead.
      */
     @Deprecated
@@ -340,13 +398,33 @@ public final class ContextOverrides {
     }
 
     /**
+     * Maven Global Settings override, or {@code null}.
+     *
+     * @since 2.3.0
+     */
+    public Path getGlobalSettingsXmlOverride() {
+        return globalSettingsXmlOverride;
+    }
+
+    /**
      * Maven System Home layout, {@code null} if Maven Home not known.
      */
     public MavenSystemHome getMavenSystemHome() {
         return mavenSystemHome;
     }
 
+    /**
+     * The built, effective settings, or {@code null}.
+     *
+     * @since 2.3.0
+     */
+    public Object getEffectiveSettings() {
+        return effectiveSettings;
+    }
+
     public static final class Builder {
+        private Path basedir = DEFAULT_BASEDIR;
+
         private Map<String, String> systemProperties = defaultSystemProperties();
 
         private Map<String, String> userProperties = new HashMap<>();
@@ -365,19 +443,27 @@ public final class ContextOverrides {
 
         private boolean withUserSettings = false;
 
+        private List<String> activeProfileIds = Collections.emptyList();
+
+        private List<String> inactiveProfileIds = Collections.emptyList();
+
         private RepositoryListener repositoryListener = null;
 
         private TransferListener transferListener = null;
 
         private Path mavenUserHome = DEFAULT_MAVEN_USER_HOME;
 
-        private Path settingsXmlOverride = null;
+        private Path userSettingsXmlOverride = null;
 
-        private Path settingsSecurityXmlOverride = null;
+        private Path userSettingsSecurityXmlOverride = null;
 
         private Path localRepositoryOverride = null;
 
+        private Path globalSettingsXmlOverride = null;
+
         private Path mavenSystemHome = null;
+
+        private Object effectiveSettings = null;
 
         /**
          * Creates a "default" builder instance (that will NOT discover {@code settings.xml}).
@@ -387,6 +473,22 @@ public final class ContextOverrides {
          */
         public static Builder create() {
             return new Builder();
+        }
+
+        /**
+         * Sets basedir path, it must be non-{@code null} and point to an existing directory. If these are not
+         * met, this method will throw. Basedir by default is initialized with {@link #DEFAULT_BASEDIR} that is
+         * "current working directory" of the process.
+         *
+         * @since 2.3.0
+         */
+        public Builder withBasedir(Path basedir) {
+            requireNonNull(basedir, "basedir cannot be null");
+            if (!Files.isDirectory(basedir)) {
+                throw new IllegalArgumentException("basedir must be existing directory: " + basedir);
+            }
+            this.basedir = basedir;
+            return this;
         }
 
         /**
@@ -501,6 +603,34 @@ public final class ContextOverrides {
         }
 
         /**
+         * Sets explicitly activated profile IDs.
+         *
+         * @since 2.3.0
+         */
+        public Builder withActiveProfileIds(List<String> activeProfileIds) {
+            if (activeProfileIds != null) {
+                this.activeProfileIds = activeProfileIds;
+            } else {
+                this.activeProfileIds = Collections.emptyList();
+            }
+            return this;
+        }
+
+        /**
+         * Sets explicitly inactivated profile IDs.
+         *
+         * @since 2.3.0
+         */
+        public Builder withInactiveProfileIds(List<String> inactiveProfileIds) {
+            if (inactiveProfileIds != null) {
+                this.inactiveProfileIds = inactiveProfileIds;
+            } else {
+                this.inactiveProfileIds = Collections.emptyList();
+            }
+            return this;
+        }
+
+        /**
          * Overrides the default location of {@code settings.xml}. Setting this method only, without invoking
          * {@link #withUserSettings(boolean)} with {@code true}, makes the passed in path to this method ignored.
          *
@@ -542,9 +672,19 @@ public final class ContextOverrides {
          * Overrides Maven User settings.xml location.
          *
          * @since 2.1.0
+         * @deprecated See {@link #withUserSettingsXmlOverride(Path)}
          */
         public Builder withSettingsXmlOverride(Path settingsXmlOverride) {
-            this.settingsXmlOverride = settingsXmlOverride;
+            return withUserSettingsXmlOverride(settingsXmlOverride);
+        }
+
+        /**
+         * Overrides Maven User settings.xml location.
+         *
+         * @since 2.3.0
+         */
+        public Builder withUserSettingsXmlOverride(Path userSettingsXmlOverride) {
+            this.userSettingsXmlOverride = userSettingsXmlOverride;
             return this;
         }
 
@@ -552,9 +692,19 @@ public final class ContextOverrides {
          * Overrides Maven User settings-security.xml location.
          *
          * @since 2.1.0
+         * @deprecated See {@link #withUserSettingsSecurityXmlOverride(Path)}
          */
         public Builder withSettingsSecurityXmlOverride(Path settingsSecurityXmlOverride) {
-            this.settingsSecurityXmlOverride = settingsSecurityXmlOverride;
+            return withUserSettingsSecurityXmlOverride(settingsSecurityXmlOverride);
+        }
+
+        /**
+         * Overrides Maven User settings-security.xml location.
+         *
+         * @since 2.3.0
+         */
+        public Builder withUserSettingsSecurityXmlOverride(Path userSettingsSecurityXmlOverride) {
+            this.userSettingsSecurityXmlOverride = userSettingsSecurityXmlOverride;
             return this;
         }
 
@@ -569,12 +719,32 @@ public final class ContextOverrides {
         }
 
         /**
+         * Overrides Maven Global settings.xml location.
+         *
+         * @since 2.3.0
+         */
+        public Builder withGlobalSettingsXmlOverride(Path globalSettingsXmlOverride) {
+            this.globalSettingsXmlOverride = globalSettingsXmlOverride;
+            return this;
+        }
+
+        /**
          * Sets Maven System Home location.
          *
          * @since 2.1.0
          */
         public Builder withMavenSystemHome(Path mavenSystemHome) {
             this.mavenSystemHome = mavenSystemHome;
+            return this;
+        }
+
+        /**
+         * Sets Maven Effective Settings.
+         *
+         * @since 2.3.0
+         */
+        public Builder withEffectiveSettings(Object effectiveSettings) {
+            this.effectiveSettings = effectiveSettings;
             return this;
         }
 
@@ -606,6 +776,7 @@ public final class ContextOverrides {
             }
 
             return new ContextOverrides(
+                    basedir,
                     systemProperties,
                     userProperties,
                     effectiveConfigProperties,
@@ -615,14 +786,18 @@ public final class ContextOverrides {
                     snapshotUpdatePolicy,
                     checksumPolicy,
                     withUserSettings,
+                    activeProfileIds,
+                    inactiveProfileIds,
                     repositoryListener,
                     transferListener,
                     new MavenUserHome(
                             mavenUserHome.toAbsolutePath(),
-                            safeAbsolute(settingsXmlOverride),
-                            safeAbsolute(settingsSecurityXmlOverride),
+                            safeAbsolute(userSettingsXmlOverride),
+                            safeAbsolute(userSettingsSecurityXmlOverride),
                             effectiveLocalRepository),
-                    effectiveMavenSystemHome == null ? null : new MavenSystemHome(effectiveMavenSystemHome));
+                    globalSettingsXmlOverride,
+                    effectiveMavenSystemHome == null ? null : new MavenSystemHome(effectiveMavenSystemHome),
+                    effectiveSettings);
         }
     }
 

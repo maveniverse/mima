@@ -9,9 +9,19 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.maven.model.ActivationFile;
+import org.apache.maven.model.building.ModelProblemCollector;
+import org.apache.maven.model.building.ModelProblemCollectorRequest;
+import org.apache.maven.model.profile.DefaultProfileActivationContext;
+import org.apache.maven.model.profile.ProfileSelector;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.apache.maven.settings.Activation;
+import org.apache.maven.settings.ActivationOS;
+import org.apache.maven.settings.ActivationProperty;
 import org.apache.maven.settings.Mirror;
 import org.apache.maven.settings.Profile;
 import org.apache.maven.settings.Proxy;
@@ -44,7 +54,17 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected StandaloneRuntimeSupport(String name, int priority) {
-        super(name, priority, discoverMavenVersion());
+        super(name, discoverVersion(), priority, discoverMavenVersion());
+    }
+
+    private static String discoverVersion() {
+        Map<String, String> version =
+                loadClasspathProperties("/eu/maveniverse/maven/mima/runtime/shared/internal/version.properties");
+        String result = version.get("version");
+        if (result == null || result.trim().isEmpty() || result.startsWith("${")) {
+            return UNKNOWN;
+        }
+        return result;
     }
 
     protected Context buildContext(
@@ -53,15 +73,16 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             RepositorySystem repositorySystem,
             SettingsBuilder settingsBuilder,
             SettingsDecrypter settingsDecrypter,
+            ProfileSelector profileSelector,
             Runnable managedCloser) {
         try {
             Settings settings = newEffectiveSettings(overrides, settingsBuilder);
             DefaultRepositorySystemSession session =
                     newRepositorySession(overrides, repositorySystem, settings, settingsDecrypter);
-            ArrayList<RemoteRepository> remoteRepositories = new ArrayList<>();
+            final ArrayList<RemoteRepository> remoteRepositories = new ArrayList<>();
             if (overrides.isAppendRepositories() || overrides.getRepositories().isEmpty()) {
-                remoteRepositories.add(ContextOverrides.CENTRAL);
-                List<Profile> activeProfiles = activeProfiles(settings);
+                remoteRepositories.add(ContextOverrides.CENTRAL); // first: best practice
+                List<Profile> activeProfiles = activeProfilesByActivation(overrides, settings, profileSelector);
                 for (Profile profile : activeProfiles) {
                     for (Repository repository : profile.getRepositories()) {
                         RemoteRepository.Builder builder = new RemoteRepository.Builder(
@@ -82,16 +103,15 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                         } else {
                             builder.setSnapshotPolicy(new RepositoryPolicy(false, null, null));
                         }
-                        remoteRepositories.add(builder.build());
+                        addReplace(remoteRepositories, builder.build());
                     }
                 }
             }
             if (!overrides.getRepositories().isEmpty()) {
-                if (overrides.isAppendRepositories()) {
-                    remoteRepositories.addAll(overrides.getRepositories());
-                } else {
-                    remoteRepositories = new ArrayList<>(overrides.getRepositories());
+                if (!overrides.isAppendRepositories()) {
+                    remoteRepositories.clear();
                 }
+                overrides.getRepositories().forEach(r -> addReplace(remoteRepositories, r));
             }
             return new Context(
                     runtime,
@@ -105,10 +125,18 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         }
     }
 
+    protected void addReplace(List<RemoteRepository> remoteRepositories, RemoteRepository repository) {
+        remoteRepositories.removeIf(r -> Objects.equals(repository.getId(), r.getId()));
+        remoteRepositories.add(repository);
+    }
+
     protected Settings newEffectiveSettings(ContextOverrides overrides, SettingsBuilder settingsBuilder)
             throws SettingsBuildingException {
         if (!overrides.isWithUserSettings()) {
             return new Settings();
+        }
+        if (overrides.getEffectiveSettings() != null) {
+            return (Settings) overrides.getEffectiveSettings();
         }
         DefaultSettingsBuildingRequest settingsBuilderRequest = new DefaultSettingsBuildingRequest();
 
@@ -118,9 +146,47 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         Properties userProperties = new Properties();
         userProperties.putAll(overrides.getUserProperties());
         settingsBuilderRequest.setUserProperties(userProperties);
+        if (overrides.getGlobalSettingsXmlOverride() != null) {
+            settingsBuilderRequest.setGlobalSettingsFile(
+                    overrides.getGlobalSettingsXmlOverride().toFile());
+        } else if (overrides.getMavenSystemHome() != null) {
+            settingsBuilderRequest.setGlobalSettingsFile(
+                    overrides.getMavenSystemHome().settingsXml().toFile());
+        }
         settingsBuilderRequest.setUserSettingsFile(
                 overrides.getMavenUserHome().settingsXml().toFile());
         return settingsBuilder.build(settingsBuilderRequest).getEffectiveSettings();
+    }
+
+    protected List<Profile> activeProfilesByActivation(
+            ContextOverrides overrides, Settings settings, ProfileSelector profileSelector) {
+        if (profileSelector == null) {
+            return activeProfiles(settings);
+        } else {
+            DefaultProfileActivationContext context = new DefaultProfileActivationContext();
+            context.setProjectDirectory(overrides.getBasedir().toFile());
+            context.setActiveProfileIds(
+                    Stream.concat(settings.getActiveProfiles().stream(), overrides.getActiveProfileIds().stream())
+                            .distinct()
+                            .collect(Collectors.toList()));
+            context.setInactiveProfileIds(overrides.getInactiveProfileIds());
+            context.setSystemProperties(overrides.getSystemProperties());
+            context.setUserProperties(overrides.getUserProperties());
+            ModelProblemCollector collector = new ModelProblemCollector() {
+                @Override
+                public void add(ModelProblemCollectorRequest req) {}
+            };
+            return profileSelector
+                    .getActiveProfiles(
+                            settings.getProfiles().stream()
+                                    .map(StandaloneRuntimeSupport::convertFromSettingsProfile)
+                                    .collect(Collectors.toList()),
+                            context,
+                            collector)
+                    .stream()
+                    .map(StandaloneRuntimeSupport::convertToSettingsProfile)
+                    .collect(Collectors.toList());
+        }
     }
 
     protected List<Profile> activeProfiles(Settings settings) {
@@ -294,6 +360,162 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
 
     protected String getUserAgent() {
         return "Apache-Maven/" + mavenVersion() + " (Java " + System.getProperty("java.version") + "; "
-                + System.getProperty("os.name") + " " + System.getProperty("os.version") + ")";
+                + System.getProperty("os.name") + " " + System.getProperty("os.version") + "; MIMA " + version() + ")";
     }
+
+    // SettingsUtils copy BEGIN
+    // Below are helper methods copied from Maven 3.9.2 SettingsUtils class, stripped unused methods and inlined
+    // Original class
+    // https://github.com/apache/maven/blob/maven-3.9.2/maven-core/src/main/java/org/apache/maven/settings/SettingsUtils.java
+    // Note: all methods accessors modified to protected, to expose them to downstream runtimes, if needed.
+    // Currently, these methods are used in this class only.
+
+    protected static Profile convertToSettingsProfile(org.apache.maven.model.Profile modelProfile) {
+        Profile profile = new Profile();
+        profile.setId(modelProfile.getId());
+        org.apache.maven.model.Activation modelActivation = modelProfile.getActivation();
+        if (modelActivation != null) {
+            Activation activation = new Activation();
+            activation.setActiveByDefault(modelActivation.isActiveByDefault());
+            activation.setJdk(modelActivation.getJdk());
+            org.apache.maven.model.ActivationProperty modelProp = modelActivation.getProperty();
+            if (modelProp != null) {
+                ActivationProperty prop = new ActivationProperty();
+                prop.setName(modelProp.getName());
+                prop.setValue(modelProp.getValue());
+                activation.setProperty(prop);
+            }
+            org.apache.maven.model.ActivationOS modelOs = modelActivation.getOs();
+            if (modelOs != null) {
+                ActivationOS os = new ActivationOS();
+                os.setArch(modelOs.getArch());
+                os.setFamily(modelOs.getFamily());
+                os.setName(modelOs.getName());
+                os.setVersion(modelOs.getVersion());
+                activation.setOs(os);
+            }
+            ActivationFile modelFile = modelActivation.getFile();
+            if (modelFile != null) {
+                org.apache.maven.settings.ActivationFile file = new org.apache.maven.settings.ActivationFile();
+                file.setExists(modelFile.getExists());
+                file.setMissing(modelFile.getMissing());
+                activation.setFile(file);
+            }
+            profile.setActivation(activation);
+        }
+        profile.setProperties(modelProfile.getProperties());
+        List<org.apache.maven.model.Repository> repos = modelProfile.getRepositories();
+        if (repos != null) {
+            for (org.apache.maven.model.Repository repo : repos) {
+                profile.addRepository(convertToSettingsRepository(repo));
+            }
+        }
+        List<org.apache.maven.model.Repository> pluginRepos = modelProfile.getPluginRepositories();
+        if (pluginRepos != null) {
+            for (org.apache.maven.model.Repository pluginRepo : pluginRepos) {
+                profile.addPluginRepository(convertToSettingsRepository(pluginRepo));
+            }
+        }
+        return profile;
+    }
+
+    protected static org.apache.maven.model.Profile convertFromSettingsProfile(Profile settingsProfile) {
+        org.apache.maven.model.Profile profile = new org.apache.maven.model.Profile();
+        profile.setId(settingsProfile.getId());
+        profile.setSource("settings.xml");
+        Activation settingsActivation = settingsProfile.getActivation();
+        if (settingsActivation != null) {
+            org.apache.maven.model.Activation activation = new org.apache.maven.model.Activation();
+            activation.setActiveByDefault(settingsActivation.isActiveByDefault());
+            activation.setJdk(settingsActivation.getJdk());
+            ActivationProperty settingsProp = settingsActivation.getProperty();
+            if (settingsProp != null) {
+                org.apache.maven.model.ActivationProperty prop = new org.apache.maven.model.ActivationProperty();
+                prop.setName(settingsProp.getName());
+                prop.setValue(settingsProp.getValue());
+                activation.setProperty(prop);
+            }
+            ActivationOS settingsOs = settingsActivation.getOs();
+            if (settingsOs != null) {
+                org.apache.maven.model.ActivationOS os = new org.apache.maven.model.ActivationOS();
+                os.setArch(settingsOs.getArch());
+                os.setFamily(settingsOs.getFamily());
+                os.setName(settingsOs.getName());
+                os.setVersion(settingsOs.getVersion());
+                activation.setOs(os);
+            }
+            org.apache.maven.settings.ActivationFile settingsFile = settingsActivation.getFile();
+            if (settingsFile != null) {
+                ActivationFile file = new ActivationFile();
+                file.setExists(settingsFile.getExists());
+                file.setMissing(settingsFile.getMissing());
+                activation.setFile(file);
+            }
+            profile.setActivation(activation);
+        }
+        profile.setProperties(settingsProfile.getProperties());
+        List<Repository> repos = settingsProfile.getRepositories();
+        if (repos != null) {
+            for (Repository repo : repos) {
+                profile.addRepository(convertFromSettingsRepository(repo));
+            }
+        }
+        List<Repository> pluginRepos = settingsProfile.getPluginRepositories();
+        if (pluginRepos != null) {
+            for (Repository pluginRepo : pluginRepos) {
+                profile.addPluginRepository(convertFromSettingsRepository(pluginRepo));
+            }
+        }
+        return profile;
+    }
+
+    protected static org.apache.maven.model.Repository convertFromSettingsRepository(Repository settingsRepo) {
+        org.apache.maven.model.Repository repo = new org.apache.maven.model.Repository();
+        repo.setId(settingsRepo.getId());
+        repo.setLayout(settingsRepo.getLayout());
+        repo.setName(settingsRepo.getName());
+        repo.setUrl(settingsRepo.getUrl());
+        if (settingsRepo.getSnapshots() != null) {
+            repo.setSnapshots(convertFromSettingsRepositoryPolicy(settingsRepo.getSnapshots()));
+        }
+        if (settingsRepo.getReleases() != null) {
+            repo.setReleases(convertFromSettingsRepositoryPolicy(settingsRepo.getReleases()));
+        }
+        return repo;
+    }
+
+    protected static org.apache.maven.model.RepositoryPolicy convertFromSettingsRepositoryPolicy(
+            org.apache.maven.settings.RepositoryPolicy settingsPolicy) {
+        org.apache.maven.model.RepositoryPolicy policy = new org.apache.maven.model.RepositoryPolicy();
+        policy.setEnabled(settingsPolicy.isEnabled());
+        policy.setUpdatePolicy(settingsPolicy.getUpdatePolicy());
+        policy.setChecksumPolicy(settingsPolicy.getChecksumPolicy());
+        return policy;
+    }
+
+    protected static Repository convertToSettingsRepository(org.apache.maven.model.Repository modelRepo) {
+        Repository repo = new Repository();
+        repo.setId(modelRepo.getId());
+        repo.setLayout(modelRepo.getLayout());
+        repo.setName(modelRepo.getName());
+        repo.setUrl(modelRepo.getUrl());
+        if (modelRepo.getSnapshots() != null) {
+            repo.setSnapshots(convertToSettingsRepositoryPolicy(modelRepo.getSnapshots()));
+        }
+        if (modelRepo.getReleases() != null) {
+            repo.setReleases(convertToSettingsRepositoryPolicy(modelRepo.getReleases()));
+        }
+        return repo;
+    }
+
+    protected static org.apache.maven.settings.RepositoryPolicy convertToSettingsRepositoryPolicy(
+            org.apache.maven.model.RepositoryPolicy modelPolicy) {
+        org.apache.maven.settings.RepositoryPolicy policy = new org.apache.maven.settings.RepositoryPolicy();
+        policy.setEnabled(modelPolicy.isEnabled());
+        policy.setUpdatePolicy(modelPolicy.getUpdatePolicy());
+        policy.setChecksumPolicy(modelPolicy.getChecksumPolicy());
+        return policy;
+    }
+
+    // SettingsUtils copy END
 }
