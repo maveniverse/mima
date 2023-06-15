@@ -67,7 +67,7 @@ public final class Context implements Closeable {
     /**
      * Shortcut for {@link ContextOverrides#getBasedir()}, never {@code null}.
      *
-     * @since 2.2.1
+     * @since 2.3.0
      */
     public Path basedir() {
         return contextOverrides.getBasedir();

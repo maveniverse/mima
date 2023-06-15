@@ -353,7 +353,7 @@ public final class ContextOverrides {
     /**
      * Returns the list of explicitly enabled profile IDs, never {@code null}.
      *
-     * @since 2.2.1
+     * @since 2.3.0
      */
     public List<String> getActiveProfileIds() {
         return activeProfileIds;
@@ -362,7 +362,7 @@ public final class ContextOverrides {
     /**
      * Returns the list of explicitly disabled profile IDs, never {@code null}.
      *
-     * @since 2.2.1
+     * @since 2.3.0
      */
     public List<String> getInactiveProfileIds() {
         return inactiveProfileIds;
@@ -400,7 +400,7 @@ public final class ContextOverrides {
     /**
      * Maven Global Settings override, or {@code null}.
      *
-     * @since 2.2.1
+     * @since 2.3.0
      */
     public Path getGlobalSettingsXmlOverride() {
         return globalSettingsXmlOverride;
@@ -416,7 +416,7 @@ public final class ContextOverrides {
     /**
      * The built, effective settings, or {@code null}.
      *
-     * @since 2.2.1
+     * @since 2.3.0
      */
     public Object getEffectiveSettings() {
         return effectiveSettings;
@@ -480,7 +480,7 @@ public final class ContextOverrides {
          * met, this method will throw. Basedir by default is initialized with {@link #DEFAULT_BASEDIR} that is
          * "current working directory" of the process.
          *
-         * @since 2.2.1
+         * @since 2.3.0
          */
         public Builder withBasedir(Path basedir) {
             requireNonNull(basedir, "basedir cannot be null");
@@ -605,7 +605,7 @@ public final class ContextOverrides {
         /**
          * Sets explicitly activated profile IDs.
          *
-         * @since 2.2.1
+         * @since 2.3.0
          */
         public Builder withActiveProfileIds(List<String> activeProfileIds) {
             if (activeProfileIds != null) {
@@ -619,7 +619,7 @@ public final class ContextOverrides {
         /**
          * Sets explicitly inactivated profile IDs.
          *
-         * @since 2.2.1
+         * @since 2.3.0
          */
         public Builder withInactiveProfileIds(List<String> inactiveProfileIds) {
             if (inactiveProfileIds != null) {
@@ -681,7 +681,7 @@ public final class ContextOverrides {
         /**
          * Overrides Maven User settings.xml location.
          *
-         * @since 2.2.1
+         * @since 2.3.0
          */
         public Builder withUserSettingsXmlOverride(Path userSettingsXmlOverride) {
             this.userSettingsXmlOverride = userSettingsXmlOverride;
@@ -701,7 +701,7 @@ public final class ContextOverrides {
         /**
          * Overrides Maven User settings-security.xml location.
          *
-         * @since 2.2.1
+         * @since 2.3.0
          */
         public Builder withUserSettingsSecurityXmlOverride(Path userSettingsSecurityXmlOverride) {
             this.userSettingsSecurityXmlOverride = userSettingsSecurityXmlOverride;
@@ -721,7 +721,7 @@ public final class ContextOverrides {
         /**
          * Overrides Maven Global settings.xml location.
          *
-         * @since 2.2.1
+         * @since 2.3.0
          */
         public Builder withGlobalSettingsXmlOverride(Path globalSettingsXmlOverride) {
             this.globalSettingsXmlOverride = globalSettingsXmlOverride;
@@ -741,7 +741,7 @@ public final class ContextOverrides {
         /**
          * Sets Maven Effective Settings.
          *
-         * @since 2.2.1
+         * @since 2.3.0
          */
         public Builder withEffectiveSettings(Object effectiveSettings) {
             this.effectiveSettings = effectiveSettings;
