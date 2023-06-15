@@ -476,16 +476,18 @@ public final class ContextOverrides {
         }
 
         /**
-         * Sets basedir path, it must be an existing directory.
+         * Sets basedir path, it must be non-{@code null} and point to an existing directory. If these are not
+         * met, this method will throw. Basedir by default is initialized with {@link #DEFAULT_BASEDIR} that is
+         * "current working directory" of the process.
          *
          * @since 2.2.1
          */
         public Builder withBasedir(Path basedir) {
-            if (basedir != null) {
-                this.basedir = basedir;
-            } else {
-                this.basedir = DEFAULT_BASEDIR;
+            requireNonNull(basedir, "basedir cannot be null");
+            if (!Files.isDirectory(basedir)) {
+                throw new IllegalArgumentException("basedir must be existing directory: " + basedir);
             }
+            this.basedir = basedir;
             return this;
         }
 
@@ -750,10 +752,6 @@ public final class ContextOverrides {
          * Builds an immutable instance of {@link ContextOverrides} using so far applied settings and configuration.
          */
         public ContextOverrides build() {
-            if (!Files.isDirectory(basedir)) {
-                throw new IllegalArgumentException("basedir must be existing directory: " + basedir);
-            }
-
             Map<String, Object> effectiveConfigProperties = new HashMap<>(systemProperties);
             effectiveConfigProperties.putAll(userProperties);
             effectiveConfigProperties.putAll(configProperties);
