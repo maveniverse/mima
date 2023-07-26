@@ -13,8 +13,8 @@
   <name>${project.groupId}:${project.artifactId}</name>
 
   <properties>
-    <version.maven>3.9.2</version.maven>
-    <version.maven-plugin-plugin>3.8.2</version.maven-plugin-plugin>
+    <version.maven>3.9.3</version.maven>
+    <version.maven-plugin-plugin>3.9.0</version.maven-plugin-plugin>
   </properties>
 
   <dependencies>
@@ -43,6 +43,10 @@
     </dependency>
   </dependencies>
 
+  <prerequisites>
+    <maven>3.8.0</maven>
+  </prerequisites>
+
   <build>
     <plugins>
       <plugin>
@@ -53,7 +57,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-invoker-plugin</artifactId>
-        <version>3.5.1</version>
+        <version>3.6.0</version>
         <configuration>
           <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
           <cloneClean>true</cloneClean>
