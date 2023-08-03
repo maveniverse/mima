@@ -9,6 +9,7 @@ import org.apache.maven.model.profile.ProfileSelector;
 import org.apache.maven.settings.building.SettingsBuilder;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.supplier.RepositorySystemSupplier;
 
 public class StandaloneStaticRuntime extends StandaloneRuntimeSupport {
 
