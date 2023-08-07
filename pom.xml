@@ -52,12 +52,12 @@
     <!--
     Build time: latest Maven and LTS Java.
     -->
-    <requireBuildtimeMavenVersion.version>[3.9.1,)</requireBuildtimeMavenVersion.version>
+    <requireBuildtimeMavenVersion.version>[3.9.3,)</requireBuildtimeMavenVersion.version>
     <requireBuildtimeJavaVersion.version>[17.0.6,)</requireBuildtimeJavaVersion.version>
 
     <!-- Dependency versions -->
-    <version.resolver>1.9.14</version.resolver>
-    <version.maven>3.9.3</version.maven>
+    <version.resolver>1.9.15</version.resolver>
+    <version.maven>3.9.4</version.maven>
     <version.sisu>0.9.0.M2</version.sisu>
     <version.slf4j>1.7.36</version.slf4j>
   </properties>
@@ -159,6 +159,11 @@
         <artifactId>maven-resolver-transport-http</artifactId>
         <version>${version.resolver}</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.maven.resolver</groupId>
+        <artifactId>maven-resolver-supplier</artifactId>
+        <version>${version.resolver}</version>
+      </dependency>
 
       <dependency>
         <groupId>org.apache.maven</groupId>
@@ -215,6 +220,20 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
+  <repositories>
+    <repository>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <id>apache.snapshots.https</id>
+      <name>ASF Snapshots</name>
+      <url>https://repository.apache.org/content/repositories/snapshots/</url>
+    </repository>
+  </repositories>
 
   <build>
     <pluginManagement>
