@@ -26,23 +26,17 @@ augment user environment from outside of Maven, obey things as user `settings.xm
 While some half-solutions did exist so far (most popular was Resolver's `ServiceLocator`), these solutions were 
 never complete: `ServiceLocator` never offered "full experience" as compared to Resolver in Sisu, it was missing
 the dynamism Sisu offered (for example, it was not extensible). Moreover, `ServiceLocator` is **deprecated** in
-latest Resolver releases, for a reason: it forces Resolver developers to apply some (archaic) compromises, while
-developing Resolver components, forbids ctor injection, components must have default ctors and have to be 
-written like "this or that", when managed by Sisu or `ServiceLocator`, components cannot be immutable, etc. 
-`ServiceLocator` pretty much forces you to write components you had to write in "good old" Plexus days.
+latest Resolver releases. Starting with Resolver 1.9.15 it does provides alternative in form of instance supplier.
 
-Moreover, recent changes in Maven 3.9.x explicitly **prevents creation of new `RepositorySystem` instances**, for 
+Still, recent changes in Maven 3.9.x explicitly **prevents creation of new `RepositorySystem` instances**, for 
 a good reason: if you run within Maven, you have everything "offered on a plate" (just inject it): 
-you have full environment initialized with user specs and setup. No need to reinvent the wheel: 
-less code, less bugs. This made `ServiceLocator` defunct in Maven 3.9.x and beyond as well.
+you have full environment initialized with user specs and setup. No need to reinvent the wheel.
 
-Finally, Maven project never offered one-stop shop solution to use Resolver as a library. There was `ServiceLocator`
-(incomplete, deprecated, to be dropped), Guice module (incomplete, likely to be deprecated) and Sisu indexes (incomplete)
-but nothing as "a whole", a glue that holds things together for most popular use of Resolver: make it usable as 
-it "as in Maven but outside of Maven".
-
-MIMA tries to go one step beyond: It's goal is to make Resolver easily reusable "as a library", outside of Maven
-but inside of it as well. And to do that in transparent way.
+Maven project never offered one-stop shop solution to use Resolver as a library, as "a whole", a glue 
+that holds things together for most popular use of Resolver: make it usable as  it "as in Maven but outside 
+of Maven". MIMA tries to deliver this and go one step beyond: It's goal is to make Resolver easily reusable 
+"as a library", outside of Maven (but still obeying Maven user configuration if needed) but inside of it 
+as well. And to do that in transparent way.
 
 ## How to use
 
