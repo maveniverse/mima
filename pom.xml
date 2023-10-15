@@ -56,8 +56,8 @@
     <requireBuildtimeJavaVersion.version>[17.0.6,)</requireBuildtimeJavaVersion.version>
 
     <!-- Dependency versions -->
-    <version.resolver>1.9.16</version.resolver>
-    <version.maven>3.9.5</version.maven>
+    <version.resolver>2.0.0-SNAPSHOT</version.resolver>
+    <version.maven>4.0.0-alpha-7</version.maven>
     <version.sisu>0.9.0.M2</version.sisu>
     <version.slf4j>1.7.36</version.slf4j>
   </properties>
