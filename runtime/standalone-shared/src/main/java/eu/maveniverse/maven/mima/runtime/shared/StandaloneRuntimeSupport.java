@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -87,10 +86,11 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             }
             DefaultRepositorySystemSession session =
                     newRepositorySession(alteredOverrides, repositorySystem, settings, settingsDecrypter);
-            final ArrayList<RemoteRepository> remoteRepositories = new ArrayList<>();
-            if (alteredOverrides.isAppendRepositories()
-                    || alteredOverrides.getRepositories().isEmpty()) {
-                remoteRepositories.add(ContextOverrides.CENTRAL); // first: best practice
+            final LinkedHashMap<String, RemoteRepository> remoteRepositories = new LinkedHashMap<>();
+            if (alteredOverrides.addRepositories() != ContextOverrides.AddRepositories.REPLACE) {
+                if (alteredOverrides.addRepositories() == ContextOverrides.AddRepositories.PREPEND) {
+                    alteredOverrides.getRepositories().forEach(r -> remoteRepositories.put(r.getId(), r));
+                }
                 List<Profile> activeProfiles = activeProfilesByActivation(alteredOverrides, settings, profileSelector);
                 for (Profile profile : activeProfiles) {
                     for (Repository repository : profile.getRepositories()) {
@@ -112,31 +112,26 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                         } else {
                             builder.setSnapshotPolicy(new RepositoryPolicy(false, null, null));
                         }
-                        addReplace(remoteRepositories, builder.build());
+                        RemoteRepository remoteRepository = builder.build();
+                        remoteRepositories.put(remoteRepository.getId(), remoteRepository);
                     }
                 }
-            }
-            if (!alteredOverrides.getRepositories().isEmpty()) {
-                if (!alteredOverrides.isAppendRepositories()) {
-                    remoteRepositories.clear();
+                if (alteredOverrides.addRepositories() == ContextOverrides.AddRepositories.APPEND) {
+                    alteredOverrides.getRepositories().forEach(r -> remoteRepositories.put(r.getId(), r));
                 }
-                alteredOverrides.getRepositories().forEach(r -> addReplace(remoteRepositories, r));
+            } else {
+                alteredOverrides.getRepositories().forEach(r -> remoteRepositories.put(r.getId(), r));
             }
             return new Context(
                     runtime,
                     alteredOverrides,
                     repositorySystem,
                     session,
-                    repositorySystem.newResolutionRepositories(session, remoteRepositories),
+                    repositorySystem.newResolutionRepositories(session, new ArrayList<>(remoteRepositories.values())),
                     managedCloser);
         } catch (Exception e) {
             throw new IllegalStateException("Cannot create context from scratch", e);
         }
-    }
-
-    protected void addReplace(List<RemoteRepository> remoteRepositories, RemoteRepository repository) {
-        remoteRepositories.removeIf(r -> Objects.equals(repository.getId(), r.getId()));
-        remoteRepositories.add(repository);
     }
 
     protected Settings newEffectiveSettings(ContextOverrides overrides, SettingsBuilder settingsBuilder)

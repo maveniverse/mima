@@ -196,6 +196,14 @@ public final class ContextOverrides {
         IGNORE
     }
 
+    public enum AddRepositories {
+        PREPEND,
+
+        APPEND,
+
+        REPLACE
+    }
+
     private final Path basedir;
 
     private final Map<String, String> systemProperties;
@@ -206,7 +214,7 @@ public final class ContextOverrides {
 
     private final List<RemoteRepository> repositories;
 
-    private final boolean appendRepositories;
+    private final AddRepositories addRepositories;
 
     private final boolean offline;
 
@@ -238,7 +246,7 @@ public final class ContextOverrides {
             final Map<String, String> userProperties,
             final Map<String, Object> configProperties,
             final List<RemoteRepository> repositories,
-            final boolean appendRepositories,
+            final AddRepositories addRepositories,
             final boolean offline,
             final SnapshotUpdatePolicy snapshotUpdatePolicy,
             final ChecksumPolicy checksumPolicy,
@@ -257,7 +265,7 @@ public final class ContextOverrides {
         this.userProperties = Collections.unmodifiableMap(userProperties);
         this.configProperties = Collections.unmodifiableMap(configProperties);
         this.repositories = Collections.unmodifiableList(repositories);
-        this.appendRepositories = appendRepositories;
+        this.addRepositories = addRepositories;
         this.offline = offline;
         this.snapshotUpdatePolicy = snapshotUpdatePolicy;
         this.checksumPolicy = checksumPolicy;
@@ -309,9 +317,21 @@ public final class ContextOverrides {
 
     /**
      * Whether {@link #getRepositories()} appends discovered repositories or replaces.
+     *
+     * @deprecated Use {@link #addRepositories()} instead.
      */
+    @Deprecated
     public boolean isAppendRepositories() {
-        return appendRepositories;
+        return addRepositories == AddRepositories.APPEND;
+    }
+
+    /**
+     * How to handle {@link #getRepositories()} list, never {@code null}.
+     *
+     * @since TBD
+     */
+    public AddRepositories addRepositories() {
+        return addRepositories;
     }
 
     /**
@@ -434,7 +454,7 @@ public final class ContextOverrides {
                 .userProperties(userProperties)
                 .configProperties(configProperties)
                 .repositories(repositories)
-                .appendRepositories(appendRepositories)
+                .addRepositories(addRepositories)
                 .offline(offline)
                 .snapshotUpdatePolicy(snapshotUpdatePolicy)
                 .checksumPolicy(checksumPolicy)
@@ -463,7 +483,7 @@ public final class ContextOverrides {
 
         private List<RemoteRepository> repositories = Collections.singletonList(CENTRAL);
 
-        private boolean appendRepositories = false;
+        private AddRepositories addRepositories = AddRepositories.REPLACE;
 
         private boolean offline = false;
 
@@ -588,9 +608,22 @@ public final class ContextOverrides {
          * If {@code true}, the {@link #repositories(List)} provided non-null list will be appended to repositories
          * coming from Maven (read from user {@code settings.xml} or current project), otherwise they are replacing
          * them. Default is {@code false}.
+         *
+         * @deprecated Use {@link #addRepositories(AddRepositories)} instead.
          */
+        @Deprecated
         public Builder appendRepositories(boolean appendRepositories) {
-            this.appendRepositories = appendRepositories;
+            this.addRepositories = appendRepositories ? AddRepositories.APPEND : AddRepositories.REPLACE;
+            return this;
+        }
+
+        /**
+         * How to handle the {@link #repositories(List)} provided list.
+         *
+         * @since TBD
+         */
+        public Builder addRepositories(AddRepositories addRepositories) {
+            this.addRepositories = addRepositories;
             return this;
         }
 
@@ -820,7 +853,7 @@ public final class ContextOverrides {
                     userProperties,
                     effectiveConfigProperties,
                     repositories,
-                    appendRepositories,
+                    addRepositories,
                     offline,
                     snapshotUpdatePolicy,
                     checksumPolicy,

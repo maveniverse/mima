@@ -1,8 +1,5 @@
 package eu.maveniverse.maven.mima.cli;
 
-import eu.maveniverse.maven.mima.context.Context;
-import eu.maveniverse.maven.mima.context.ContextOverrides;
-import eu.maveniverse.maven.mima.context.Runtimes;
 import java.util.List;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -27,13 +24,9 @@ public final class Resolve extends CommandSupport {
     private String gav;
 
     @Override
-    public Integer call() throws DependencyResolutionException {
-        ContextOverrides contextOverrides =
-                ContextOverrides.Builder.create().withUserSettings(true).build();
-        if (verbose) {
-            logger.info("Hello!");
-        }
-        try (Context context = Runtimes.INSTANCE.getRuntime().create(contextOverrides)) {
+    public Integer call() {
+        doWithContext(context -> {
+            logger.info("Resolving {}", gav);
             RepositorySystem system = context.repositorySystem();
             RepositorySystemSession session = context.repositorySystemSession();
 
@@ -45,16 +38,20 @@ public final class Resolve extends CommandSupport {
             DependencyRequest dependencyRequest =
                     new DependencyRequest(collectRequest, DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE));
 
-            List<ArtifactResult> artifactResults =
-                    system.resolveDependencies(session, dependencyRequest).getArtifactResults();
+            try {
+                List<ArtifactResult> artifactResults =
+                        system.resolveDependencies(session, dependencyRequest).getArtifactResults();
 
-            for (ArtifactResult artifactResult : artifactResults) {
-                logger.info(
-                        "{} -> {}",
-                        artifactResult.getArtifact(),
-                        artifactResult.getArtifact().getFile());
+                for (ArtifactResult artifactResult : artifactResults) {
+                    logger.info(
+                            "{} -> {}",
+                            artifactResult.getArtifact(),
+                            artifactResult.getArtifact().getFile());
+                }
+            } catch (DependencyResolutionException e) {
+                throw new RuntimeException(e);
             }
-        }
+        });
         return 1;
     }
 }

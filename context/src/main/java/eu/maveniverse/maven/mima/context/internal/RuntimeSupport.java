@@ -105,15 +105,16 @@ public abstract class RuntimeSupport implements Runtime {
         }
 
         ArrayList<RemoteRepository> remoteRepositories = new ArrayList<>();
-        if (overrides.isAppendRepositories() || overrides.getRepositories().isEmpty()) {
-            remoteRepositories.addAll(context.remoteRepositories());
+        if (overrides.addRepositories() == ContextOverrides.AddRepositories.PREPEND) {
+            remoteRepositories.addAll(overrides.getRepositories());
         }
-        if (!overrides.getRepositories().isEmpty()) {
-            if (overrides.isAppendRepositories()) {
-                remoteRepositories.addAll(overrides.getRepositories());
-            } else {
-                remoteRepositories = new ArrayList<>(overrides.getRepositories());
-            }
+        if (overrides.addRepositories() != ContextOverrides.AddRepositories.REPLACE) {
+            remoteRepositories.addAll(context.remoteRepositories());
+        } else {
+            remoteRepositories.addAll(overrides.getRepositories());
+        }
+        if (overrides.addRepositories() == ContextOverrides.AddRepositories.APPEND) {
+            remoteRepositories.addAll(overrides.getRepositories());
         }
 
         return new Context(
