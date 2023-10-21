@@ -16,11 +16,7 @@
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
     </dependency>
-    <dependency>
-      <groupId>info.picocli</groupId>
-      <artifactId>picocli-codegen</artifactId>
-      <scope>provided</scope>
-    </dependency>
+
     <dependency>
       <groupId>eu.maveniverse.maven.mima</groupId>
       <artifactId>context</artifactId>
@@ -29,7 +25,6 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -41,6 +36,7 @@
       <artifactId>jcl-over-slf4j</artifactId>
       <scope>runtime</scope>
     </dependency>
+
     <dependency>
       <groupId>eu.maveniverse.maven.mima.runtime</groupId>
       <artifactId>standalone-static-uber</artifactId>
@@ -151,7 +147,7 @@
           <annotationProcessorPaths>
             <path>
               <groupId>info.picocli</groupId>
-              <artifactId>picocli</artifactId>
+              <artifactId>picocli-codegen</artifactId>
               <version>${version.picocli}</version>
             </path>
           </annotationProcessorPaths>
