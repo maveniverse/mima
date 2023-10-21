@@ -3,6 +3,7 @@ package eu.maveniverse.maven.mima.runtime.shared;
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -76,13 +77,21 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             ProfileSelector profileSelector,
             Runnable managedCloser) {
         try {
-            Settings settings = newEffectiveSettings(overrides, settingsBuilder);
+            ContextOverrides alteredOverrides = overrides;
+            Settings settings = newEffectiveSettings(alteredOverrides, settingsBuilder);
+            if (settings.getLocalRepository() != null) {
+                alteredOverrides = alteredOverrides.toBuilder()
+                        .withLocalRepositoryOverride(
+                                Paths.get(settings.getLocalRepository()).toAbsolutePath())
+                        .build();
+            }
             DefaultRepositorySystemSession session =
-                    newRepositorySession(overrides, repositorySystem, settings, settingsDecrypter);
+                    newRepositorySession(alteredOverrides, repositorySystem, settings, settingsDecrypter);
             final ArrayList<RemoteRepository> remoteRepositories = new ArrayList<>();
-            if (overrides.isAppendRepositories() || overrides.getRepositories().isEmpty()) {
+            if (alteredOverrides.isAppendRepositories()
+                    || alteredOverrides.getRepositories().isEmpty()) {
                 remoteRepositories.add(ContextOverrides.CENTRAL); // first: best practice
-                List<Profile> activeProfiles = activeProfilesByActivation(overrides, settings, profileSelector);
+                List<Profile> activeProfiles = activeProfilesByActivation(alteredOverrides, settings, profileSelector);
                 for (Profile profile : activeProfiles) {
                     for (Repository repository : profile.getRepositories()) {
                         RemoteRepository.Builder builder = new RemoteRepository.Builder(
@@ -107,15 +116,15 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                     }
                 }
             }
-            if (!overrides.getRepositories().isEmpty()) {
-                if (!overrides.isAppendRepositories()) {
+            if (!alteredOverrides.getRepositories().isEmpty()) {
+                if (!alteredOverrides.isAppendRepositories()) {
                     remoteRepositories.clear();
                 }
-                overrides.getRepositories().forEach(r -> addReplace(remoteRepositories, r));
+                alteredOverrides.getRepositories().forEach(r -> addReplace(remoteRepositories, r));
             }
             return new Context(
                     runtime,
-                    overrides,
+                    alteredOverrides,
                     repositorySystem,
                     session,
                     repositorySystem.newResolutionRepositories(session, remoteRepositories),

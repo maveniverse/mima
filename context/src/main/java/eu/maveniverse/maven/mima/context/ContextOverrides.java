@@ -422,6 +422,36 @@ public final class ContextOverrides {
         return effectiveSettings;
     }
 
+    /**
+     * Creates {@link Builder} out of current instance.
+     *
+     * @since TBD
+     */
+    public Builder toBuilder() {
+        return new Builder()
+                .withBasedir(basedir)
+                .systemProperties(systemProperties)
+                .userProperties(userProperties)
+                .configProperties(configProperties)
+                .repositories(repositories)
+                .appendRepositories(appendRepositories)
+                .offline(offline)
+                .snapshotUpdatePolicy(snapshotUpdatePolicy)
+                .checksumPolicy(checksumPolicy)
+                .withUserSettings(withUserSettings)
+                .withActiveProfileIds(activeProfileIds)
+                .withInactiveProfileIds(inactiveProfileIds)
+                .repositoryListener(repositoryListener)
+                .transferListener(transferListener)
+                .withMavenUserHome(mavenUserHome.mavenUserHome)
+                .withUserSettingsXmlOverride(mavenUserHome.settingsXmlOverride)
+                .withUserSettingsSecurityXmlOverride(mavenUserHome.settingsSecurityXmlOverride)
+                .withLocalRepositoryOverride(mavenUserHome.localRepositoryOverride)
+                .withGlobalSettingsXmlOverride(globalSettingsXmlOverride)
+                .withMavenSystemHome(mavenSystemHome.basedir())
+                .withEffectiveSettings(effectiveSettings);
+    }
+
     public static final class Builder {
         private Path basedir = DEFAULT_BASEDIR;
 
@@ -473,6 +503,13 @@ public final class ContextOverrides {
          */
         public static Builder create() {
             return new Builder();
+        }
+
+        /**
+         * Hide ctor, use {@link #create()} to create new builder instances.
+         */
+        private Builder() {
+            // hidden
         }
 
         /**
@@ -674,6 +711,7 @@ public final class ContextOverrides {
          * @since 2.1.0
          * @deprecated See {@link #withUserSettingsXmlOverride(Path)}
          */
+        @Deprecated
         public Builder withSettingsXmlOverride(Path settingsXmlOverride) {
             return withUserSettingsXmlOverride(settingsXmlOverride);
         }
@@ -694,6 +732,7 @@ public final class ContextOverrides {
          * @since 2.1.0
          * @deprecated See {@link #withUserSettingsSecurityXmlOverride(Path)}
          */
+        @Deprecated
         public Builder withSettingsSecurityXmlOverride(Path settingsSecurityXmlOverride) {
             return withUserSettingsSecurityXmlOverride(settingsSecurityXmlOverride);
         }

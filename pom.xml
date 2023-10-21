@@ -5,7 +5,7 @@
   <parent>
     <groupId>eu.maveniverse.maven.parent</groupId>
     <artifactId>parent</artifactId>
-    <version>5</version>
+    <version>6</version>
   </parent>
 
   <groupId>eu.maveniverse.maven.mima</groupId>
@@ -27,6 +27,7 @@
   <modules>
     <module>context</module>
     <module>runtime</module>
+    <module>cli</module>
   </modules>
 
   <scm>
@@ -60,6 +61,7 @@
     <version.maven>3.9.5</version.maven>
     <version.sisu>0.9.0.M2</version.sisu>
     <version.slf4j>1.7.36</version.slf4j>
+    <version.picocli>4.7.5</version.picocli>
   </properties>
 
   <dependencyManagement>
@@ -110,6 +112,11 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-simple</artifactId>
+        <version>${version.slf4j}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
         <version>${version.slf4j}</version>
       </dependency>
 
@@ -213,6 +220,18 @@
         <version>${version.sisu}</version>
       </dependency>
 
+      <!-- CLI -->
+      <dependency>
+        <groupId>info.picocli</groupId>
+        <artifactId>picocli</artifactId>
+        <version>${version.picocli}</version>
+      </dependency>
+      <dependency>
+        <groupId>info.picocli</groupId>
+        <artifactId>picocli-codegen</artifactId>
+        <version>${version.picocli}</version>
+      </dependency>
+
       <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-api</artifactId>
@@ -236,20 +255,11 @@
   </repositories>
 
   <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.eclipse.sisu</groupId>
-          <artifactId>sisu-maven-plugin</artifactId>
-          <version>${version.sisu}</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-
     <plugins>
       <plugin>
         <groupId>org.eclipse.sisu</groupId>
         <artifactId>sisu-maven-plugin</artifactId>
+        <version>${version.sisu}</version>
         <executions>
           <execution>
             <id>index-project</id>
