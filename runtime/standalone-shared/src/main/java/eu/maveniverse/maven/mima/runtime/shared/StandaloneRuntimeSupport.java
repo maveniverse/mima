@@ -28,6 +28,7 @@ import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Repository;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
+import org.apache.maven.settings.TrackableBase;
 import org.apache.maven.settings.building.DefaultSettingsBuildingRequest;
 import org.apache.maven.settings.building.SettingsBuilder;
 import org.apache.maven.settings.building.SettingsBuildingException;
@@ -35,6 +36,7 @@ import org.apache.maven.settings.building.SettingsProblem;
 import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
+import org.apache.maven.settings.merge.MavenSettingsMerger;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.eclipse.aether.ConfigurationProperties;
 import org.eclipse.aether.DefaultRepositoryCache;
@@ -80,7 +82,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             Settings settings = newEffectiveSettings(alteredOverrides, settingsBuilder);
 
             // settings: local repository
-            if (settings.getLocalRepository() != null) {
+            if (settings.getLocalRepository() != null && alteredOverrides.getLocalRepositoryOverride() == null) {
                 alteredOverrides = alteredOverrides.toBuilder()
                         .withLocalRepositoryOverride(
                                 Paths.get(settings.getLocalRepository()).toAbsolutePath())
@@ -191,7 +193,12 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         }
         settingsBuilderRequest.setUserSettingsFile(
                 overrides.getMavenUserHome().settingsXml().toFile());
-        return settingsBuilder.build(settingsBuilderRequest).getEffectiveSettings();
+        Settings result = settingsBuilder.build(settingsBuilderRequest).getEffectiveSettings();
+        if (overrides.getEffectiveSettingsMixin() != null) {
+            new MavenSettingsMerger()
+                    .merge(result, (Settings) overrides.getEffectiveSettingsMixin(), TrackableBase.GLOBAL_LEVEL);
+        }
+        return result;
     }
 
     protected List<Profile> activeProfilesByActivation(

@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import org.apache.maven.settings.Proxy;
+import org.apache.maven.settings.Settings;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +52,11 @@ public abstract class CommandSupport implements Callable<Integer> {
             names = {"-D", "--define"},
             description = "Define a user property")
     protected List<String> userProperties;
+
+    @CommandLine.Option(
+            names = {"--proxy"},
+            description = "Define a HTTP proxy (host:port)")
+    protected String proxy;
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -164,6 +171,21 @@ public abstract class CommandSupport implements Callable<Integer> {
                 defined.put(name, value);
             }
             builder.userProperties(defined);
+        }
+        if (proxy != null) {
+            String[] elems = proxy.split(":");
+            if (elems.length != 2) {
+                throw new IllegalArgumentException("Proxy must be specified as 'host:port'");
+            }
+            Proxy proxySettings = new Proxy();
+            proxySettings.setId("mima-mixin");
+            proxySettings.setActive(true);
+            proxySettings.setProtocol("http");
+            proxySettings.setHost(elems[0]);
+            proxySettings.setPort(Integer.parseInt(elems[1]));
+            Settings proxyMixin = new Settings();
+            proxyMixin.addProxy(proxySettings);
+            builder.withEffectiveSettingsMixin(proxyMixin);
         }
         return builder.build();
     }
