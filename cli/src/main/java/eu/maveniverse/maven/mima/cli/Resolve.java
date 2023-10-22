@@ -1,8 +1,6 @@
 package eu.maveniverse.maven.mima.cli;
 
 import eu.maveniverse.maven.mima.context.Context;
-import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
@@ -33,8 +31,6 @@ public final class Resolve extends CommandSupport {
     @Override
     protected Integer doCall(Context context) {
         logger.info("Resolving {}", gav);
-        RepositorySystem system = context.repositorySystem();
-        RepositorySystemSession session = context.repositorySystemSession();
 
         Artifact artifact = new DefaultArtifact(gav);
 
@@ -45,7 +41,8 @@ public final class Resolve extends CommandSupport {
                 new DependencyRequest(collectRequest, DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE));
 
         try {
-            DependencyResult dependencyResult = system.resolveDependencies(session, dependencyRequest);
+            DependencyResult dependencyResult = context.repositorySystem()
+                    .resolveDependencies(context.repositorySystemSession(), dependencyRequest);
 
             for (ArtifactResult artifactResult : dependencyResult.getArtifactResults()) {
                 logger.info(

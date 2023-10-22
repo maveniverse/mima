@@ -2,8 +2,6 @@ package eu.maveniverse.maven.mima.cli;
 
 import eu.maveniverse.maven.mima.context.Context;
 import java.nio.file.Path;
-import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.deployment.DeployRequest;
@@ -33,8 +31,6 @@ public final class Deploy extends CommandSupport {
     @Override
     protected Integer doCall(Context context) {
         logger.info("Deploying {}", gav);
-        RepositorySystem system = context.repositorySystem();
-        RepositorySystemSession session = context.repositorySystemSession();
 
         Artifact jarArtifact = new DefaultArtifact(gav);
         jarArtifact = jarArtifact.setFile(jar.toFile());
@@ -48,7 +44,7 @@ public final class Deploy extends CommandSupport {
         deployRequest.addArtifact(jarArtifact).addArtifact(pomArtifact).setRepository(remoteRepository);
 
         try {
-            system.deploy(session, deployRequest);
+            context.repositorySystem().deploy(context.repositorySystemSession(), deployRequest);
         } catch (DeploymentException e) {
             throw new RuntimeException(e);
         }

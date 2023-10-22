@@ -2,8 +2,6 @@ package eu.maveniverse.maven.mima.cli;
 
 import eu.maveniverse.maven.mima.context.Context;
 import java.nio.file.Path;
-import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.installation.InstallRequest;
@@ -29,8 +27,6 @@ public final class Install extends CommandSupport {
     @Override
     protected Integer doCall(Context context) {
         logger.info("Installing {}", gav);
-        RepositorySystem system = context.repositorySystem();
-        RepositorySystemSession session = context.repositorySystemSession();
 
         Artifact jarArtifact = new DefaultArtifact(gav);
         jarArtifact = jarArtifact.setFile(jar.toFile());
@@ -42,7 +38,7 @@ public final class Install extends CommandSupport {
         installRequest.addArtifact(jarArtifact).addArtifact(pomArtifact);
 
         try {
-            system.install(session, installRequest);
+            context.repositorySystem().install(context.repositorySystemSession(), installRequest);
         } catch (InstallationException e) {
             throw new RuntimeException(e);
         }
