@@ -87,11 +87,19 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                         .build();
             }
 
+            // settings: active profiles
+            List<Profile> activeProfiles = activeProfilesByActivation(alteredOverrides, settings, profileSelector);
+            if (!activeProfiles.isEmpty()) {
+                alteredOverrides = alteredOverrides.toBuilder()
+                        .withActiveProfileIds(
+                                activeProfiles.stream().map(Profile::getId).collect(Collectors.toList()))
+                        .build();
+            }
+
             // settings: active profile properties
             // In MIMA there is no "project context", but to support Resolver configuration
             // via settings.xml (MNG-7590) we push them into user properties
             HashMap<String, String> profileProperties = new HashMap<>();
-            List<Profile> activeProfiles = activeProfilesByActivation(alteredOverrides, settings, profileSelector);
             for (Profile profile : activeProfiles) {
                 profile.getProperties()
                         .stringPropertyNames()

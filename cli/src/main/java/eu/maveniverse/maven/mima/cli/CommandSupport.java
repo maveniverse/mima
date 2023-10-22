@@ -5,6 +5,8 @@ import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.Runtime;
 import eu.maveniverse.maven.mima.context.Runtimes;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.slf4j.Logger;
@@ -35,6 +37,12 @@ public abstract class CommandSupport implements Callable<Integer> {
             names = {"-gs", "--global-settings"},
             description = "The Maven Global Settings file to use")
     protected Path globalSettingsXml;
+
+    @CommandLine.Option(
+            names = {"-P", "--activate-profiles"},
+            split = ",",
+            description = "Comma delimited list of profile IDs to activate (may use '+', '-' and '!' prefix)")
+    protected List<String> profiles;
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -68,6 +76,11 @@ public abstract class CommandSupport implements Callable<Integer> {
             logger.info("       local repository {}", mavenUserHome.localRepository());
 
             logger.info("");
+            logger.info("               PROFILES");
+            logger.info("                 Active {}", context.contextOverrides().getActiveProfileIds());
+            logger.info("               Inactive {}", context.contextOverrides().getInactiveProfileIds());
+
+            logger.info("");
             logger.info("    Remote repositories");
             for (RemoteRepository repository : context.remoteRepositories()) {
                 if (repository.getMirroredRepositories().isEmpty()) {
@@ -89,14 +102,28 @@ public abstract class CommandSupport implements Callable<Integer> {
                 .withUserSettings(true)
                 .repositories(null)
                 .addRepositories(ContextOverrides.AddRepositories.APPEND);
+        if (offline) {
+            builder.offline(true);
+        }
         if (userSettingsXml != null) {
             builder.withUserSettingsXmlOverride(userSettingsXml);
         }
         if (globalSettingsXml != null) {
             builder.withGlobalSettingsXmlOverride(globalSettingsXml);
         }
-        if (offline) {
-            builder.offline(true);
+        if (profiles != null && !profiles.isEmpty()) {
+            ArrayList<String> activeProfiles = new ArrayList<>();
+            ArrayList<String> inactiveProfiles = new ArrayList<>();
+            for (String profile : profiles) {
+                if (profile.startsWith("+")) {
+                    activeProfiles.add(profile.substring(1));
+                } else if (profile.startsWith("-") || profile.startsWith("!")) {
+                    inactiveProfiles.add(profile.substring(1));
+                } else {
+                    activeProfiles.add(profile);
+                }
+            }
+            builder.withActiveProfileIds(activeProfiles).withInactiveProfileIds(inactiveProfiles);
         }
         return builder.build();
     }
