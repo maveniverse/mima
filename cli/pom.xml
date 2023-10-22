@@ -72,7 +72,7 @@
               <version>${version.picocli}</version>
             </path>
           </annotationProcessorPaths>
-          <proc>full</proc>
+          <proc combine.self="override" />
           <compilerArgs>
             <arg>-Aproject=${project.groupId}/${project.artifactId}</arg>
           </compilerArgs>
