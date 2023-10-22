@@ -44,6 +44,12 @@ public final class Resolve extends CommandSupport {
             description = "Download javadoc JARs as well (best effort)")
     private boolean javadoc;
 
+    @CommandLine.Option(
+            names = {"--scope"},
+            defaultValue = JavaScopes.COMPILE,
+            description = "Scope to resolve")
+    private String scope;
+
     @Override
     protected Integer doCall(Context context) {
         logger.info("Resolving {}", gav);
@@ -56,7 +62,7 @@ public final class Resolve extends CommandSupport {
         collectRequest.setRoot(new Dependency(new DefaultArtifact(gav), JavaScopes.COMPILE));
         collectRequest.setRepositories(context.remoteRepositories());
         DependencyRequest dependencyRequest =
-                new DependencyRequest(collectRequest, DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE));
+                new DependencyRequest(collectRequest, DependencyFilterUtils.classpathFilter(scope));
 
         try {
             context.repositorySystem().resolveDependencies(session, dependencyRequest);
