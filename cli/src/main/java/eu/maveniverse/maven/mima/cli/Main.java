@@ -1,5 +1,6 @@
 package eu.maveniverse.maven.mima.cli;
 
+import eu.maveniverse.maven.mima.context.Context;
 import picocli.CommandLine;
 
 /**
@@ -12,8 +13,8 @@ import picocli.CommandLine;
         description = "MIMA CLI")
 public class Main extends CommandSupport {
     @Override
-    public Integer call() {
-        logger.info("Hello!");
+    protected Integer doCall(Context context) {
+        logger.info("Hello from MIMA!");
         return 1;
     }
 

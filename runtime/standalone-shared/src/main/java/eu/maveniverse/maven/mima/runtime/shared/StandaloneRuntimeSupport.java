@@ -78,20 +78,43 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         try {
             ContextOverrides alteredOverrides = overrides;
             Settings settings = newEffectiveSettings(alteredOverrides, settingsBuilder);
+
+            // settings: local repository
             if (settings.getLocalRepository() != null) {
                 alteredOverrides = alteredOverrides.toBuilder()
                         .withLocalRepositoryOverride(
                                 Paths.get(settings.getLocalRepository()).toAbsolutePath())
                         .build();
             }
+
+            // settings: active profile properties
+            // In MIMA there is no "project context", but to support Resolver configuration
+            // via settings.xml (MNG-7590) we push them into user properties
+            HashMap<String, String> profileProperties = new HashMap<>();
+            List<Profile> activeProfiles = activeProfilesByActivation(alteredOverrides, settings, profileSelector);
+            for (Profile profile : activeProfiles) {
+                profile.getProperties()
+                        .stringPropertyNames()
+                        .forEach(n ->
+                                profileProperties.put(n, profile.getProperties().getProperty(n)));
+            }
+            if (!profileProperties.isEmpty()) {
+                Map<String, String> userProperties = new HashMap<>(alteredOverrides.getUserProperties());
+                profileProperties.forEach(userProperties::putIfAbsent);
+                alteredOverrides = alteredOverrides.toBuilder()
+                        .userProperties(userProperties)
+                        .build();
+            }
+
             DefaultRepositorySystemSession session =
                     newRepositorySession(alteredOverrides, repositorySystem, settings, settingsDecrypter);
             final LinkedHashMap<String, RemoteRepository> remoteRepositories = new LinkedHashMap<>();
+
+            // settings: active profile repositories (if enabled)
             if (alteredOverrides.addRepositories() != ContextOverrides.AddRepositories.REPLACE) {
                 if (alteredOverrides.addRepositories() == ContextOverrides.AddRepositories.PREPEND) {
                     alteredOverrides.getRepositories().forEach(r -> remoteRepositories.put(r.getId(), r));
                 }
-                List<Profile> activeProfiles = activeProfilesByActivation(alteredOverrides, settings, profileSelector);
                 for (Profile profile : activeProfiles) {
                     for (Repository repository : profile.getRepositories()) {
                         RemoteRepository.Builder builder = new RemoteRepository.Builder(
@@ -225,13 +248,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         session.setCache(new DefaultRepositoryCache());
 
         LinkedHashMap<Object, Object> configProps = new LinkedHashMap<>(overrides.getConfigProperties());
-        configProps.put(ConfigurationProperties.USER_AGENT, getUserAgent());
-
-        // First add properties populated from settings.xml
-        List<Profile> activeProfiles = activeProfiles(settings);
-        for (Profile profile : activeProfiles) {
-            configProps.putAll(profile.getProperties());
-        }
+        configProps.putIfAbsent(ConfigurationProperties.USER_AGENT, getUserAgent());
 
         // internal things, these should not be overridden
         configProps.put(ConfigurationProperties.INTERACTIVE, false);

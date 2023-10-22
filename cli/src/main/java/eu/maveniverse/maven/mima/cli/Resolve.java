@@ -1,5 +1,6 @@
 package eu.maveniverse.maven.mima.cli;
 
+import eu.maveniverse.maven.mima.context.Context;
 import java.util.List;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
@@ -24,34 +25,32 @@ public final class Resolve extends CommandSupport {
     private String gav;
 
     @Override
-    public Integer call() {
-        doWithContext(context -> {
-            logger.info("Resolving {}", gav);
-            RepositorySystem system = context.repositorySystem();
-            RepositorySystemSession session = context.repositorySystemSession();
+    protected Integer doCall(Context context) {
+        logger.info("Resolving {}", gav);
+        RepositorySystem system = context.repositorySystem();
+        RepositorySystemSession session = context.repositorySystemSession();
 
-            Artifact artifact = new DefaultArtifact(gav);
+        Artifact artifact = new DefaultArtifact(gav);
 
-            CollectRequest collectRequest = new CollectRequest();
-            collectRequest.setRoot(new Dependency(artifact, JavaScopes.COMPILE));
-            collectRequest.setRepositories(context.remoteRepositories());
-            DependencyRequest dependencyRequest =
-                    new DependencyRequest(collectRequest, DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE));
+        CollectRequest collectRequest = new CollectRequest();
+        collectRequest.setRoot(new Dependency(artifact, JavaScopes.COMPILE));
+        collectRequest.setRepositories(context.remoteRepositories());
+        DependencyRequest dependencyRequest =
+                new DependencyRequest(collectRequest, DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE));
 
-            try {
-                List<ArtifactResult> artifactResults =
-                        system.resolveDependencies(session, dependencyRequest).getArtifactResults();
+        try {
+            List<ArtifactResult> artifactResults =
+                    system.resolveDependencies(session, dependencyRequest).getArtifactResults();
 
-                for (ArtifactResult artifactResult : artifactResults) {
-                    logger.info(
-                            "{} -> {}",
-                            artifactResult.getArtifact(),
-                            artifactResult.getArtifact().getFile());
-                }
-            } catch (DependencyResolutionException e) {
-                throw new RuntimeException(e);
+            for (ArtifactResult artifactResult : artifactResults) {
+                logger.info(
+                        "{} -> {}",
+                        artifactResult.getArtifact(),
+                        artifactResult.getArtifact().getFile());
             }
-        });
+        } catch (DependencyResolutionException e) {
+            throw new RuntimeException(e);
+        }
         return 1;
     }
 }

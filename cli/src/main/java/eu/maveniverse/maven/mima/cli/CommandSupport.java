@@ -6,7 +6,6 @@ import eu.maveniverse.maven.mima.context.Runtime;
 import eu.maveniverse.maven.mima.context.Runtimes;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
-import java.util.function.Consumer;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,18 +33,24 @@ public abstract class CommandSupport implements Callable<Integer> {
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected void mayDumpEnv(Runtime runtime, Context context) {
-        logger.info("MIMA Runtime {} {}", runtime.name(), runtime.version());
-        logger.info("==========================================================");
+    private void mayDumpEnv(Runtime runtime, Context context) {
+        logger.info("MIMA (Runtime '{}' version {})", runtime.name(), runtime.version());
+        logger.info("====");
         if (verbose) {
             logger.info("          Maven version {}", runtime.mavenVersion());
             logger.info("                Managed {}", runtime.managedRepositorySystem());
             logger.info("                Basedir {}", context.basedir());
-            logger.info("");
+
             ContextOverrides.MavenSystemHome mavenSystemHome =
                     context.contextOverrides().getMavenSystemHome();
+            logger.info("");
             logger.info(
                     "             MAVEN_HOME {}", mavenSystemHome == null ? "undefined" : mavenSystemHome.basedir());
+            if (mavenSystemHome != null) {
+                logger.info("           settings.xml {}", mavenSystemHome.settingsXml());
+                logger.info("         toolchains.xml {}", mavenSystemHome.toolchainsXml());
+            }
+
             ContextOverrides.MavenUserHome mavenUserHome =
                     context.contextOverrides().getMavenUserHome();
             logger.info("");
@@ -53,16 +58,24 @@ public abstract class CommandSupport implements Callable<Integer> {
             logger.info("           settings.xml {}", mavenUserHome.settingsXml());
             logger.info("  settings-security.xml {}", mavenUserHome.settingsSecurityXml());
             logger.info("       local repository {}", mavenUserHome.localRepository());
+
             logger.info("");
             logger.info("    Remote repositories");
             for (RemoteRepository repository : context.remoteRepositories()) {
-                logger.info("                        {}", repository);
+                if (repository.getMirroredRepositories().isEmpty()) {
+                    logger.info("                        {}", repository);
+                } else {
+                    logger.info("                        {}, mirror of", repository);
+                    for (RemoteRepository mirrored : repository.getMirroredRepositories()) {
+                        logger.info("                          {}", mirrored);
+                    }
+                }
             }
         }
         logger.info("");
     }
 
-    protected void doWithContext(Consumer<Context> contextConsumer) {
+    protected ContextOverrides createContextOverrides() {
         // create builder with some sane defaults
         ContextOverrides.Builder builder = ContextOverrides.Builder.create()
                 .withUserSettings(true)
@@ -74,11 +87,21 @@ public abstract class CommandSupport implements Callable<Integer> {
         if (globalSettingsXml != null) {
             builder.withGlobalSettingsXmlOverride(globalSettingsXml);
         }
-        ContextOverrides contextOverrides = builder.build();
-        Runtime runtime = Runtimes.INSTANCE.getRuntime();
-        try (Context context = runtime.create(contextOverrides)) {
+        return builder.build();
+    }
+
+    protected Runtime getRuntime() {
+        return Runtimes.INSTANCE.getRuntime();
+    }
+
+    @Override
+    public Integer call() {
+        Runtime runtime = getRuntime();
+        try (Context context = runtime.create(createContextOverrides())) {
             mayDumpEnv(runtime, context);
-            contextConsumer.accept(context);
+            return doCall(context);
         }
     }
+
+    protected abstract Integer doCall(Context context);
 }
