@@ -98,7 +98,8 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
 
             // settings: active profile properties
             // In MIMA there is no "project context", but to support Resolver configuration
-            // via settings.xml (MNG-7590) we push them into user properties
+            // via settings.xml (MNG-7590) we push them into user properties.
+            // Note: putIfAbsent used, as if key is present, it means it was added via override already
             HashMap<String, String> profileProperties = new HashMap<>();
             for (Profile profile : activeProfiles) {
                 profile.getProperties()
@@ -116,9 +117,9 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
 
             DefaultRepositorySystemSession session =
                     newRepositorySession(alteredOverrides, repositorySystem, settings, settingsDecrypter);
-            final LinkedHashMap<String, RemoteRepository> remoteRepositories = new LinkedHashMap<>();
 
-            // settings: active profile repositories (if enabled)
+            // settings: active profile repositories (if enabled), strictly preserve order
+            final LinkedHashMap<String, RemoteRepository> remoteRepositories = new LinkedHashMap<>();
             if (alteredOverrides.addRepositories() != ContextOverrides.AddRepositories.REPLACE) {
                 if (alteredOverrides.addRepositories() == ContextOverrides.AddRepositories.PREPEND) {
                     alteredOverrides.getRepositories().forEach(r -> remoteRepositories.put(r.getId(), r));
