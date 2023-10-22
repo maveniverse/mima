@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.eclipse.aether.RepositoryListener;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
@@ -109,6 +110,27 @@ public final class ContextOverrides {
             }
             return basedir().resolve("repository");
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            MavenUserHome that = (MavenUserHome) o;
+            return Objects.equals(mavenUserHome, that.mavenUserHome)
+                    && Objects.equals(settingsXmlOverride, that.settingsXmlOverride)
+                    && Objects.equals(settingsSecurityXmlOverride, that.settingsSecurityXmlOverride)
+                    && Objects.equals(localRepositoryOverride, that.localRepositoryOverride);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(
+                    mavenUserHome, settingsXmlOverride, settingsSecurityXmlOverride, localRepositoryOverride);
+        }
     }
 
     /**
@@ -182,6 +204,23 @@ public final class ContextOverrides {
 
         public Path libExt() {
             return lib().resolve("ext");
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            MavenSystemHome that = (MavenSystemHome) o;
+            return Objects.equals(mavenSystemHome, that.mavenSystemHome);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mavenSystemHome);
         }
     }
 
@@ -470,6 +509,58 @@ public final class ContextOverrides {
                 .withGlobalSettingsXmlOverride(globalSettingsXmlOverride)
                 .withMavenSystemHome(mavenSystemHome.basedir())
                 .withEffectiveSettings(effectiveSettings);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ContextOverrides that = (ContextOverrides) o;
+        return offline == that.offline
+                && withUserSettings == that.withUserSettings
+                && Objects.equals(basedir, that.basedir)
+                && Objects.equals(systemProperties, that.systemProperties)
+                && Objects.equals(userProperties, that.userProperties)
+                && Objects.equals(configProperties, that.configProperties)
+                && Objects.equals(repositories, that.repositories)
+                && addRepositories == that.addRepositories
+                && snapshotUpdatePolicy == that.snapshotUpdatePolicy
+                && checksumPolicy == that.checksumPolicy
+                && Objects.equals(activeProfileIds, that.activeProfileIds)
+                && Objects.equals(inactiveProfileIds, that.inactiveProfileIds)
+                && Objects.equals(repositoryListener, that.repositoryListener)
+                && Objects.equals(transferListener, that.transferListener)
+                && Objects.equals(mavenUserHome, that.mavenUserHome)
+                && Objects.equals(globalSettingsXmlOverride, that.globalSettingsXmlOverride)
+                && Objects.equals(mavenSystemHome, that.mavenSystemHome)
+                && Objects.equals(effectiveSettings, that.effectiveSettings);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                basedir,
+                systemProperties,
+                userProperties,
+                configProperties,
+                repositories,
+                addRepositories,
+                offline,
+                snapshotUpdatePolicy,
+                checksumPolicy,
+                withUserSettings,
+                activeProfileIds,
+                inactiveProfileIds,
+                repositoryListener,
+                transferListener,
+                mavenUserHome,
+                globalSettingsXmlOverride,
+                mavenSystemHome,
+                effectiveSettings);
     }
 
     public static final class Builder {
