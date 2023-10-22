@@ -1,6 +1,7 @@
 package eu.maveniverse.maven.mima.cli;
 
 import eu.maveniverse.maven.mima.context.Context;
+import eu.maveniverse.maven.mima.context.Runtime;
 import picocli.CommandLine;
 
 /**
@@ -13,8 +14,12 @@ import picocli.CommandLine;
         description = "MIMA CLI")
 public class Main extends CommandSupport {
     @Override
-    protected Integer doCall(Context context) {
-        logger.info("Hello from MIMA!");
+    public Integer call() {
+        Runtime runtime = getRuntime();
+        try (Context context = runtime.create(createContextOverrides())) {
+            verbose = true;
+            mayDumpEnv(runtime, context);
+        }
         return 1;
     }
 

@@ -6,7 +6,9 @@ import eu.maveniverse.maven.mima.context.Runtime;
 import eu.maveniverse.maven.mima.context.Runtimes;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.slf4j.Logger;
@@ -44,9 +46,14 @@ public abstract class CommandSupport implements Callable<Integer> {
             description = "Comma delimited list of profile IDs to activate (may use '+', '-' and '!' prefix)")
     protected List<String> profiles;
 
+    @CommandLine.Option(
+            names = {"-D", "--define"},
+            description = "Define a user property")
+    protected List<String> userProperties;
+
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
-    private void mayDumpEnv(Runtime runtime, Context context) {
+    protected void mayDumpEnv(Runtime runtime, Context context) {
         logger.info("MIMA (Runtime '{}' version {})", runtime.name(), runtime.version());
         logger.info("====");
         if (verbose) {
@@ -81,7 +88,7 @@ public abstract class CommandSupport implements Callable<Integer> {
             logger.info("               Inactive {}", context.contextOverrides().getInactiveProfileIds());
 
             logger.info("");
-            logger.info("    Remote repositories");
+            logger.info("    REMOTE REPOSITORIES");
             for (RemoteRepository repository : context.remoteRepositories()) {
                 if (repository.getMirroredRepositories().isEmpty()) {
                     logger.info("                        {}", repository);
@@ -91,6 +98,22 @@ public abstract class CommandSupport implements Callable<Integer> {
                         logger.info("                          {}", mirrored);
                     }
                 }
+            }
+
+            if (verbose) {
+                logger.info("");
+                logger.info("        USER PROPERTIES");
+                context.contextOverrides().getUserProperties().entrySet().stream()
+                        .sorted(Map.Entry.comparingByKey())
+                        .forEach(e -> logger.info("                         {}={}", e.getKey(), e.getValue()));
+                logger.info("      SYSTEM PROPERTIES");
+                context.contextOverrides().getSystemProperties().entrySet().stream()
+                        .sorted(Map.Entry.comparingByKey())
+                        .forEach(e -> logger.info("                         {}={}", e.getKey(), e.getValue()));
+                logger.info("      CONFIG PROPERTIES");
+                context.contextOverrides().getConfigProperties().entrySet().stream()
+                        .sorted(Map.Entry.comparingByKey())
+                        .forEach(e -> logger.info("                         {}={}", e.getKey(), e.getValue()));
             }
         }
         logger.info("");
@@ -125,6 +148,23 @@ public abstract class CommandSupport implements Callable<Integer> {
             }
             builder.withActiveProfileIds(activeProfiles).withInactiveProfileIds(inactiveProfiles);
         }
+        if (userProperties != null && !userProperties.isEmpty()) {
+            HashMap<String, String> defined = new HashMap<>(userProperties.size());
+            String name;
+            String value;
+            for (String property : userProperties) {
+                int i = property.indexOf('=');
+                if (i <= 0) {
+                    name = property.trim();
+                    value = Boolean.TRUE.toString();
+                } else {
+                    name = property.substring(0, i).trim();
+                    value = property.substring(i + 1);
+                }
+                defined.put(name, value);
+            }
+            builder.userProperties(defined);
+        }
         return builder.build();
     }
 
@@ -141,5 +181,7 @@ public abstract class CommandSupport implements Callable<Integer> {
         }
     }
 
-    protected abstract Integer doCall(Context context);
+    protected Integer doCall(Context context) {
+        throw new RuntimeException("Not implemented; you should override this method in subcommand");
+    }
 }
