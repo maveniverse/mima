@@ -243,12 +243,14 @@ public final class ContextOverrides {
                 return false;
             }
             MavenSystemHome that = (MavenSystemHome) o;
-            return Objects.equals(mavenSystemHome, that.mavenSystemHome);
+            return Objects.equals(mavenSystemHome, that.mavenSystemHome)
+                    && Objects.equals(settingsXmlOverride, that.settingsXmlOverride)
+                    && Objects.equals(toolchainsXmlOverride, that.toolchainsXmlOverride);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(mavenSystemHome);
+            return Objects.hash(mavenSystemHome, settingsXmlOverride, toolchainsXmlOverride);
         }
     }
 
@@ -615,7 +617,6 @@ public final class ContextOverrides {
                 .withGlobalToolchainsXmlOverride(globalToolchainsXmlOverride)
                 .withUserSettingsSecurityXmlOverride(userSettingsSecurityXmlOverride)
                 .withLocalRepositoryOverride(mavenUserHome.localRepositoryOverride)
-                .withGlobalSettingsXmlOverride(globalSettingsXmlOverride)
                 .withMavenSystemHome(mavenSystemHome == null ? null : mavenSystemHome.basedir())
                 .withEffectiveSettings(effectiveSettings)
                 .withEffectiveSettingsMixin(effectiveSettingsMixin);
@@ -645,7 +646,12 @@ public final class ContextOverrides {
                 && Objects.equals(repositoryListener, that.repositoryListener)
                 && Objects.equals(transferListener, that.transferListener)
                 && Objects.equals(mavenUserHome, that.mavenUserHome)
+                && Objects.equals(localRepositoryOverride, that.localRepositoryOverride)
+                && Objects.equals(userSettingsXmlOverride, that.userSettingsXmlOverride)
                 && Objects.equals(globalSettingsXmlOverride, that.globalSettingsXmlOverride)
+                && Objects.equals(userToolchainsXmlOverride, that.userToolchainsXmlOverride)
+                && Objects.equals(globalToolchainsXmlOverride, that.globalToolchainsXmlOverride)
+                && Objects.equals(userSettingsSecurityXmlOverride, that.userSettingsSecurityXmlOverride)
                 && Objects.equals(mavenSystemHome, that.mavenSystemHome)
                 && Objects.equals(effectiveSettings, that.effectiveSettings)
                 && Objects.equals(effectiveSettingsMixin, that.effectiveSettingsMixin);
@@ -669,7 +675,12 @@ public final class ContextOverrides {
                 repositoryListener,
                 transferListener,
                 mavenUserHome,
+                localRepositoryOverride,
+                userSettingsXmlOverride,
                 globalSettingsXmlOverride,
+                userToolchainsXmlOverride,
+                globalToolchainsXmlOverride,
+                userSettingsSecurityXmlOverride,
                 mavenSystemHome,
                 effectiveSettings,
                 effectiveSettingsMixin);
