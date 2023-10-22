@@ -55,9 +55,9 @@ public final class Resolve extends CommandSupport {
             }
 
             if (classpath) {
-                logger.info("");
                 PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
                 dependencyResult.getRoot().accept(nlg);
+                logger.info("");
                 logger.info("classpath: {}", nlg.getClassPath());
             }
         } catch (DependencyResolutionException e) {
