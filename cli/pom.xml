@@ -16,16 +16,21 @@
   </properties>
 
   <dependencies>
+    <!-- Compile -->
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
     </dependency>
-
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
     <dependency>
       <groupId>eu.maveniverse.maven.mima</groupId>
       <artifactId>context</artifactId>
     </dependency>
 
+    <!-- Provided (by runtime) -->
     <dependency>
       <groupId>org.apache.maven.resolver</groupId>
       <artifactId>maven-resolver-api</artifactId>
@@ -37,10 +42,7 @@
       <scope>provided</scope>
     </dependency>
 
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
+    <!-- Runtime -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
@@ -51,7 +53,6 @@
       <artifactId>jcl-over-slf4j</artifactId>
       <scope>runtime</scope>
     </dependency>
-
     <dependency>
       <groupId>eu.maveniverse.maven.mima.runtime</groupId>
       <artifactId>standalone-static-uber</artifactId>
