@@ -507,7 +507,7 @@ public final class ContextOverrides {
                 .withUserSettingsSecurityXmlOverride(mavenUserHome.settingsSecurityXmlOverride)
                 .withLocalRepositoryOverride(mavenUserHome.localRepositoryOverride)
                 .withGlobalSettingsXmlOverride(globalSettingsXmlOverride)
-                .withMavenSystemHome(mavenSystemHome.basedir())
+                .withMavenSystemHome(mavenSystemHome == null ? null : mavenSystemHome.basedir())
                 .withEffectiveSettings(effectiveSettings);
     }
 
