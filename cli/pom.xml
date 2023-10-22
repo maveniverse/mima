@@ -11,6 +11,10 @@
   <artifactId>cli</artifactId>
   <name>${project.groupId}:${project.artifactId}</name>
 
+  <properties>
+    <mainClass>eu.maveniverse.maven.mima.cli.Main</mainClass>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>info.picocli</groupId>
@@ -20,6 +24,17 @@
     <dependency>
       <groupId>eu.maveniverse.maven.mima</groupId>
       <artifactId>context</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-util</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -45,101 +60,7 @@
   </dependencies>
 
   <build>
-    <resources>
-      <resource>
-        <filtering>false</filtering>
-        <directory>src/main/resources</directory>
-      </resource>
-      <resource>
-        <filtering>false</filtering>
-        <directory>target/generated-resources</directory>
-      </resource>
-    </resources>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>add-picocli</id>
-            <goals>
-              <goal>unpack-dependencies</goal>
-            </goals>
-            <phase>generate-resources</phase>
-            <configuration>
-              <includeGroupIds>info.picocli</includeGroupIds>
-              <includeArtifactIds>picocli</includeArtifactIds>
-              <excludeTransitive>true</excludeTransitive>
-              <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
-            </configuration>
-          </execution>
-          <execution>
-            <id>add-context</id>
-            <goals>
-              <goal>unpack-dependencies</goal>
-            </goals>
-            <phase>generate-resources</phase>
-            <configuration>
-              <includeGroupIds>eu.maveniverse.maven.mima</includeGroupIds>
-              <includeArtifactIds>context</includeArtifactIds>
-              <excludeTransitive>true</excludeTransitive>
-              <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
-            </configuration>
-          </execution>
-          <execution>
-            <id>add-slf4j-api</id>
-            <goals>
-              <goal>unpack-dependencies</goal>
-            </goals>
-            <phase>generate-resources</phase>
-            <configuration>
-              <includeGroupIds>org.slf4j</includeGroupIds>
-              <includeArtifactIds>slf4j-api</includeArtifactIds>
-              <excludeTransitive>true</excludeTransitive>
-              <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
-            </configuration>
-          </execution>
-          <execution>
-            <id>add-slf4j-simple</id>
-            <goals>
-              <goal>unpack-dependencies</goal>
-            </goals>
-            <phase>generate-resources</phase>
-            <configuration>
-              <includeGroupIds>org.slf4j</includeGroupIds>
-              <includeArtifactIds>slf4j-simple</includeArtifactIds>
-              <excludeTransitive>true</excludeTransitive>
-              <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
-            </configuration>
-          </execution>
-          <execution>
-            <id>add-jcl-over-slf4j</id>
-            <goals>
-              <goal>unpack-dependencies</goal>
-            </goals>
-            <phase>generate-resources</phase>
-            <configuration>
-              <includeGroupIds>org.slf4j</includeGroupIds>
-              <includeArtifactIds>jcl-over-slf4j</includeArtifactIds>
-              <excludeTransitive>true</excludeTransitive>
-              <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
-            </configuration>
-          </execution>
-          <execution>
-            <id>add-runtime</id>
-            <goals>
-              <goal>unpack-dependencies</goal>
-            </goals>
-            <phase>generate-resources</phase>
-            <configuration>
-              <includeGroupIds>eu.maveniverse.maven.mima.runtime</includeGroupIds>
-              <includeArtifactIds>standalone-static-uber</includeArtifactIds>
-              <excludeTransitive>true</excludeTransitive>
-              <outputDirectory>${project.build.directory}/generated-resources</outputDirectory>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -151,6 +72,7 @@
               <version>${version.picocli}</version>
             </path>
           </annotationProcessorPaths>
+          <proc>full</proc>
           <compilerArgs>
             <arg>-Aproject=${project.groupId}/${project.artifactId}</arg>
           </compilerArgs>
@@ -162,10 +84,54 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>eu.maveniverse.maven.mima.cli.Main</mainClass>
+              <mainClass>${mainClass}</mainClass>
             </manifest>
           </archive>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>cli</id>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>uber</shadedClassifierName>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                <transformer implementation="org.apache.maven.plugins.shade.resource.SisuIndexResourceTransformer" />
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <manifestEntries>
+                    <Main-Class>${mainClass}</Main-Class>
+                    <Specification-Title>${project.artifactId}</Specification-Title>
+                    <Specification-Version>${project.version}</Specification-Version>
+                    <Implementation-Title>${project.artifactId}</Implementation-Title>
+                    <Implementation-Version>${project.version}</Implementation-Version>
+                    <Implementation-Vendor-Id>${project.groupId}</Implementation-Vendor-Id>
+                  </manifestEntries>
+                </transformer>
+              </transformers>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/MANIFEST.MF</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+              <entryPoints>
+                <entryPoint>eu.maveniverse.maven.mima.cli.Main</entryPoint>
+              </entryPoints>
+              <minimizeJar>true</minimizeJar>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
