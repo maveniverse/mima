@@ -16,7 +16,7 @@ import org.eclipse.aether.util.filter.DependencyFilterUtils;
 import picocli.CommandLine;
 
 /**
- * Resolver.
+ * Resolve.
  */
 @CommandLine.Command(name = "resolve", description = "Resolves Maven Artifacts")
 public final class Resolve extends CommandSupport {

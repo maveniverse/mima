@@ -22,6 +22,11 @@ public abstract class CommandSupport implements Callable<Integer> {
     protected boolean verbose;
 
     @CommandLine.Option(
+            names = {"-o", "--offline"},
+            description = "Work offline")
+    protected boolean offline;
+
+    @CommandLine.Option(
             names = {"-s", "--settings"},
             description = "The Maven User Settings file to use")
     protected Path userSettingsXml;
@@ -40,6 +45,9 @@ public abstract class CommandSupport implements Callable<Integer> {
             logger.info("          Maven version {}", runtime.mavenVersion());
             logger.info("                Managed {}", runtime.managedRepositorySystem());
             logger.info("                Basedir {}", context.basedir());
+            logger.info(
+                    "                Offline {}",
+                    context.repositorySystemSession().isOffline());
 
             ContextOverrides.MavenSystemHome mavenSystemHome =
                     context.contextOverrides().getMavenSystemHome();
@@ -86,6 +94,9 @@ public abstract class CommandSupport implements Callable<Integer> {
         }
         if (globalSettingsXml != null) {
             builder.withGlobalSettingsXmlOverride(globalSettingsXml);
+        }
+        if (offline) {
+            builder.offline(true);
         }
         return builder.build();
     }

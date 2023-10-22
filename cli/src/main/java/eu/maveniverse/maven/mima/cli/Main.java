@@ -8,7 +8,7 @@ import picocli.CommandLine;
  */
 @CommandLine.Command(
         name = "mima",
-        subcommands = {Resolve.class},
+        subcommands = {Resolve.class, Install.class, Deploy.class},
         version = "1.0",
         description = "MIMA CLI")
 public class Main extends CommandSupport {
