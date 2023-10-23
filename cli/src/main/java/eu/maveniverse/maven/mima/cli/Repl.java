@@ -2,7 +2,6 @@ package eu.maveniverse.maven.mima.cli;
 
 import eu.maveniverse.maven.mima.context.Context;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.jline.builtins.ConfigurationPath;
 import org.jline.console.SystemRegistry;
 import org.jline.console.impl.Builtins;
@@ -32,8 +31,8 @@ public class Repl extends CommandSupport {
         Class<?> tp = JansiTerminalProvider.class;
 
         // set up JLine built-in commands
-        ConfigurationPath configPath = new ConfigurationPath(Paths.get("."), Paths.get("."));
-        Builtins builtins = new Builtins(Repl::workDir, configPath, null);
+        ConfigurationPath configPath = new ConfigurationPath(context.basedir(), context.basedir());
+        Builtins builtins = new Builtins(context::basedir, configPath, null);
         builtins.rename(org.jline.console.impl.Builtins.Command.TTOP, "top");
         builtins.alias("zle", "widget");
         builtins.alias("bindkey", "keymap");
@@ -44,10 +43,10 @@ public class Repl extends CommandSupport {
         Parser parser = new DefaultParser();
 
         try (Terminal terminal = TerminalBuilder.builder().name("mima").build()) {
-            SystemRegistry systemRegistry = new SystemRegistryImpl(parser, terminal, Repl::workDir, configPath);
+            SystemRegistry systemRegistry = new SystemRegistryImpl(parser, terminal, context::basedir, configPath);
             systemRegistry.setCommandRegistries(builtins, picocliCommands);
 
-            Path history = Paths.get(System.getProperty("user.home"), ".m2/.mima_history");
+            Path history = context.mavenUserHome().basedir().resolve(".mima_history");
             LineReader reader = LineReaderBuilder.builder()
                     .terminal(terminal)
                     .history(new DefaultHistory())
@@ -81,12 +80,8 @@ public class Repl extends CommandSupport {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("REPL Failure: ", e);
             return 1;
         }
-    }
-
-    private static Path workDir() {
-        return Paths.get(System.getProperty("user.dir"));
     }
 }
