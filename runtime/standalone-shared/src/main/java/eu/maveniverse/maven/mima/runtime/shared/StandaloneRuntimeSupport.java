@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.toMap;
 
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
+import eu.maveniverse.maven.mima.context.HTTPProxy;
 import eu.maveniverse.maven.mima.context.MavenSystemHome;
 import eu.maveniverse.maven.mima.context.MavenUserHome;
 import eu.maveniverse.maven.mima.context.internal.MavenSystemHomeImpl;
@@ -143,6 +144,13 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                         Paths.get(settings.getLocalRepository()).toAbsolutePath());
             }
 
+            // settings: active proxy
+            Proxy proxy = settings.getActiveProxy();
+            HTTPProxy httpProxy = null;
+            if (proxy != null) {
+                httpProxy = toHTTPProxy(proxy);
+            }
+
             // settings: active profiles
             List<Profile> activeProfiles =
                     activeProfilesByActivation(alteredOverrides, baseDir, settings, profileSelector);
@@ -220,10 +228,22 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                     repositorySystem,
                     session,
                     repositorySystem.newResolutionRepositories(session, new ArrayList<>(remoteRepositories.values())),
+                    httpProxy,
                     managedCloser);
         } catch (Exception e) {
             throw new IllegalStateException("Cannot create context from scratch", e);
         }
+    }
+
+    private HTTPProxy toHTTPProxy(Proxy proxy) {
+        HashMap<String, Object> data = new HashMap<>();
+        if (proxy.getUsername() != null) {
+            data.put("username", proxy.getUsername());
+        }
+        if (proxy.getPassword() != null) {
+            data.put("password", proxy.getPassword());
+        }
+        return new HTTPProxy(proxy.getProtocol(), proxy.getHost(), proxy.getPort(), proxy.getNonProxyHosts(), data);
     }
 
     protected Settings newEffectiveSettings(
@@ -235,7 +255,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         if (!overrides.isWithUserSettings()) {
             return new Settings();
         }
-        if (overrides.getEffectiveSettings() != null) {
+        if (overrides.getEffectiveSettings() instanceof Settings) {
             return (Settings) overrides.getEffectiveSettings();
         }
         DefaultSettingsBuildingRequest settingsBuilderRequest = new DefaultSettingsBuildingRequest();
@@ -252,11 +272,26 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         }
         settingsBuilderRequest.setUserSettingsFile(mavenUserHome.settingsXml().toFile());
         Settings result = settingsBuilder.build(settingsBuilderRequest).getEffectiveSettings();
-        if (overrides.getEffectiveSettingsMixin() != null) {
-            new MavenSettingsMerger()
-                    .merge(result, (Settings) overrides.getEffectiveSettingsMixin(), TrackableBase.GLOBAL_LEVEL);
+        if (overrides.getEffectiveSettingsMixin() instanceof Settings) {
+            settingsMixin(result, (Settings) overrides.getEffectiveSettingsMixin());
         }
         return result;
+    }
+
+    protected void settingsMixin(Settings settings, Settings mixin) {
+        // Special care for mixin that is about to add Proxy:
+        // - disable all other proxies, if exists
+        // Hence:
+        // - if mixin proxy is active, it prevails
+        // - if mixin proxy is inactive, shuts down proxy
+        boolean mixinAddsProxy = !mixin.getProxies().isEmpty();
+        if (mixinAddsProxy) {
+            for (Proxy proxy : settings.getProxies()) {
+                proxy.setActive(false);
+            }
+            settings.flushActiveProxy();
+        }
+        new MavenSettingsMerger().merge(settings, mixin, TrackableBase.GLOBAL_LEVEL);
     }
 
     protected List<Profile> activeProfilesByActivation(
