@@ -2,6 +2,7 @@ package eu.maveniverse.maven.mima.cli;
 
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
+import eu.maveniverse.maven.mima.context.HTTPProxy;
 import eu.maveniverse.maven.mima.context.MavenSystemHome;
 import eu.maveniverse.maven.mima.context.MavenUserHome;
 import eu.maveniverse.maven.mima.context.Runtime;
@@ -106,6 +107,14 @@ public abstract class CommandSupport implements Callable<Integer> {
                     logger.info("                          {}", mirrored);
                 }
             }
+        }
+
+        if (context.httpProxy() != null) {
+            HTTPProxy proxy = context.httpProxy();
+            logger.info("");
+            logger.info("             HTTP PROXY");
+            logger.info("                    url {}://{}:{}", proxy.getProtocol(), proxy.getHost(), proxy.getPort());
+            logger.info("          nonProxyHosts {}", proxy.getNonProxyHosts());
         }
 
         if (verbose) {

@@ -2,6 +2,7 @@ package eu.maveniverse.maven.mima.runtime.maven;
 
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
+import eu.maveniverse.maven.mima.context.HTTPProxy;
 import eu.maveniverse.maven.mima.context.MavenSystemHome;
 import eu.maveniverse.maven.mima.context.MavenUserHome;
 import eu.maveniverse.maven.mima.context.internal.MavenSystemHomeImpl;
@@ -9,6 +10,7 @@ import eu.maveniverse.maven.mima.context.internal.MavenUserHomeImpl;
 import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -17,6 +19,7 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.rtinfo.RuntimeInformation;
+import org.apache.maven.settings.Proxy;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 
@@ -82,8 +85,24 @@ public final class MavenRuntime extends RuntimeSupport {
                         repositorySystem,
                         session,
                         repositorySystem.newResolutionRepositories(session, effective.getRepositories()),
+                        toHTTPProxy(mavenSession.getSettings().getActiveProxy()),
                         null),
                 false); // unmanaged context: close should NOT shut down repositorySystem
+    }
+
+    private HTTPProxy toHTTPProxy(Proxy proxy) {
+        if (proxy == null) {
+            return null;
+        }
+
+        HashMap<String, Object> data = new HashMap<>();
+        if (proxy.getUsername() != null) {
+            data.put("username", proxy.getUsername());
+        }
+        if (proxy.getPassword() != null) {
+            data.put("password", proxy.getPassword());
+        }
+        return new HTTPProxy(proxy.getProtocol(), proxy.getHost(), proxy.getPort(), proxy.getNonProxyHosts(), data);
     }
 
     private MavenUserHome discoverMavenUserHome(MavenExecutionRequest executionRequest) {

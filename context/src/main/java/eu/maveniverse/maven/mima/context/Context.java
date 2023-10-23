@@ -44,6 +44,8 @@ public final class Context implements Closeable {
 
     private final List<RemoteRepository> remoteRepositories;
 
+    private final HTTPProxy httpProxy;
+
     private final Runnable managedCloser;
 
     public Context(
@@ -55,6 +57,7 @@ public final class Context implements Closeable {
             RepositorySystem repositorySystem,
             RepositorySystemSession repositorySystemSession,
             List<RemoteRepository> remoteRepositories,
+            HTTPProxy httpProxy,
             Runnable managedCloser) {
         this.runtime = requireNonNull(runtime);
         this.contextOverrides = requireNonNull(contextOverrides);
@@ -64,6 +67,7 @@ public final class Context implements Closeable {
         this.repositorySystemSession = requireNonNull(repositorySystemSession);
         this.repositorySystem = requireNonNull(repositorySystem);
         this.remoteRepositories = requireNonNull(remoteRepositories);
+        this.httpProxy = httpProxy;
         this.managedCloser = managedCloser;
     }
 
@@ -123,6 +127,16 @@ public final class Context implements Closeable {
      */
     public List<RemoteRepository> remoteRepositories() {
         return remoteRepositories;
+    }
+
+    /**
+     * Returns HTTP Proxy that Resolver will use, or {@code null}. This configuration may come from user
+     * {@code settings.xml}.
+     *
+     * @since 2.4.0
+     */
+    public HTTPProxy httpProxy() {
+        return httpProxy;
     }
 
     /**
