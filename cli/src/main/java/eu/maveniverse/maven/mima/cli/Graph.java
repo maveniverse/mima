@@ -27,7 +27,7 @@ import org.eclipse.aether.util.graph.visitor.DependencyGraphDumper;
 import picocli.CommandLine;
 
 /**
- * Deploy.
+ * Graph.
  */
 @CommandLine.Command(name = "graph", description = "Displays dependency graph")
 public final class Graph extends CommandSupport {
@@ -43,14 +43,17 @@ public final class Graph extends CommandSupport {
         session.setConfigProperty(ConflictResolver.CONFIG_PROP_VERBOSE, ConflictResolver.Verbosity.FULL);
         session.setConfigProperty(DependencyManagerUtils.CONFIG_PROP_VERBOSE, true);
 
+        // TODO: configuration for this
         session.setDependencyManager(new DefaultDependencyManager());
 
+        // TODO: configuration for this
         session.setDependencySelector(new AndDependencySelector(
                 new ScopeDependencySelector(JavaScopes.TEST),
                 new OptionalDependencySelector(),
                 new ExclusionDependencySelector()));
         session.setDependencyTraverser(new FatArtifactTraverser());
 
+        // TODO: configuration for this
         DependencyGraphTransformer transformer = new ConflictResolver(
                 new NearestVersionSelector(), new JavaScopeSelector(),
                 new SimpleOptionalitySelector(), new JavaScopeDeriver());
