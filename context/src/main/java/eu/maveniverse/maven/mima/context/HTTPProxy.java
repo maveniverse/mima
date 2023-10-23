@@ -6,8 +6,7 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * Registry of known {@link Runtime} instances. It orders them by priority. This class is the "entry point" in MIMA to
- * obtain actual {@link Runtime} instance.
+ * HTTP Proxy configuration, that resolver uses.
  *
  * @since 2.4.0
  */
@@ -52,7 +51,7 @@ public final class HTTPProxy {
     }
 
     /**
-     * The comma or pipe delimited list of non-proxy hosts, never {@code null}.
+     * String of comma or pipe delimited list of non-proxy hosts, never {@code null}.
      *
      * @see <a href="https://maven.apache.org/settings.html#proxies">Maven Settings Reference - Proxies</a>
      */
