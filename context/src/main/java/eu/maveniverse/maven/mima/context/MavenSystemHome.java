@@ -5,7 +5,7 @@ import java.nio.file.Path;
 /**
  * Interface pointing to Maven System Home and various locations of interests within it.
  *
- * @since TBD
+ * @since 2.4.0
  */
 public interface MavenSystemHome {
     Path basedir();

@@ -190,7 +190,7 @@ public final class ContextOverrides {
     /**
      * How to handle {@link #getRepositories()} list, never {@code null}.
      *
-     * @since TBD
+     * @since 2.4.0
      */
     public AddRepositoriesOp addRepositoriesOp() {
         return addRepositoriesOp;
@@ -259,7 +259,7 @@ public final class ContextOverrides {
     /**
      * Maven User Home override, of {@code null}.
      *
-     * @since TBD
+     * @since 2.4.0
      */
     public Path getMavenUserHomeOverride() {
         return mavenUserHomeOverride;
@@ -268,7 +268,7 @@ public final class ContextOverrides {
     /**
      * Maven User Settings override, or {@code null}.
      *
-     * @since TBD
+     * @since 2.4.0
      */
     public Path getUserSettingsXmlOverride() {
         return userSettingsXmlOverride;
@@ -277,7 +277,7 @@ public final class ContextOverrides {
     /**
      * Maven User settings-security.xml override, or {@code null}.
      *
-     * @since TBD
+     * @since 2.4.0
      */
     public Path getUserSettingsSecurityXmlOverride() {
         return userSettingsSecurityXmlOverride;
@@ -286,7 +286,7 @@ public final class ContextOverrides {
     /**
      * Maven User Toolchains override, or {@code null}.
      *
-     * @since TBD
+     * @since 2.4.0
      */
     public Path getUserToolchainsXmlOverride() {
         return userToolchainsXmlOverride;
@@ -295,7 +295,7 @@ public final class ContextOverrides {
     /**
      * Maven Local Repository override, or {@code null}.
      *
-     * @since TBD
+     * @since 2.4.0
      */
     public Path getLocalRepositoryOverride() {
         return localRepositoryOverride;
@@ -304,7 +304,7 @@ public final class ContextOverrides {
     /**
      * Maven System Home override, of {@code null}.
      *
-     * @since TBD
+     * @since 2.4.0
      */
     public Path getMavenSystemHomeOverride() {
         return mavenSystemHomeOverride;
@@ -322,7 +322,7 @@ public final class ContextOverrides {
     /**
      * Maven Global Toolchains override, or {@code null}.
      *
-     * @since TBD
+     * @since 2.4.0
      */
     public Path getGlobalToolchainsXmlOverride() {
         return globalToolchainsXmlOverride;
@@ -340,7 +340,7 @@ public final class ContextOverrides {
     /**
      * The built, effective setting mixin, or {@code null}.
      *
-     * @since TBD
+     * @since 2.4.0
      */
     public Object getEffectiveSettingsMixin() {
         return effectiveSettingsMixin;
@@ -349,7 +349,7 @@ public final class ContextOverrides {
     /**
      * Creates {@link Builder} out of current instance.
      *
-     * @since TBD
+     * @since 2.4.0
      */
     public Builder toBuilder() {
         return new Builder()
@@ -583,7 +583,7 @@ public final class ContextOverrides {
         /**
          * How to handle the {@link #repositories(List)} provided list.
          *
-         * @since TBD
+         * @since 2.4.0
          */
         public Builder addRepositoriesOp(AddRepositoriesOp addRepositoriesOp) {
             this.addRepositoriesOp = addRepositoriesOp;
@@ -670,7 +670,7 @@ public final class ContextOverrides {
         /**
          * Override for Maven User Home.
          *
-         * @since TBD
+         * @since 2.4.0
          */
         public Builder withMavenUserHomeOverride(Path mavenUserHomeOverride) {
             this.mavenUserHomeOverride = mavenUserHomeOverride;
@@ -700,7 +700,7 @@ public final class ContextOverrides {
         /**
          * Overrides Maven User toolchains.xml location.
          *
-         * @since TBD
+         * @since 2.4.0
          */
         public Builder withUserToolchainsXmlOverride(Path userToolchainsXmlOverride) {
             this.userToolchainsXmlOverride = userToolchainsXmlOverride;
@@ -720,7 +720,7 @@ public final class ContextOverrides {
         /**
          * Sets Maven System Home override.
          *
-         * @since TBD
+         * @since 2.4.0
          */
         public Builder withMavenSystemHomeOverride(Path mavenSystemHomeOverride) {
             this.mavenSystemHomeOverride = mavenSystemHomeOverride;
@@ -740,7 +740,7 @@ public final class ContextOverrides {
         /**
          * Overrides Maven Global toolchains.xml location.
          *
-         * @since TBD
+         * @since 2.4.0
          */
         public Builder withGlobalToolchainsXmlOverride(Path globalToolchainsXmlOverride) {
             this.globalToolchainsXmlOverride = globalToolchainsXmlOverride;
@@ -766,7 +766,7 @@ public final class ContextOverrides {
          * Important: it must be "effective" (all paths interpolated, resolved, etc), as this object is accepted
          * as is, there is no any processing applied to it!
          *
-         * @since TBD
+         * @since 2.4.0
          */
         public Builder withEffectiveSettingsMixin(Object effectiveSettingsMixin) {
             this.effectiveSettingsMixin = effectiveSettingsMixin;
