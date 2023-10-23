@@ -3,13 +3,13 @@ package eu.maveniverse.maven.mima.runtime.shared;
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,6 +28,7 @@ import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Repository;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
+import org.apache.maven.settings.TrackableBase;
 import org.apache.maven.settings.building.DefaultSettingsBuildingRequest;
 import org.apache.maven.settings.building.SettingsBuilder;
 import org.apache.maven.settings.building.SettingsBuildingException;
@@ -35,6 +36,7 @@ import org.apache.maven.settings.building.SettingsProblem;
 import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
+import org.apache.maven.settings.merge.MavenSettingsMerger;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.eclipse.aether.ConfigurationProperties;
 import org.eclipse.aether.DefaultRepositoryCache;
@@ -76,13 +78,54 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             ProfileSelector profileSelector,
             Runnable managedCloser) {
         try {
-            Settings settings = newEffectiveSettings(overrides, settingsBuilder);
+            ContextOverrides alteredOverrides = overrides;
+            Settings settings = newEffectiveSettings(alteredOverrides, settingsBuilder);
+
+            // settings: local repository
+            if (settings.getLocalRepository() != null && alteredOverrides.getLocalRepositoryOverride() == null) {
+                alteredOverrides = alteredOverrides.toBuilder()
+                        .withLocalRepositoryOverride(
+                                Paths.get(settings.getLocalRepository()).toAbsolutePath())
+                        .build();
+            }
+
+            // settings: active profiles
+            List<Profile> activeProfiles = activeProfilesByActivation(alteredOverrides, settings, profileSelector);
+            if (!activeProfiles.isEmpty()) {
+                alteredOverrides = alteredOverrides.toBuilder()
+                        .withActiveProfileIds(
+                                activeProfiles.stream().map(Profile::getId).collect(Collectors.toList()))
+                        .build();
+            }
+
+            // settings: active profile properties
+            // In MIMA there is no "project context", but to support Resolver configuration
+            // via settings.xml (MNG-7590) we push them into user properties.
+            // Note: putIfAbsent used, as if key is present, it means it was added via override already
+            HashMap<String, String> profileProperties = new HashMap<>();
+            for (Profile profile : activeProfiles) {
+                profile.getProperties()
+                        .stringPropertyNames()
+                        .forEach(n ->
+                                profileProperties.put(n, profile.getProperties().getProperty(n)));
+            }
+            if (!profileProperties.isEmpty()) {
+                Map<String, String> userProperties = new HashMap<>(alteredOverrides.getUserProperties());
+                profileProperties.forEach(userProperties::putIfAbsent);
+                alteredOverrides = alteredOverrides.toBuilder()
+                        .userProperties(userProperties)
+                        .build();
+            }
+
             DefaultRepositorySystemSession session =
-                    newRepositorySession(overrides, repositorySystem, settings, settingsDecrypter);
-            final ArrayList<RemoteRepository> remoteRepositories = new ArrayList<>();
-            if (overrides.isAppendRepositories() || overrides.getRepositories().isEmpty()) {
-                remoteRepositories.add(ContextOverrides.CENTRAL); // first: best practice
-                List<Profile> activeProfiles = activeProfilesByActivation(overrides, settings, profileSelector);
+                    newRepositorySession(alteredOverrides, repositorySystem, settings, settingsDecrypter);
+
+            // settings: active profile repositories (if enabled), strictly preserve order
+            final LinkedHashMap<String, RemoteRepository> remoteRepositories = new LinkedHashMap<>();
+            if (alteredOverrides.addRepositories() != ContextOverrides.AddRepositories.REPLACE) {
+                if (alteredOverrides.addRepositories() == ContextOverrides.AddRepositories.PREPEND) {
+                    alteredOverrides.getRepositories().forEach(r -> remoteRepositories.put(r.getId(), r));
+                }
                 for (Profile profile : activeProfiles) {
                     for (Repository repository : profile.getRepositories()) {
                         RemoteRepository.Builder builder = new RemoteRepository.Builder(
@@ -103,31 +146,26 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                         } else {
                             builder.setSnapshotPolicy(new RepositoryPolicy(false, null, null));
                         }
-                        addReplace(remoteRepositories, builder.build());
+                        RemoteRepository remoteRepository = builder.build();
+                        remoteRepositories.put(remoteRepository.getId(), remoteRepository);
                     }
                 }
-            }
-            if (!overrides.getRepositories().isEmpty()) {
-                if (!overrides.isAppendRepositories()) {
-                    remoteRepositories.clear();
+                if (alteredOverrides.addRepositories() == ContextOverrides.AddRepositories.APPEND) {
+                    alteredOverrides.getRepositories().forEach(r -> remoteRepositories.put(r.getId(), r));
                 }
-                overrides.getRepositories().forEach(r -> addReplace(remoteRepositories, r));
+            } else {
+                alteredOverrides.getRepositories().forEach(r -> remoteRepositories.put(r.getId(), r));
             }
             return new Context(
                     runtime,
-                    overrides,
+                    alteredOverrides,
                     repositorySystem,
                     session,
-                    repositorySystem.newResolutionRepositories(session, remoteRepositories),
+                    repositorySystem.newResolutionRepositories(session, new ArrayList<>(remoteRepositories.values())),
                     managedCloser);
         } catch (Exception e) {
             throw new IllegalStateException("Cannot create context from scratch", e);
         }
-    }
-
-    protected void addReplace(List<RemoteRepository> remoteRepositories, RemoteRepository repository) {
-        remoteRepositories.removeIf(r -> Objects.equals(repository.getId(), r.getId()));
-        remoteRepositories.add(repository);
     }
 
     protected Settings newEffectiveSettings(ContextOverrides overrides, SettingsBuilder settingsBuilder)
@@ -155,7 +193,12 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         }
         settingsBuilderRequest.setUserSettingsFile(
                 overrides.getMavenUserHome().settingsXml().toFile());
-        return settingsBuilder.build(settingsBuilderRequest).getEffectiveSettings();
+        Settings result = settingsBuilder.build(settingsBuilderRequest).getEffectiveSettings();
+        if (overrides.getEffectiveSettingsMixin() != null) {
+            new MavenSettingsMerger()
+                    .merge(result, (Settings) overrides.getEffectiveSettingsMixin(), TrackableBase.GLOBAL_LEVEL);
+        }
+        return result;
     }
 
     protected List<Profile> activeProfilesByActivation(
@@ -221,13 +264,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         session.setCache(new DefaultRepositoryCache());
 
         LinkedHashMap<Object, Object> configProps = new LinkedHashMap<>(overrides.getConfigProperties());
-        configProps.put(ConfigurationProperties.USER_AGENT, getUserAgent());
-
-        // First add properties populated from settings.xml
-        List<Profile> activeProfiles = activeProfiles(settings);
-        for (Profile profile : activeProfiles) {
-            configProps.putAll(profile.getProperties());
-        }
+        configProps.putIfAbsent(ConfigurationProperties.USER_AGENT, getUserAgent());
 
         // internal things, these should not be overridden
         configProps.put(ConfigurationProperties.INTERACTIVE, false);
