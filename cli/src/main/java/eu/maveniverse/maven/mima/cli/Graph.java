@@ -6,11 +6,14 @@ import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.collection.DependencyCollectionException;
-import org.eclipse.aether.collection.DependencyGraphTransformer;
+import org.eclipse.aether.collection.DependencyManager;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.util.artifact.JavaScopes;
+import org.eclipse.aether.util.graph.manager.ClassicDependencyManager;
 import org.eclipse.aether.util.graph.manager.DefaultDependencyManager;
 import org.eclipse.aether.util.graph.manager.DependencyManagerUtils;
+import org.eclipse.aether.util.graph.manager.NoopDependencyManager;
+import org.eclipse.aether.util.graph.manager.TransitiveDependencyManager;
 import org.eclipse.aether.util.graph.selector.AndDependencySelector;
 import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector;
 import org.eclipse.aether.util.graph.selector.OptionalDependencySelector;
@@ -35,6 +38,19 @@ public final class Graph extends CommandSupport {
     @CommandLine.Parameters(index = "0", description = "The GAV to install")
     private String gav;
 
+    @CommandLine.Option(
+            names = {"--dependencyManager"},
+            defaultValue = "classic",
+            description = "Dependency manager to use (classic, default, noop, transitive)")
+    private String dependencyManager;
+
+    @CommandLine.Option(
+            names = {"--excludeScopes"},
+            defaultValue = JavaScopes.TEST,
+            split = ",",
+            description = "Scopes to exclude (default is 'test')")
+    private String[] excludeScopes;
+
     @Override
     protected Integer doCall(Context context) {
         logger.info("Collecting {}", gav);
@@ -43,22 +59,19 @@ public final class Graph extends CommandSupport {
         session.setConfigProperty(ConflictResolver.CONFIG_PROP_VERBOSE, ConflictResolver.Verbosity.FULL);
         session.setConfigProperty(DependencyManagerUtils.CONFIG_PROP_VERBOSE, true);
 
-        // TODO: configuration for this
-        session.setDependencyManager(new DefaultDependencyManager());
+        session.setDependencyManager(dependencyManager());
 
-        // TODO: configuration for this
         session.setDependencySelector(new AndDependencySelector(
-                new ScopeDependencySelector(JavaScopes.TEST),
+                new ScopeDependencySelector(excludeScopes),
                 new OptionalDependencySelector(),
                 new ExclusionDependencySelector()));
         session.setDependencyTraverser(new FatArtifactTraverser());
 
-        // TODO: configuration for this
-        DependencyGraphTransformer transformer = new ConflictResolver(
-                new NearestVersionSelector(), new JavaScopeSelector(),
-                new SimpleOptionalitySelector(), new JavaScopeDeriver());
-        transformer = new ChainedDependencyGraphTransformer(transformer, new JavaDependencyContextRefiner());
-        session.setDependencyGraphTransformer(transformer);
+        session.setDependencyGraphTransformer(new ChainedDependencyGraphTransformer(
+                new ConflictResolver(
+                        new NearestVersionSelector(), new JavaScopeSelector(),
+                        new SimpleOptionalitySelector(), new JavaScopeDeriver()),
+                new JavaDependencyContextRefiner()));
 
         Artifact artifact = new DefaultArtifact(gav);
 
@@ -67,6 +80,7 @@ public final class Graph extends CommandSupport {
         collectRequest.setRepositories(context.remoteRepositories());
 
         try {
+            logger.info("");
             context.repositorySystem()
                     .collectDependencies(session, collectRequest)
                     .getRoot()
@@ -75,5 +89,19 @@ public final class Graph extends CommandSupport {
             throw new RuntimeException(e);
         }
         return 1;
+    }
+
+    private DependencyManager dependencyManager() {
+        if ("classic".equalsIgnoreCase(dependencyManager)) {
+            return new ClassicDependencyManager();
+        } else if ("default".equalsIgnoreCase(dependencyManager)) {
+            return new DefaultDependencyManager();
+        } else if ("noop".equalsIgnoreCase(dependencyManager)) {
+            return new NoopDependencyManager();
+        } else if ("transitive".equalsIgnoreCase(dependencyManager)) {
+            return new TransitiveDependencyManager();
+        } else {
+            throw new IllegalArgumentException("Unknown dependency manager: " + dependencyManager);
+        }
     }
 }
