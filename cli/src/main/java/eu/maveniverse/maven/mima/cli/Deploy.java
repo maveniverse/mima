@@ -16,7 +16,7 @@ import picocli.CommandLine;
 @CommandLine.Command(name = "deploy", description = "Deploys Maven Artifacts")
 public final class Deploy extends CommandSupport {
 
-    @CommandLine.Parameters(index = "0", description = "The GAV to install")
+    @CommandLine.Parameters(index = "0", description = "The GAV to deploy")
     private String gav;
 
     @CommandLine.Parameters(index = "1", description = "The artifact JAR file")
