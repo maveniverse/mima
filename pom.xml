@@ -231,6 +231,16 @@
         <artifactId>picocli-codegen</artifactId>
         <version>${version.picocli}</version>
       </dependency>
+      <dependency>
+        <groupId>info.picocli</groupId>
+        <artifactId>picocli-shell-jline3</artifactId>
+        <version>${version.picocli}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.fusesource.jansi</groupId>
+        <artifactId>jansi</artifactId>
+        <version>2.4.1</version>
+      </dependency>
 
       <dependency>
         <groupId>org.junit.jupiter</groupId>
