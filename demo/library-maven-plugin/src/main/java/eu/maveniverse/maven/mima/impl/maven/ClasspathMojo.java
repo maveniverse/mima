@@ -20,7 +20,7 @@ public class ClasspathMojo extends AbstractMojo {
         try {
             Classpath classpath = new Classpath();
             ContextOverrides overrides =
-                    ContextOverrides.Builder.create().offline(offline).build();
+                    ContextOverrides.create().offline(offline).build();
 
             String cp = classpath.classpath(overrides, artifact);
             getLog().info("");

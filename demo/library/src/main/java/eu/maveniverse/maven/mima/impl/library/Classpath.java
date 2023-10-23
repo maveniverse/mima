@@ -61,7 +61,7 @@ public class Classpath {
         Classpath classpath = new Classpath();
         try {
             ContextOverrides overrides =
-                    ContextOverrides.Builder.create().withUserSettings(true).build();
+                    ContextOverrides.create().withUserSettings(true).build();
 
             String cp = classpath.classpath(overrides, args[0]);
             System.out.println("Classpath of " + args[0] + " is:");

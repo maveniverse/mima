@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
+import eu.maveniverse.maven.mima.runtime.shared.PreBoot;
 import eu.maveniverse.maven.mima.runtime.shared.StandaloneRuntimeSupport;
 import org.apache.maven.model.profile.ProfileSelector;
 import org.apache.maven.settings.building.SettingsBuilder;
@@ -28,13 +29,14 @@ public class StandaloneStaticRuntime extends StandaloneRuntimeSupport {
 
     @Override
     public Context create(ContextOverrides overrides) {
-        RepositorySystem repositorySystem = requireNonNull(createRepositorySystem(overrides));
-        SettingsBuilder settingsBuilder = requireNonNull(createSettingsBuilder(overrides));
-        SettingsDecrypter settingsDecrypter = requireNonNull(createSettingsDecrypter(overrides));
-        ProfileSelector profileSelector = requireNonNull(createProfileSelector(overrides));
+        PreBoot preBoot = preBoot(overrides);
+        RepositorySystem repositorySystem = requireNonNull(createRepositorySystem(preBoot));
+        SettingsBuilder settingsBuilder = requireNonNull(createSettingsBuilder(preBoot));
+        SettingsDecrypter settingsDecrypter = requireNonNull(createSettingsDecrypter(preBoot));
+        ProfileSelector profileSelector = requireNonNull(createProfileSelector(preBoot));
         return buildContext(
                 this,
-                overrides,
+                preBoot,
                 repositorySystem,
                 settingsBuilder,
                 settingsDecrypter,
@@ -42,19 +44,19 @@ public class StandaloneStaticRuntime extends StandaloneRuntimeSupport {
                 repositorySystem::shutdown);
     }
 
-    protected RepositorySystem createRepositorySystem(ContextOverrides contextOverrides) {
+    protected RepositorySystem createRepositorySystem(PreBoot preBoot) {
         return new RepositorySystemSupplier().get();
     }
 
-    protected SettingsBuilder createSettingsBuilder(ContextOverrides contextOverrides) {
+    protected SettingsBuilder createSettingsBuilder(PreBoot preBoot) {
         return new SettingsBuilderSupplier().get();
     }
 
-    protected SettingsDecrypter createSettingsDecrypter(ContextOverrides contextOverrides) {
-        return new SettingsDecrypterSupplier(contextOverrides).get();
+    protected SettingsDecrypter createSettingsDecrypter(PreBoot preBoot) {
+        return new SettingsDecrypterSupplier(preBoot.getMavenUserHome()).get();
     }
 
-    protected ProfileSelector createProfileSelector(ContextOverrides contextOverrides) {
+    protected ProfileSelector createProfileSelector(PreBoot preBoot) {
         return new ProfileSelectorSupplier().get();
     }
 }

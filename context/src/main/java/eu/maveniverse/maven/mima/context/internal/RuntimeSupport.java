@@ -10,6 +10,7 @@ import eu.maveniverse.maven.mima.context.Runtime;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import org.eclipse.aether.DefaultRepositoryCache;
 import org.eclipse.aether.DefaultRepositorySystemSession;
@@ -31,6 +32,14 @@ public abstract class RuntimeSupport implements Runtime {
     private static final String MAVEN_REPO_LOCAL_TAIL = "maven.repo.local.tail";
 
     private static final String MAVEN_REPO_LOCAL_TAIL_IGNORE_AVAILABILITY = "maven.repo.local.tail.ignoreAvailability";
+
+    public static final Path DEFAULT_BASEDIR =
+            Paths.get(System.getProperty("user.dir")).toAbsolutePath();
+
+    public static final Path DEFAULT_USER_HOME =
+            Paths.get(System.getProperty("user.home")).toAbsolutePath();
+
+    public static final Path DEFAULT_MAVEN_USER_HOME = DEFAULT_USER_HOME.resolve(".m2");
 
     private final String name;
 
@@ -89,7 +98,7 @@ public abstract class RuntimeSupport implements Runtime {
 
         session.setOffline(overrides.isOffline());
 
-        customizeLocalRepositoryManager(overrides, context.repositorySystem(), session);
+        customizeLocalRepositoryManager(context, session);
 
         customizeChecksumPolicy(overrides, session);
 
@@ -103,36 +112,27 @@ public abstract class RuntimeSupport implements Runtime {
         if (overrides.getRepositoryListener() != null) {
             session.setRepositoryListener(overrides.getRepositoryListener());
         }
-
-        ArrayList<RemoteRepository> remoteRepositories = new ArrayList<>();
-        if (overrides.addRepositories() == ContextOverrides.AddRepositories.PREPEND) {
-            remoteRepositories.addAll(overrides.getRepositories());
-        }
-        if (overrides.addRepositories() != ContextOverrides.AddRepositories.REPLACE) {
-            remoteRepositories.addAll(context.remoteRepositories());
-        } else {
-            remoteRepositories.addAll(overrides.getRepositories());
-        }
-        if (overrides.addRepositories() == ContextOverrides.AddRepositories.APPEND) {
-            remoteRepositories.addAll(overrides.getRepositories());
-        }
+        List<RemoteRepository> remoteRepositories =
+                customizeRemoteRepositories(overrides, context.remoteRepositories());
 
         return new Context(
                 runtime,
                 overrides,
+                overrides.getBasedirOverride() != null ? overrides.getBasedirOverride() : context.basedir(),
+                ((MavenUserHomeImpl) context.mavenUserHome()).derive(overrides),
+                ((MavenSystemHomeImpl) context.mavenSystemHome()).derive(overrides),
                 context.repositorySystem(),
                 session,
                 context.repositorySystem().newResolutionRepositories(session, remoteRepositories),
                 null); // derived context: close should NOT shut down repositorySystem
     }
 
-    protected void customizeLocalRepositoryManager(
-            ContextOverrides overrides, RepositorySystem repositorySystem, DefaultRepositorySystemSession session) {
+    protected void customizeLocalRepositoryManager(Context context, DefaultRepositorySystemSession session) {
         Path localRepoPath = session.getLocalRepository().getBasedir().toPath();
-        if (overrides.getMavenUserHome().localRepository().equals(localRepoPath)) {
+        if (context.mavenUserHome().localRepository().equals(localRepoPath)) {
             return;
         }
-        newLocalRepositoryManager(overrides.getMavenUserHome().localRepository(), repositorySystem, session);
+        newLocalRepositoryManager(context.mavenUserHome().localRepository(), context.repositorySystem(), session);
     }
 
     protected void newLocalRepositoryManager(
@@ -184,6 +184,27 @@ public abstract class RuntimeSupport implements Runtime {
                     break;
             }
         }
+    }
+
+    protected List<RemoteRepository> customizeRemoteRepositories(
+            ContextOverrides contextOverrides, List<RemoteRepository> remoteRepositories) {
+        ArrayList<RemoteRepository> result = new ArrayList<>();
+        if (contextOverrides.addRepositoriesOp() == ContextOverrides.AddRepositoriesOp.REPLACE) {
+            result.addAll(contextOverrides.getRepositories());
+        } else {
+            if (contextOverrides.addRepositoriesOp() == ContextOverrides.AddRepositoriesOp.PREPEND) {
+                result.addAll(contextOverrides.getRepositories());
+            }
+            result.addAll(remoteRepositories);
+            if (contextOverrides.addRepositoriesOp() == ContextOverrides.AddRepositoriesOp.APPEND) {
+                result.addAll(contextOverrides.getRepositories());
+            }
+        }
+        return result;
+    }
+
+    protected MavenUserHomeImpl defaultMavenUserHome() {
+        return new MavenUserHomeImpl(DEFAULT_MAVEN_USER_HOME);
     }
 
     protected static String discoverMavenVersion() {

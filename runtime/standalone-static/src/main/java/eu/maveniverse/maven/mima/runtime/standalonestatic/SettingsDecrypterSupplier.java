@@ -2,7 +2,7 @@ package eu.maveniverse.maven.mima.runtime.standalonestatic;
 
 import static java.util.Objects.requireNonNull;
 
-import eu.maveniverse.maven.mima.context.ContextOverrides;
+import eu.maveniverse.maven.mima.context.MavenUserHome;
 import java.util.Collections;
 import java.util.function.Supplier;
 import org.apache.maven.settings.crypto.DefaultSettingsDecrypter;
@@ -14,10 +14,10 @@ import org.sonatype.plexus.components.sec.dispatcher.DefaultSecDispatcher;
  * Override to customize.
  */
 public class SettingsDecrypterSupplier implements Supplier<SettingsDecrypter> {
-    private final ContextOverrides contextOverrides;
+    private final MavenUserHome mavenUserHome;
 
-    public SettingsDecrypterSupplier(ContextOverrides contextOverrides) {
-        this.contextOverrides = requireNonNull(contextOverrides);
+    public SettingsDecrypterSupplier(MavenUserHome mavenUserHome) {
+        this.mavenUserHome = requireNonNull(mavenUserHome);
     }
 
     @Override
@@ -26,7 +26,7 @@ public class SettingsDecrypterSupplier implements Supplier<SettingsDecrypter> {
         DefaultSecDispatcher secDispatcher = new DefaultSecDispatcher(
                 plexusCipher,
                 Collections.emptyMap(),
-                contextOverrides.getMavenUserHome().settingsSecurityXml().toString());
+                mavenUserHome.settingsSecurityXml().toString());
         return new DefaultSettingsDecrypter(secDispatcher);
     }
 }
