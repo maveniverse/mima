@@ -17,6 +17,7 @@ import org.jline.reader.Parser;
 import org.jline.reader.Reference;
 import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.DefaultParser;
+import org.jline.reader.impl.history.DefaultHistory;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.terminal.impl.jansi.JansiTerminalProvider;
@@ -46,11 +47,14 @@ public class Repl extends CommandSupport {
             SystemRegistry systemRegistry = new SystemRegistryImpl(parser, terminal, Repl::workDir, configPath);
             systemRegistry.setCommandRegistries(builtins, picocliCommands);
 
+            Path history = Paths.get(System.getProperty("user.home"), ".m2/.mima_history");
             LineReader reader = LineReaderBuilder.builder()
                     .terminal(terminal)
+                    .history(new DefaultHistory())
                     .completer(systemRegistry.completer())
                     .parser(parser)
                     .variable(LineReader.LIST_MAX, 50) // max tab completion candidates
+                    .variable(LineReader.HISTORY_FILE, history)
                     .build();
             builtins.setLineReader(reader);
             new TailTipWidgets(reader, systemRegistry::commandDescription, 5, TailTipWidgets.TipType.COMPLETER);
