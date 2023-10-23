@@ -90,6 +90,7 @@ public final class Resolve extends CommandSupport {
                 // log
             }
 
+            logger.info("");
             for (Artifact artifact : collector.artifacts.values().stream()
                     .flatMap(Collection::stream)
                     .collect(Collectors.toList())) {

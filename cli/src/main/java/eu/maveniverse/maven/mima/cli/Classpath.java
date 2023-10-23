@@ -19,7 +19,7 @@ import picocli.CommandLine;
 @CommandLine.Command(name = "classpath", description = "Resolves Maven Artifact and prints out the classpath")
 public final class Classpath extends CommandSupport {
 
-    @CommandLine.Parameters(index = "0", description = "The GAV to resolve")
+    @CommandLine.Parameters(index = "0", description = "The GAV to print classpath for")
     private String gav;
 
     @Override
@@ -41,7 +41,7 @@ public final class Classpath extends CommandSupport {
             PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
             dependencyResult.getRoot().accept(nlg);
             logger.info("");
-            logger.info("classpath: {}", nlg.getClassPath());
+            logger.info("{}", nlg.getClassPath());
         } catch (DependencyResolutionException e) {
             throw new RuntimeException(e);
         }

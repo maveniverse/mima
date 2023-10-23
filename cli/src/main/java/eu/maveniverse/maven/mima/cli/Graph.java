@@ -35,7 +35,7 @@ import picocli.CommandLine;
 @CommandLine.Command(name = "graph", description = "Displays dependency graph")
 public final class Graph extends CommandSupport {
 
-    @CommandLine.Parameters(index = "0", description = "The GAV to install")
+    @CommandLine.Parameters(index = "0", description = "The GAV to graph")
     private String gav;
 
     @CommandLine.Option(
