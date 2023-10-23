@@ -32,6 +32,12 @@ public final class Context implements Closeable {
 
     private final ContextOverrides contextOverrides;
 
+    private final Path basedir;
+
+    private final MavenUserHome mavenUserHome;
+
+    private final MavenSystemHome mavenSystemHome;
+
     private final RepositorySystem repositorySystem;
 
     private final RepositorySystemSession repositorySystemSession;
@@ -43,12 +49,18 @@ public final class Context implements Closeable {
     public Context(
             RuntimeSupport runtime,
             ContextOverrides contextOverrides,
+            Path basedir,
+            MavenUserHome mavenUserHome,
+            MavenSystemHome mavenSystemHome,
             RepositorySystem repositorySystem,
             RepositorySystemSession repositorySystemSession,
             List<RemoteRepository> remoteRepositories,
             Runnable managedCloser) {
         this.runtime = requireNonNull(runtime);
         this.contextOverrides = requireNonNull(contextOverrides);
+        this.basedir = requireNonNull(basedir);
+        this.mavenUserHome = requireNonNull(mavenUserHome);
+        this.mavenSystemHome = mavenSystemHome;
         this.repositorySystemSession = requireNonNull(repositorySystemSession);
         this.repositorySystem = requireNonNull(repositorySystem);
         this.remoteRepositories = requireNonNull(remoteRepositories);
@@ -56,7 +68,8 @@ public final class Context implements Closeable {
     }
 
     /**
-     * Returns the {@link ContextOverrides}, never {@code null}.
+     * Returns the effective {@link ContextOverrides}, never {@code null}. This instance MAY be different from the user
+     * supplied one to {@link Runtime#create(ContextOverrides)}, as it will contain discovered configuration as well.
      *
      * @since 2.1.0
      */
@@ -65,30 +78,30 @@ public final class Context implements Closeable {
     }
 
     /**
-     * Shortcut for {@link ContextOverrides#getBasedir()}, never {@code null}.
+     * The basedir ("cwd"), never {@code null}.
      *
      * @since 2.3.0
      */
     public Path basedir() {
-        return contextOverrides.getBasedir();
+        return basedir;
     }
 
     /**
-     * Returns effective {@link ContextOverrides.MavenUserHome}, never {@code null}.
+     * Returns effective {@link MavenUserHome}, never {@code null}.
      *
      * @since 2.1.0
      */
-    public ContextOverrides.MavenUserHome mavenUserHome() {
-        return contextOverrides.getMavenUserHome();
+    public MavenUserHome mavenUserHome() {
+        return mavenUserHome;
     }
 
     /**
-     * Returns effective {@link ContextOverrides.MavenSystemHome}, may be {@code null}, if no Maven Home discovered.
+     * Returns effective {@link MavenSystemHome}, may be {@code null}, if no Maven Home discovered.
      *
      * @since 2.1.0
      */
-    public ContextOverrides.MavenSystemHome mavenSystemHome() {
-        return contextOverrides.getMavenSystemHome();
+    public MavenSystemHome mavenSystemHome() {
+        return mavenSystemHome;
     }
 
     /**

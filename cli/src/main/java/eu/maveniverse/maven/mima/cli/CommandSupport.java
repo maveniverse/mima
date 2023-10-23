@@ -2,6 +2,8 @@ package eu.maveniverse.maven.mima.cli;
 
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
+import eu.maveniverse.maven.mima.context.MavenSystemHome;
+import eu.maveniverse.maven.mima.context.MavenUserHome;
 import eu.maveniverse.maven.mima.context.Runtime;
 import eu.maveniverse.maven.mima.context.Runtimes;
 import java.nio.file.Path;
@@ -60,78 +62,73 @@ public abstract class CommandSupport implements Callable<Integer> {
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected void mayDumpEnv(Runtime runtime, Context context) {
+    protected void writeVersion(Runtime runtime, Context context) {
         logger.info("MIMA (Runtime '{}' version {})", runtime.name(), runtime.version());
         logger.info("====");
-        if (verbose) {
-            logger.info("          Maven version {}", runtime.mavenVersion());
-            logger.info("                Managed {}", runtime.managedRepositorySystem());
-            logger.info("                Basedir {}", context.basedir());
-            logger.info(
-                    "                Offline {}",
-                    context.repositorySystemSession().isOffline());
+    }
 
-            ContextOverrides.MavenSystemHome mavenSystemHome =
-                    context.contextOverrides().getMavenSystemHome();
-            logger.info("");
-            logger.info(
-                    "             MAVEN_HOME {}", mavenSystemHome == null ? "undefined" : mavenSystemHome.basedir());
-            if (mavenSystemHome != null) {
-                logger.info("           settings.xml {}", mavenSystemHome.settingsXml());
-                logger.info("         toolchains.xml {}", mavenSystemHome.toolchainsXml());
-            }
+    protected void mayDumpEnv(Runtime runtime, Context context) {
+        writeVersion(runtime, context);
+        logger.info("          Maven version {}", runtime.mavenVersion());
+        logger.info("                Managed {}", runtime.managedRepositorySystem());
+        logger.info("                Basedir {}", context.basedir());
+        logger.info(
+                "                Offline {}", context.repositorySystemSession().isOffline());
 
-            ContextOverrides.MavenUserHome mavenUserHome =
-                    context.contextOverrides().getMavenUserHome();
-            logger.info("");
-            logger.info("              USER_HOME {}", mavenUserHome.basedir());
-            logger.info("           settings.xml {}", mavenUserHome.settingsXml());
-            logger.info("  settings-security.xml {}", mavenUserHome.settingsSecurityXml());
-            logger.info("       local repository {}", mavenUserHome.localRepository());
+        MavenSystemHome mavenSystemHome = context.mavenSystemHome();
+        logger.info("");
+        logger.info("             MAVEN_HOME {}", mavenSystemHome == null ? "undefined" : mavenSystemHome.basedir());
+        if (mavenSystemHome != null) {
+            logger.info("           settings.xml {}", mavenSystemHome.settingsXml());
+            logger.info("         toolchains.xml {}", mavenSystemHome.toolchainsXml());
+        }
 
-            logger.info("");
-            logger.info("               PROFILES");
-            logger.info("                 Active {}", context.contextOverrides().getActiveProfileIds());
-            logger.info("               Inactive {}", context.contextOverrides().getInactiveProfileIds());
+        MavenUserHome mavenUserHome = context.mavenUserHome();
+        logger.info("");
+        logger.info("              USER_HOME {}", mavenUserHome.basedir());
+        logger.info("           settings.xml {}", mavenUserHome.settingsXml());
+        logger.info("  settings-security.xml {}", mavenUserHome.settingsSecurityXml());
+        logger.info("       local repository {}", mavenUserHome.localRepository());
 
-            logger.info("");
-            logger.info("    REMOTE REPOSITORIES");
-            for (RemoteRepository repository : context.remoteRepositories()) {
-                if (repository.getMirroredRepositories().isEmpty()) {
-                    logger.info("                        {}", repository);
-                } else {
-                    logger.info("                        {}, mirror of", repository);
-                    for (RemoteRepository mirrored : repository.getMirroredRepositories()) {
-                        logger.info("                          {}", mirrored);
-                    }
+        logger.info("");
+        logger.info("               PROFILES");
+        logger.info("                 Active {}", context.contextOverrides().getActiveProfileIds());
+        logger.info("               Inactive {}", context.contextOverrides().getInactiveProfileIds());
+
+        logger.info("");
+        logger.info("    REMOTE REPOSITORIES");
+        for (RemoteRepository repository : context.remoteRepositories()) {
+            if (repository.getMirroredRepositories().isEmpty()) {
+                logger.info("                        {}", repository);
+            } else {
+                logger.info("                        {}, mirror of", repository);
+                for (RemoteRepository mirrored : repository.getMirroredRepositories()) {
+                    logger.info("                          {}", mirrored);
                 }
             }
+        }
 
-            if (verbose) {
-                logger.info("");
-                logger.info("        USER PROPERTIES");
-                context.contextOverrides().getUserProperties().entrySet().stream()
-                        .sorted(Map.Entry.comparingByKey())
-                        .forEach(e -> logger.info("                         {}={}", e.getKey(), e.getValue()));
-                logger.info("      SYSTEM PROPERTIES");
-                context.contextOverrides().getSystemProperties().entrySet().stream()
-                        .sorted(Map.Entry.comparingByKey())
-                        .forEach(e -> logger.info("                         {}={}", e.getKey(), e.getValue()));
-                logger.info("      CONFIG PROPERTIES");
-                context.contextOverrides().getConfigProperties().entrySet().stream()
-                        .sorted(Map.Entry.comparingByKey())
-                        .forEach(e -> logger.info("                         {}={}", e.getKey(), e.getValue()));
-            }
+        if (verbose) {
+            logger.info("");
+            logger.info("        USER PROPERTIES");
+            context.contextOverrides().getUserProperties().entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey())
+                    .forEach(e -> logger.info("                         {}={}", e.getKey(), e.getValue()));
+            logger.info("      SYSTEM PROPERTIES");
+            context.contextOverrides().getSystemProperties().entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey())
+                    .forEach(e -> logger.info("                         {}={}", e.getKey(), e.getValue()));
+            logger.info("      CONFIG PROPERTIES");
+            context.contextOverrides().getConfigProperties().entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey())
+                    .forEach(e -> logger.info("                         {}={}", e.getKey(), e.getValue()));
         }
         logger.info("");
     }
 
     protected ContextOverrides createContextOverrides() {
         // create builder with some sane defaults
-        ContextOverrides.Builder builder = ContextOverrides.Builder.create()
-                .withUserSettings(true)
-                .repositories(null)
-                .addRepositories(ContextOverrides.AddRepositories.APPEND);
+        ContextOverrides.Builder builder = ContextOverrides.create().withUserSettings(true);
         if (offline) {
             builder.offline(true);
         }
@@ -198,7 +195,7 @@ public abstract class CommandSupport implements Callable<Integer> {
     public Integer call() {
         Runtime runtime = getRuntime();
         try (Context context = runtime.create(createContextOverrides())) {
-            mayDumpEnv(runtime, context);
+            writeVersion(runtime, context);
             return doCall(context);
         }
     }

@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 public class ClasspathTest {
     @Test
     public void simple() throws Exception {
-        ContextOverrides overrides = ContextOverrides.Builder.create()
+        ContextOverrides overrides = ContextOverrides.create()
                 .withLocalRepositoryOverride(Paths.get("target/simple"))
                 .build();
 
@@ -27,7 +27,7 @@ public class ClasspathTest {
 
     @Test
     public void simpleOffline() {
-        ContextOverrides overrides = ContextOverrides.Builder.create()
+        ContextOverrides overrides = ContextOverrides.create()
                 .withLocalRepositoryOverride(Paths.get("target/simpleOffline"))
                 .offline(true)
                 .build();
@@ -38,8 +38,8 @@ public class ClasspathTest {
 
     @Test
     public void simpleEncrypted() {
-        ContextOverrides overrides = ContextOverrides.Builder.create()
-                .withMavenUserHome(Paths.get("target/test-classes/encrypted"))
+        ContextOverrides overrides = ContextOverrides.create()
+                .withMavenUserHomeOverride(Paths.get("target/test-classes/encrypted"))
                 .withUserSettings(true)
                 .withLocalRepositoryOverride(Paths.get("target/simpleEncrypted"))
                 .build();
@@ -61,9 +61,9 @@ public class ClasspathTest {
 
     @Test
     public void simpleEncryptedNoMaster() {
-        ContextOverrides overrides = ContextOverrides.Builder.create()
-                .withMavenUserHome(Paths.get("target/test-classes/encrypted"))
-                .withSettingsSecurityXmlOverride(Paths.get("no-such-file"))
+        ContextOverrides overrides = ContextOverrides.create()
+                .withMavenUserHomeOverride(Paths.get("target/test-classes/encrypted"))
+                .withUserSettingsSecurityXmlOverride(Paths.get("no-such-file"))
                 .withUserSettings(true)
                 .withLocalRepositoryOverride(Paths.get("target/simpleEncrypted"))
                 .build();

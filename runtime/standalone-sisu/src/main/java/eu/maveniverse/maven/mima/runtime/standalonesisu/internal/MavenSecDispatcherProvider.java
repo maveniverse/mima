@@ -1,6 +1,6 @@
 package eu.maveniverse.maven.mima.runtime.standalonesisu.internal;
 
-import eu.maveniverse.maven.mima.context.ContextOverrides;
+import eu.maveniverse.maven.mima.runtime.shared.PreBoot;
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -17,12 +17,11 @@ public class MavenSecDispatcherProvider implements Provider<SecDispatcher> {
     private final SecDispatcher secDispatcher;
 
     @Inject
-    public MavenSecDispatcherProvider(
-            ContextOverrides contextOverrides, PlexusCipher plexusCipher, Map<String, PasswordDecryptor> pds) {
+    public MavenSecDispatcherProvider(PreBoot preBoot, PlexusCipher plexusCipher, Map<String, PasswordDecryptor> pds) {
         this.secDispatcher = new DefaultSecDispatcher(
                 plexusCipher,
                 pds,
-                contextOverrides.getMavenUserHome().settingsSecurityXml().toString());
+                preBoot.getMavenUserHome().settingsSecurityXml().toString());
     }
 
     @Override

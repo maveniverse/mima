@@ -1,12 +1,9 @@
 package eu.maveniverse.maven.mima.context;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toMap;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,224 +33,6 @@ public final class ContextOverrides {
                     false, RepositoryPolicy.UPDATE_POLICY_NEVER, RepositoryPolicy.CHECKSUM_POLICY_WARN))
             .build();
 
-    /**
-     * Default basedir (used when no override).
-     */
-    public static final Path DEFAULT_BASEDIR =
-            Paths.get(System.getProperty("user.dir")).toAbsolutePath();
-
-    /**
-     * Default user home (used when no override).
-     */
-    public static final Path DEFAULT_USER_HOME =
-            Paths.get(System.getProperty("user.home")).toAbsolutePath();
-
-    /**
-     * Default path of Maven User Home (used when no override).
-     */
-    public static final Path DEFAULT_MAVEN_USER_HOME = DEFAULT_USER_HOME.resolve(".m2");
-
-    /**
-     * Layout of Maven User Home, by default {@code $HOME/.m2}.
-     *
-     * @since 2.1.0
-     */
-    public static final class MavenUserHome {
-        private final Path mavenUserHome;
-
-        private final Path settingsXmlOverride;
-
-        private final Path settingsSecurityXmlOverride;
-
-        private final Path toolchainsXmlOverride;
-
-        private final Path localRepositoryOverride;
-
-        public MavenUserHome() {
-            this(DEFAULT_MAVEN_USER_HOME);
-        }
-
-        public MavenUserHome(Path mavenUserHome) {
-            this(mavenUserHome, null, null, null, null);
-        }
-
-        public MavenUserHome(
-                Path mavenUserHome,
-                Path settingsXmlOverride,
-                Path settingsSecurityXmlOverride,
-                Path toolchainsXmlOverride,
-                Path localRepositoryOverride) {
-            this.mavenUserHome = requireNonNull(mavenUserHome);
-            this.settingsXmlOverride = settingsXmlOverride;
-            this.settingsSecurityXmlOverride = settingsSecurityXmlOverride;
-            this.toolchainsXmlOverride = toolchainsXmlOverride;
-            this.localRepositoryOverride = localRepositoryOverride;
-        }
-
-        public Path basedir() {
-            return mavenUserHome;
-        }
-
-        public Path settingsXml() {
-            if (settingsXmlOverride != null) {
-                return settingsXmlOverride;
-            }
-            return basedir().resolve("settings.xml");
-        }
-
-        public Path settingsSecurityXml() {
-            if (settingsSecurityXmlOverride != null) {
-                return settingsSecurityXmlOverride;
-            }
-            return basedir().resolve("settings-security.xml");
-        }
-
-        public Path toolchainsXml() {
-            if (toolchainsXmlOverride != null) {
-                return toolchainsXmlOverride;
-            }
-            return basedir().resolve("toolchains.xml");
-        }
-
-        public Path localRepository() {
-            if (localRepositoryOverride != null) {
-                return localRepositoryOverride;
-            }
-            return basedir().resolve("repository");
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            MavenUserHome that = (MavenUserHome) o;
-            return Objects.equals(mavenUserHome, that.mavenUserHome)
-                    && Objects.equals(settingsXmlOverride, that.settingsXmlOverride)
-                    && Objects.equals(settingsSecurityXmlOverride, that.settingsSecurityXmlOverride)
-                    && Objects.equals(toolchainsXmlOverride, that.toolchainsXmlOverride)
-                    && Objects.equals(localRepositoryOverride, that.localRepositoryOverride);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(
-                    mavenUserHome,
-                    settingsXmlOverride,
-                    settingsSecurityXmlOverride,
-                    toolchainsXmlOverride,
-                    localRepositoryOverride);
-        }
-    }
-
-    /**
-     * Layout of Maven System Home, usually set with {@code $MAVEN_HOME} environment variable, or {@code maven.home}
-     * Java System Property (by Maven).
-     *
-     * @since 2.1.0
-     */
-    public static final class MavenSystemHome {
-        private final Path mavenSystemHome;
-
-        private final Path settingsXmlOverride;
-
-        private final Path toolchainsXmlOverride;
-
-        public MavenSystemHome(Path mavenSystemHome, Path settingsXmlOverride, Path toolchainsXmlOverride) {
-            this.mavenSystemHome = requireNonNull(mavenSystemHome);
-            this.settingsXmlOverride = settingsXmlOverride;
-            this.toolchainsXmlOverride = toolchainsXmlOverride;
-        }
-
-        public Path basedir() {
-            return mavenSystemHome;
-        }
-
-        public Path bin() {
-            return basedir().resolve("bin");
-        }
-
-        public Path boot() {
-            return basedir().resolve("boot");
-        }
-
-        public Path conf() {
-            return basedir().resolve("conf");
-        }
-
-        public Path lib() {
-            return basedir().resolve("lib");
-        }
-
-        public Path m2Conf() {
-            return bin().resolve("m2.conf");
-        }
-
-        public Path mvn() {
-            return bin().resolve("mvn");
-        }
-
-        public Path mvnCmd() {
-            return bin().resolve("mvn.cmd");
-        }
-
-        public Path mvnDebug() {
-            return bin().resolve("mvnDebug");
-        }
-
-        public Path mvnDebugCmd() {
-            return bin().resolve("mvnDebug.cmd");
-        }
-
-        public Path settingsXml() {
-            if (settingsXmlOverride != null) {
-                return settingsXmlOverride;
-            }
-            return conf().resolve("settings.xml");
-        }
-
-        public Path toolchainsXml() {
-            if (toolchainsXmlOverride != null) {
-                return toolchainsXmlOverride;
-            }
-            return conf().resolve("toolchains.xml");
-        }
-
-        public Path confLogging() {
-            return conf().resolve("logging");
-        }
-
-        public Path simpleloggerProperties() {
-            return confLogging().resolve("simplelogger.properties");
-        }
-
-        public Path libExt() {
-            return lib().resolve("ext");
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            MavenSystemHome that = (MavenSystemHome) o;
-            return Objects.equals(mavenSystemHome, that.mavenSystemHome)
-                    && Objects.equals(settingsXmlOverride, that.settingsXmlOverride)
-                    && Objects.equals(toolchainsXmlOverride, that.toolchainsXmlOverride);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(mavenSystemHome, settingsXmlOverride, toolchainsXmlOverride);
-        }
-    }
-
     public enum SnapshotUpdatePolicy {
         ALWAYS,
         NEVER
@@ -265,7 +44,7 @@ public final class ContextOverrides {
         IGNORE
     }
 
-    public enum AddRepositories {
+    public enum AddRepositoriesOp {
         PREPEND,
 
         APPEND,
@@ -273,7 +52,7 @@ public final class ContextOverrides {
         REPLACE
     }
 
-    private final Path basedir;
+    private final Path basedirOverride;
 
     private final Map<String, String> systemProperties;
 
@@ -283,7 +62,7 @@ public final class ContextOverrides {
 
     private final List<RemoteRepository> repositories;
 
-    private final AddRepositories addRepositories;
+    private final AddRepositoriesOp addRepositoriesOp;
 
     private final boolean offline;
 
@@ -301,33 +80,33 @@ public final class ContextOverrides {
 
     private final TransferListener transferListener;
 
-    private final MavenUserHome mavenUserHome;
-
-    private final Path localRepositoryOverride;
+    private final Path mavenUserHomeOverride;
 
     private final Path userSettingsXmlOverride;
 
-    private final Path globalSettingsXmlOverride;
+    private final Path userSettingsSecurityXmlOverride;
 
     private final Path userToolchainsXmlOverride;
 
+    private final Path localRepositoryOverride;
+
+    private final Path mavenSystemHomeOverride;
+
+    private final Path globalSettingsXmlOverride;
+
     private final Path globalToolchainsXmlOverride;
-
-    private final Path userSettingsSecurityXmlOverride;
-
-    private final MavenSystemHome mavenSystemHome;
 
     private final Object effectiveSettings;
 
     private final Object effectiveSettingsMixin;
 
     private ContextOverrides(
-            final Path basedir,
+            final Path basedirOverride,
             final Map<String, String> systemProperties,
             final Map<String, String> userProperties,
             final Map<String, Object> configProperties,
             final List<RemoteRepository> repositories,
-            final AddRepositories addRepositories,
+            final AddRepositoriesOp addRepositoriesOp,
             final boolean offline,
             final SnapshotUpdatePolicy snapshotUpdatePolicy,
             final ChecksumPolicy checksumPolicy,
@@ -336,23 +115,23 @@ public final class ContextOverrides {
             final List<String> inactiveProfileIds,
             final RepositoryListener repositoryListener,
             final TransferListener transferListener,
-            final MavenUserHome mavenUserHome,
-            final Path localRepositoryOverride,
+            final Path mavenUserHomeOverride,
             final Path userSettingsXmlOverride,
-            final Path globalSettingsXmlOverride,
-            final Path userToolchainsXmlOverride,
-            final Path globalToolchainsXmlOverride,
             final Path userSettingsSecurityXmlOverride,
-            final MavenSystemHome mavenSystemHome,
+            final Path userToolchainsXmlOverride,
+            final Path localRepositoryOverride,
+            final Path mavenSystemHomeOverride,
+            final Path globalSettingsXmlOverride,
+            final Path globalToolchainsXmlOverride,
             final Object effectiveSettings,
             final Object effectiveSettingsMixin) {
 
-        this.basedir = requireNonNull(basedir);
+        this.basedirOverride = basedirOverride;
         this.systemProperties = Collections.unmodifiableMap(systemProperties);
         this.userProperties = Collections.unmodifiableMap(userProperties);
         this.configProperties = Collections.unmodifiableMap(configProperties);
         this.repositories = Collections.unmodifiableList(repositories);
-        this.addRepositories = addRepositories;
+        this.addRepositoriesOp = requireNonNull(addRepositoriesOp);
         this.offline = offline;
         this.snapshotUpdatePolicy = snapshotUpdatePolicy;
         this.checksumPolicy = checksumPolicy;
@@ -361,23 +140,23 @@ public final class ContextOverrides {
         this.inactiveProfileIds = Collections.unmodifiableList(inactiveProfileIds);
         this.repositoryListener = repositoryListener;
         this.transferListener = transferListener;
-        this.mavenUserHome = mavenUserHome;
-        this.localRepositoryOverride = localRepositoryOverride;
+        this.mavenUserHomeOverride = mavenUserHomeOverride;
         this.userSettingsXmlOverride = userSettingsXmlOverride;
-        this.globalSettingsXmlOverride = globalSettingsXmlOverride;
-        this.userToolchainsXmlOverride = userToolchainsXmlOverride;
-        this.globalToolchainsXmlOverride = globalToolchainsXmlOverride;
         this.userSettingsSecurityXmlOverride = userSettingsSecurityXmlOverride;
-        this.mavenSystemHome = mavenSystemHome;
+        this.userToolchainsXmlOverride = userToolchainsXmlOverride;
+        this.localRepositoryOverride = localRepositoryOverride;
+        this.mavenSystemHomeOverride = mavenSystemHomeOverride;
+        this.globalSettingsXmlOverride = globalSettingsXmlOverride;
+        this.globalToolchainsXmlOverride = globalToolchainsXmlOverride;
         this.effectiveSettings = effectiveSettings;
         this.effectiveSettingsMixin = effectiveSettingsMixin;
     }
 
     /**
-     * Returns the basedir, never {@code null}. It is an existing directory.
+     * Returns the basedirOverride, or {@code null}.
      */
-    public Path getBasedir() {
-        return basedir;
+    public Path getBasedirOverride() {
+        return basedirOverride;
     }
 
     /**
@@ -409,22 +188,12 @@ public final class ContextOverrides {
     }
 
     /**
-     * Whether {@link #getRepositories()} appends discovered repositories or replaces.
-     *
-     * @deprecated Use {@link #addRepositories()} instead.
-     */
-    @Deprecated
-    public boolean isAppendRepositories() {
-        return addRepositories == AddRepositories.APPEND;
-    }
-
-    /**
      * How to handle {@link #getRepositories()} list, never {@code null}.
      *
      * @since TBD
      */
-    public AddRepositories addRepositories() {
-        return addRepositories;
+    public AddRepositoriesOp addRepositoriesOp() {
+        return addRepositoriesOp;
     }
 
     /**
@@ -432,14 +201,6 @@ public final class ContextOverrides {
      */
     public boolean isOffline() {
         return offline;
-    }
-
-    /**
-     * @deprecated Use {@link #getMavenUserHome()} instead.
-     */
-    @Deprecated
-    public Path getLocalRepository() {
-        return getMavenUserHome().localRepository();
     }
 
     /**
@@ -482,14 +243,6 @@ public final class ContextOverrides {
     }
 
     /**
-     * @deprecated Use {@link #getMavenUserHome()} instead.
-     */
-    @Deprecated
-    public Path getSettingsXml() {
-        return getMavenUserHome().settingsXml();
-    }
-
-    /**
      * Repository listener, {@code null} if none.
      */
     public RepositoryListener getRepositoryListener() {
@@ -504,19 +257,12 @@ public final class ContextOverrides {
     }
 
     /**
-     * Maven User Home layout, never {@code null}.
-     */
-    public MavenUserHome getMavenUserHome() {
-        return mavenUserHome;
-    }
-
-    /**
-     * Maven Local Repository override, or {@code null}.
+     * Maven User Home override, of {@code null}.
      *
      * @since TBD
      */
-    public Path getLocalRepositoryOverride() {
-        return localRepositoryOverride;
+    public Path getMavenUserHomeOverride() {
+        return mavenUserHomeOverride;
     }
 
     /**
@@ -529,12 +275,12 @@ public final class ContextOverrides {
     }
 
     /**
-     * Maven Global Settings override, or {@code null}.
+     * Maven User settings-security.xml override, or {@code null}.
      *
-     * @since 2.3.0
+     * @since TBD
      */
-    public Path getGlobalSettingsXmlOverride() {
-        return globalSettingsXmlOverride;
+    public Path getUserSettingsSecurityXmlOverride() {
+        return userSettingsSecurityXmlOverride;
     }
 
     /**
@@ -547,28 +293,39 @@ public final class ContextOverrides {
     }
 
     /**
+     * Maven Local Repository override, or {@code null}.
+     *
+     * @since TBD
+     */
+    public Path getLocalRepositoryOverride() {
+        return localRepositoryOverride;
+    }
+
+    /**
+     * Maven System Home override, of {@code null}.
+     *
+     * @since TBD
+     */
+    public Path getMavenSystemHomeOverride() {
+        return mavenSystemHomeOverride;
+    }
+
+    /**
+     * Maven Global Settings override, or {@code null}.
+     *
+     * @since 2.3.0
+     */
+    public Path getGlobalSettingsXmlOverride() {
+        return globalSettingsXmlOverride;
+    }
+
+    /**
      * Maven Global Toolchains override, or {@code null}.
      *
      * @since TBD
      */
     public Path getGlobalToolchainsXmlOverride() {
         return globalToolchainsXmlOverride;
-    }
-
-    /**
-     * Maven User settings-security.xml override, or {@code null}.
-     *
-     * @since TBD
-     */
-    public Path getUserSettingsSecurityXmlOverride() {
-        return userSettingsSecurityXmlOverride;
-    }
-
-    /**
-     * Maven System Home layout, {@code null} if Maven Home not known.
-     */
-    public MavenSystemHome getMavenSystemHome() {
-        return mavenSystemHome;
     }
 
     /**
@@ -596,12 +353,12 @@ public final class ContextOverrides {
      */
     public Builder toBuilder() {
         return new Builder()
-                .withBasedir(basedir)
+                .withBasedirOverride(basedirOverride)
                 .systemProperties(systemProperties)
                 .userProperties(userProperties)
                 .configProperties(configProperties)
                 .repositories(repositories)
-                .addRepositories(addRepositories)
+                .addRepositoriesOp(addRepositoriesOp)
                 .offline(offline)
                 .snapshotUpdatePolicy(snapshotUpdatePolicy)
                 .checksumPolicy(checksumPolicy)
@@ -610,14 +367,14 @@ public final class ContextOverrides {
                 .withInactiveProfileIds(inactiveProfileIds)
                 .repositoryListener(repositoryListener)
                 .transferListener(transferListener)
-                .withMavenUserHome(mavenUserHome.mavenUserHome)
+                .withMavenUserHomeOverride(mavenUserHomeOverride)
                 .withUserSettingsXmlOverride(userSettingsXmlOverride)
-                .withGlobalSettingsXmlOverride(globalSettingsXmlOverride)
-                .withUserToolchainsXmlOverride(userToolchainsXmlOverride)
-                .withGlobalToolchainsXmlOverride(globalToolchainsXmlOverride)
                 .withUserSettingsSecurityXmlOverride(userSettingsSecurityXmlOverride)
-                .withLocalRepositoryOverride(mavenUserHome.localRepositoryOverride)
-                .withMavenSystemHome(mavenSystemHome == null ? null : mavenSystemHome.basedir())
+                .withUserToolchainsXmlOverride(userToolchainsXmlOverride)
+                .withLocalRepositoryOverride(localRepositoryOverride)
+                .withMavenSystemHomeOverride(mavenSystemHomeOverride)
+                .withGlobalSettingsXmlOverride(globalSettingsXmlOverride)
+                .withGlobalToolchainsXmlOverride(globalToolchainsXmlOverride)
                 .withEffectiveSettings(effectiveSettings)
                 .withEffectiveSettingsMixin(effectiveSettingsMixin);
     }
@@ -633,26 +390,26 @@ public final class ContextOverrides {
         ContextOverrides that = (ContextOverrides) o;
         return offline == that.offline
                 && withUserSettings == that.withUserSettings
-                && Objects.equals(basedir, that.basedir)
+                && Objects.equals(basedirOverride, that.basedirOverride)
                 && Objects.equals(systemProperties, that.systemProperties)
                 && Objects.equals(userProperties, that.userProperties)
                 && Objects.equals(configProperties, that.configProperties)
                 && Objects.equals(repositories, that.repositories)
-                && addRepositories == that.addRepositories
+                && addRepositoriesOp == that.addRepositoriesOp
                 && snapshotUpdatePolicy == that.snapshotUpdatePolicy
                 && checksumPolicy == that.checksumPolicy
                 && Objects.equals(activeProfileIds, that.activeProfileIds)
                 && Objects.equals(inactiveProfileIds, that.inactiveProfileIds)
                 && Objects.equals(repositoryListener, that.repositoryListener)
                 && Objects.equals(transferListener, that.transferListener)
-                && Objects.equals(mavenUserHome, that.mavenUserHome)
-                && Objects.equals(localRepositoryOverride, that.localRepositoryOverride)
+                && Objects.equals(mavenUserHomeOverride, that.mavenUserHomeOverride)
                 && Objects.equals(userSettingsXmlOverride, that.userSettingsXmlOverride)
-                && Objects.equals(globalSettingsXmlOverride, that.globalSettingsXmlOverride)
-                && Objects.equals(userToolchainsXmlOverride, that.userToolchainsXmlOverride)
-                && Objects.equals(globalToolchainsXmlOverride, that.globalToolchainsXmlOverride)
                 && Objects.equals(userSettingsSecurityXmlOverride, that.userSettingsSecurityXmlOverride)
-                && Objects.equals(mavenSystemHome, that.mavenSystemHome)
+                && Objects.equals(userToolchainsXmlOverride, that.userToolchainsXmlOverride)
+                && Objects.equals(localRepositoryOverride, that.localRepositoryOverride)
+                && Objects.equals(mavenSystemHomeOverride, that.mavenSystemHomeOverride)
+                && Objects.equals(globalSettingsXmlOverride, that.globalSettingsXmlOverride)
+                && Objects.equals(globalToolchainsXmlOverride, that.globalToolchainsXmlOverride)
                 && Objects.equals(effectiveSettings, that.effectiveSettings)
                 && Objects.equals(effectiveSettingsMixin, that.effectiveSettingsMixin);
     }
@@ -660,12 +417,12 @@ public final class ContextOverrides {
     @Override
     public int hashCode() {
         return Objects.hash(
-                basedir,
+                basedirOverride,
                 systemProperties,
                 userProperties,
                 configProperties,
                 repositories,
-                addRepositories,
+                addRepositoriesOp,
                 offline,
                 snapshotUpdatePolicy,
                 checksumPolicy,
@@ -674,30 +431,40 @@ public final class ContextOverrides {
                 inactiveProfileIds,
                 repositoryListener,
                 transferListener,
-                mavenUserHome,
-                localRepositoryOverride,
+                mavenUserHomeOverride,
                 userSettingsXmlOverride,
-                globalSettingsXmlOverride,
-                userToolchainsXmlOverride,
-                globalToolchainsXmlOverride,
                 userSettingsSecurityXmlOverride,
-                mavenSystemHome,
+                userToolchainsXmlOverride,
+                localRepositoryOverride,
+                mavenSystemHomeOverride,
+                globalSettingsXmlOverride,
+                globalToolchainsXmlOverride,
                 effectiveSettings,
                 effectiveSettingsMixin);
     }
 
+    /**
+     * Creates a "default" builder instance (that will NOT discover {@code settings.xml}).
+     * <p>
+     * Note: if you want to obey "Maven environment", you must invoke {@link Builder#withUserSettings(boolean)} with
+     * {@code true} parameter at least.
+     */
+    public static Builder create() {
+        return new Builder();
+    }
+
     public static final class Builder {
-        private Path basedir = DEFAULT_BASEDIR;
+        private Path basedirOverride = null;
 
-        private Map<String, String> systemProperties = defaultSystemProperties();
+        private Map<String, String> systemProperties = Collections.emptyMap();
 
-        private Map<String, String> userProperties = new HashMap<>();
+        private Map<String, String> userProperties = Collections.emptyMap();
 
-        private Map<String, Object> configProperties = new HashMap<>();
+        private Map<String, Object> configProperties = Collections.emptyMap();
 
         private List<RemoteRepository> repositories = Collections.singletonList(CENTRAL);
 
-        private AddRepositories addRepositories = AddRepositories.REPLACE;
+        private AddRepositoriesOp addRepositoriesOp = AddRepositoriesOp.PREPEND;
 
         private boolean offline = false;
 
@@ -715,35 +482,25 @@ public final class ContextOverrides {
 
         private TransferListener transferListener = null;
 
-        private Path mavenUserHome = DEFAULT_MAVEN_USER_HOME;
+        private Path mavenUserHomeOverride = null;
 
         private Path userSettingsXmlOverride = null;
 
-        private Path userToolchainsXmlOverride = null;
-
         private Path userSettingsSecurityXmlOverride = null;
 
+        private Path userToolchainsXmlOverride = null;
+
         private Path localRepositoryOverride = null;
+
+        private Path mavenSystemHomeOverride = null;
 
         private Path globalSettingsXmlOverride = null;
 
         private Path globalToolchainsXmlOverride = null;
 
-        private Path mavenSystemHome = null;
-
         private Object effectiveSettings = null;
 
         private Object effectiveSettingsMixin = null;
-
-        /**
-         * Creates a "default" builder instance (that will NOT discover {@code settings.xml}).
-         * <p>
-         * Note: if you want to obey "Maven environment", you must invoke {@link #withUserSettings(boolean)} with
-         * {@code true} parameter at least.
-         */
-        public static Builder create() {
-            return new Builder();
-        }
 
         /**
          * Hide ctor, use {@link #create()} to create new builder instances.
@@ -753,31 +510,30 @@ public final class ContextOverrides {
         }
 
         /**
-         * Sets basedir path, it must be non-{@code null} and point to an existing directory. If these are not
-         * met, this method will throw. Basedir by default is initialized with {@link #DEFAULT_BASEDIR} that is
+         * Overrides basedir path (cwd), it must be non-{@code null} and point to an existing directory. If these
+         * are not met, this method will throw. Basedir by default is initialized with {@code CWD} that is
          * "current working directory" of the process.
          *
          * @since 2.3.0
          */
-        public Builder withBasedir(Path basedir) {
-            requireNonNull(basedir, "basedir cannot be null");
-            if (!Files.isDirectory(basedir)) {
-                throw new IllegalArgumentException("basedir must be existing directory: " + basedir);
+        public Builder withBasedirOverride(Path basedirOverride) {
+            if (basedirOverride != null) {
+                if (!Files.isDirectory(basedirOverride)) {
+                    throw new IllegalArgumentException("basedir must be existing directory: " + basedirOverride);
+                }
             }
-            this.basedir = basedir;
+            this.basedirOverride = basedirOverride;
             return this;
         }
 
         /**
          * Sets Maven System Properties to be used. Users usually don't want to tamper with this.
-         * <p>
-         * For defaults see {@link #defaultSystemProperties()}.
          */
         public Builder systemProperties(Map<String, String> systemProperties) {
             if (systemProperties != null) {
                 this.systemProperties = new HashMap<>(systemProperties);
             } else {
-                this.systemProperties = new HashMap<>();
+                this.systemProperties = Collections.emptyMap();
             }
             return this;
         }
@@ -789,7 +545,7 @@ public final class ContextOverrides {
             if (userProperties != null) {
                 this.userProperties = new HashMap<>(userProperties);
             } else {
-                this.userProperties = new HashMap<>();
+                this.userProperties = Collections.emptyMap();
             }
             return this;
         }
@@ -802,14 +558,14 @@ public final class ContextOverrides {
             if (configProperties != null) {
                 this.configProperties = new HashMap<>(configProperties);
             } else {
-                this.configProperties = new HashMap<>();
+                this.configProperties = Collections.emptyMap();
             }
             return this;
         }
 
         /**
          * Sets the list of {@link RemoteRepository} instance you want to use. The list may replace or append the
-         * list of repositories coming from Maven, see {@link #appendRepositories(boolean)}.
+         * list of repositories coming from Maven, see {@link #addRepositoriesOp()}.
          * <p>
          * If {@link #withUserSettings(boolean)} invoked with {@code true}, the {@code settings.xml} discovered
          * repositories (and many more) will be used to create context. Also, in case when MIMA runs within Maven,
@@ -825,25 +581,12 @@ public final class ContextOverrides {
         }
 
         /**
-         * If {@code true}, the {@link #repositories(List)} provided non-null list will be appended to repositories
-         * coming from Maven (read from user {@code settings.xml} or current project), otherwise they are replacing
-         * them. Default is {@code false}.
-         *
-         * @deprecated Use {@link #addRepositories(AddRepositories)} instead.
-         */
-        @Deprecated
-        public Builder appendRepositories(boolean appendRepositories) {
-            this.addRepositories = appendRepositories ? AddRepositories.APPEND : AddRepositories.REPLACE;
-            return this;
-        }
-
-        /**
          * How to handle the {@link #repositories(List)} provided list.
          *
          * @since TBD
          */
-        public Builder addRepositories(AddRepositories addRepositories) {
-            this.addRepositories = addRepositories;
+        public Builder addRepositoriesOp(AddRepositoriesOp addRepositoriesOp) {
+            this.addRepositoriesOp = addRepositoriesOp;
             return this;
         }
 
@@ -853,18 +596,6 @@ public final class ContextOverrides {
         public Builder offline(boolean offline) {
             this.offline = offline;
             return this;
-        }
-
-        /**
-         * Overrides the (default ot discovered) location of local repository. This path "wins" always, even if
-         * {@link #withUserSettings(boolean)} was invoked with {@code true} and it contains alternate local repository
-         * path.
-         *
-         * @deprecated Use {@link #withLocalRepositoryOverride(Path)} instead.
-         */
-        @Deprecated
-        public Builder localRepository(Path localRepository) {
-            return withLocalRepositoryOverride(localRepository);
         }
 
         /**
@@ -884,7 +615,7 @@ public final class ContextOverrides {
         }
 
         /**
-         * Enables or disables use of {@code settings.xml}, used to find out location of local repository,
+         * Enables or disables use of userSettingsXml, used to find out location of local repository,
          * authentication, remote repositories and many more.
          */
         public Builder withUserSettings(boolean withUserSettings) {
@@ -899,7 +630,7 @@ public final class ContextOverrides {
          */
         public Builder withActiveProfileIds(List<String> activeProfileIds) {
             if (activeProfileIds != null) {
-                this.activeProfileIds = activeProfileIds;
+                this.activeProfileIds = new ArrayList<>(activeProfileIds);
             } else {
                 this.activeProfileIds = Collections.emptyList();
             }
@@ -913,22 +644,11 @@ public final class ContextOverrides {
          */
         public Builder withInactiveProfileIds(List<String> inactiveProfileIds) {
             if (inactiveProfileIds != null) {
-                this.inactiveProfileIds = inactiveProfileIds;
+                this.inactiveProfileIds = new ArrayList<>(inactiveProfileIds);
             } else {
                 this.inactiveProfileIds = Collections.emptyList();
             }
             return this;
-        }
-
-        /**
-         * Overrides the default location of {@code settings.xml}. Setting this method only, without invoking
-         * {@link #withUserSettings(boolean)} with {@code true}, makes the passed in path to this method ignored.
-         *
-         * @deprecated Use {@link #withSettingsXmlOverride(Path)} instead.
-         */
-        @Deprecated
-        public Builder settingsXml(Path settingsXml) {
-            return withSettingsXmlOverride(settingsXml);
         }
 
         /**
@@ -948,25 +668,13 @@ public final class ContextOverrides {
         }
 
         /**
-         * Overrides Maven User Home, does not accept {@code null}.
+         * Override for Maven User Home.
          *
-         * @since 2.1.0
+         * @since TBD
          */
-        public Builder withMavenUserHome(Path mavenUserHome) {
-            requireNonNull(mavenUserHome);
-            this.mavenUserHome = mavenUserHome;
+        public Builder withMavenUserHomeOverride(Path mavenUserHomeOverride) {
+            this.mavenUserHomeOverride = mavenUserHomeOverride;
             return this;
-        }
-
-        /**
-         * Overrides Maven User settings.xml location.
-         *
-         * @since 2.1.0
-         * @deprecated See {@link #withUserSettingsXmlOverride(Path)}
-         */
-        @Deprecated
-        public Builder withSettingsXmlOverride(Path settingsXmlOverride) {
-            return withUserSettingsXmlOverride(settingsXmlOverride);
         }
 
         /**
@@ -976,6 +684,16 @@ public final class ContextOverrides {
          */
         public Builder withUserSettingsXmlOverride(Path userSettingsXmlOverride) {
             this.userSettingsXmlOverride = userSettingsXmlOverride;
+            return this;
+        }
+
+        /**
+         * Overrides Maven User settings-security.xml location.
+         *
+         * @since 2.3.0
+         */
+        public Builder withUserSettingsSecurityXmlOverride(Path userSettingsSecurityXmlOverride) {
+            this.userSettingsSecurityXmlOverride = userSettingsSecurityXmlOverride;
             return this;
         }
 
@@ -990,33 +708,22 @@ public final class ContextOverrides {
         }
 
         /**
-         * Overrides Maven User settings-security.xml location.
-         *
-         * @since 2.1.0
-         * @deprecated See {@link #withUserSettingsSecurityXmlOverride(Path)}
-         */
-        @Deprecated
-        public Builder withSettingsSecurityXmlOverride(Path settingsSecurityXmlOverride) {
-            return withUserSettingsSecurityXmlOverride(settingsSecurityXmlOverride);
-        }
-
-        /**
-         * Overrides Maven User settings-security.xml location.
-         *
-         * @since 2.3.0
-         */
-        public Builder withUserSettingsSecurityXmlOverride(Path userSettingsSecurityXmlOverride) {
-            this.userSettingsSecurityXmlOverride = userSettingsSecurityXmlOverride;
-            return this;
-        }
-
-        /**
          * Overrides Maven User local repository location.
          *
          * @since 2.1.0
          */
         public Builder withLocalRepositoryOverride(Path localRepositoryOverride) {
             this.localRepositoryOverride = localRepositoryOverride;
+            return this;
+        }
+
+        /**
+         * Sets Maven System Home override.
+         *
+         * @since TBD
+         */
+        public Builder withMavenSystemHomeOverride(Path mavenSystemHomeOverride) {
+            this.mavenSystemHomeOverride = mavenSystemHomeOverride;
             return this;
         }
 
@@ -1037,16 +744,6 @@ public final class ContextOverrides {
          */
         public Builder withGlobalToolchainsXmlOverride(Path globalToolchainsXmlOverride) {
             this.globalToolchainsXmlOverride = globalToolchainsXmlOverride;
-            return this;
-        }
-
-        /**
-         * Sets Maven System Home location.
-         *
-         * @since 2.1.0
-         */
-        public Builder withMavenSystemHome(Path mavenSystemHome) {
-            this.mavenSystemHome = mavenSystemHome;
             return this;
         }
 
@@ -1080,36 +777,13 @@ public final class ContextOverrides {
          * Builds an immutable instance of {@link ContextOverrides} using so far applied settings and configuration.
          */
         public ContextOverrides build() {
-            Map<String, Object> effectiveConfigProperties = new HashMap<>(systemProperties);
-            effectiveConfigProperties.putAll(userProperties);
-            effectiveConfigProperties.putAll(configProperties);
-
-            localRepositoryOverride = safeAbsolute(localRepositoryOverride);
-            if (localRepositoryOverride == null) {
-                String localRepoPath = (String) effectiveConfigProperties.get("maven.repo.local");
-                if (localRepoPath != null) {
-                    localRepositoryOverride = Paths.get(localRepoPath).toAbsolutePath();
-                }
-            }
-
-            mavenSystemHome = safeAbsolute(mavenSystemHome);
-            if (mavenSystemHome == null) {
-                String mavenHome = (String) effectiveConfigProperties.get("maven.home");
-                if (mavenHome == null) {
-                    mavenHome = (String) effectiveConfigProperties.get("env.MAVEN_HOME");
-                }
-                if (mavenHome != null) {
-                    mavenSystemHome = Paths.get(mavenHome).toAbsolutePath();
-                }
-            }
-
             return new ContextOverrides(
-                    basedir,
+                    basedirOverride,
                     systemProperties,
                     userProperties,
-                    effectiveConfigProperties,
+                    configProperties,
                     repositories,
-                    addRepositories,
+                    addRepositoriesOp,
                     offline,
                     snapshotUpdatePolicy,
                     checksumPolicy,
@@ -1118,51 +792,16 @@ public final class ContextOverrides {
                     inactiveProfileIds,
                     repositoryListener,
                     transferListener,
-                    new MavenUserHome(
-                            mavenUserHome.toAbsolutePath(),
-                            safeAbsolute(userSettingsXmlOverride),
-                            safeAbsolute(userSettingsSecurityXmlOverride),
-                            safeAbsolute(userToolchainsXmlOverride),
-                            localRepositoryOverride),
-                    localRepositoryOverride,
+                    mavenUserHomeOverride,
                     userSettingsXmlOverride,
-                    globalSettingsXmlOverride,
-                    userToolchainsXmlOverride,
-                    globalToolchainsXmlOverride,
                     userSettingsSecurityXmlOverride,
-                    mavenSystemHome == null
-                            ? null
-                            : new MavenSystemHome(
-                                    mavenSystemHome, globalSettingsXmlOverride, globalToolchainsXmlOverride),
+                    userToolchainsXmlOverride,
+                    localRepositoryOverride,
+                    mavenSystemHomeOverride,
+                    globalSettingsXmlOverride,
+                    globalToolchainsXmlOverride,
                     effectiveSettings,
                     effectiveSettingsMixin);
         }
-    }
-
-    /**
-     * Collects (Maven) system properties as Maven does: it is a mixture of {@link System#getenv()} prefixed with
-     * {@code "env."} and Java System properties.
-     */
-    public static Map<String, String> defaultSystemProperties() {
-        HashMap<String, String> result = new HashMap<>();
-        // Env variables prefixed with "env."
-        result.putAll(System.getenv().entrySet().stream()
-                .map(e -> new AbstractMap.SimpleEntry<>("env." + e.getKey(), e.getValue()))
-                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
-        // Java System properties
-        result.putAll(System.getProperties().entrySet().stream()
-                .collect(toMap(e -> (String) e.getKey(), e -> (String) e.getValue())));
-
-        return result;
-    }
-
-    /**
-     * Helper to safely make nullable {@link Path} instances absolute.
-     */
-    private static Path safeAbsolute(Path path) {
-        if (path == null) {
-            return null;
-        }
-        return path.toAbsolutePath();
     }
 }
