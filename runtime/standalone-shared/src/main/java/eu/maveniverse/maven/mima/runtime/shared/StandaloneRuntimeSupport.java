@@ -289,6 +289,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             for (Proxy proxy : settings.getProxies()) {
                 proxy.setActive(false);
             }
+            settings.flushActiveProxy();
         }
         new MavenSettingsMerger().merge(settings, mixin, TrackableBase.GLOBAL_LEVEL);
     }
