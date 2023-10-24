@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Settings;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -24,7 +25,6 @@ import picocli.CommandLine;
  * Support.
  */
 public abstract class CommandSupport implements Callable<Integer> {
-
     @CommandLine.Option(
             names = {"-v", "--verbose"},
             description = "Be verbose about things happening")
@@ -63,13 +63,17 @@ public abstract class CommandSupport implements Callable<Integer> {
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected void writeVersion(Runtime runtime, Context context) {
-        logger.info("MIMA (Runtime '{}' version {})", runtime.name(), runtime.version());
-        logger.info("====");
+    private static final AtomicBoolean VWO = new AtomicBoolean(false);
+
+    protected void writeVersionOnce(Runtime runtime) {
+        if (VWO.compareAndSet(false, true)) {
+            logger.info("MIMA (Runtime '{}' version {})", runtime.name(), runtime.version());
+            logger.info("====");
+        }
     }
 
     protected void mayDumpEnv(Runtime runtime, Context context) {
-        writeVersion(runtime, context);
+        writeVersionOnce(runtime);
         logger.info("          Maven version {}", runtime.mavenVersion());
         logger.info("                Managed {}", runtime.managedRepositorySystem());
         logger.info("                Basedir {}", context.basedir());
@@ -203,8 +207,8 @@ public abstract class CommandSupport implements Callable<Integer> {
     @Override
     public Integer call() {
         Runtime runtime = getRuntime();
+        writeVersionOnce(runtime);
         try (Context context = runtime.create(createContextOverrides())) {
-            writeVersion(runtime, context);
             return doCall(context);
         }
     }

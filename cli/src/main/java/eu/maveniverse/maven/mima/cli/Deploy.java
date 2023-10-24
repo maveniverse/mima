@@ -48,6 +48,6 @@ public final class Deploy extends CommandSupport {
         } catch (DeploymentException e) {
             throw new RuntimeException(e);
         }
-        return 1;
+        return 0;
     }
 }

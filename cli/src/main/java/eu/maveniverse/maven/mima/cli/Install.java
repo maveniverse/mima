@@ -42,6 +42,6 @@ public final class Install extends CommandSupport {
         } catch (InstallationException e) {
             throw new RuntimeException(e);
         }
-        return 1;
+        return 0;
     }
 }
