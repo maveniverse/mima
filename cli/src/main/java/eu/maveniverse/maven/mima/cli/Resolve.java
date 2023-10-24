@@ -99,7 +99,7 @@ public final class Resolve extends CommandSupport {
         } catch (DependencyResolutionException e) {
             throw new RuntimeException(e);
         }
-        return 1;
+        return 0;
     }
 
     private static final class ArtifactCollector extends AbstractRepositoryListener {

@@ -12,22 +12,23 @@
   <name>${project.groupId}:${project.artifactId}</name>
 
   <properties>
+    <maven.compiler.release>11</maven.compiler.release>
     <mainClass>eu.maveniverse.maven.mima.cli.Main</mainClass>
   </properties>
 
   <dependencies>
     <!-- Compile -->
     <dependency>
-      <groupId>info.picocli</groupId>
-      <artifactId>picocli</artifactId>
+      <groupId>eu.maveniverse.maven.mima</groupId>
+      <artifactId>context</artifactId>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>eu.maveniverse.maven.mima</groupId>
-      <artifactId>context</artifactId>
+      <groupId>info.picocli</groupId>
+      <artifactId>picocli</artifactId>
     </dependency>
     <dependency>
       <groupId>info.picocli</groupId>
@@ -36,6 +37,18 @@
     <dependency>
       <groupId>org.fusesource.jansi</groupId>
       <artifactId>jansi</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.indexer</groupId>
+      <artifactId>search-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.indexer</groupId>
+      <artifactId>search-backend-remoterepository</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.indexer</groupId>
+      <artifactId>search-backend-smo</artifactId>
     </dependency>
 
     <!-- Provided (by runtime) -->
@@ -144,6 +157,9 @@
                   <artifact>*:*</artifact>
                   <excludes>
                     <exclude>META-INF/MANIFEST.MF</exclude>
+                    <exclude>META-INF/LICENSE</exclude>
+                    <exclude>META-INF/DEPENDENCIES</exclude>
+                    <exclude>META-INF/NOTICE</exclude>
                     <exclude>**/module-info.class</exclude>
                   </excludes>
                 </filter>

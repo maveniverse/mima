@@ -45,6 +45,6 @@ public final class Classpath extends CommandSupport {
         } catch (DependencyResolutionException e) {
             throw new RuntimeException(e);
         }
-        return 1;
+        return 0;
     }
 }

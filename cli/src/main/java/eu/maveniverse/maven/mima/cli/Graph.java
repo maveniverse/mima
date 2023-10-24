@@ -88,7 +88,7 @@ public final class Graph extends CommandSupport {
         } catch (DependencyCollectionException e) {
             throw new RuntimeException(e);
         }
-        return 1;
+        return 0;
     }
 
     private DependencyManager dependencyManager() {
