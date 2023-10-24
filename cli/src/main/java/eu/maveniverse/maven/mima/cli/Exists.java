@@ -1,6 +1,6 @@
 package eu.maveniverse.maven.mima.cli;
 
-import static eu.maveniverse.maven.mima.cli.Identify.toQuery;
+import static eu.maveniverse.maven.mima.cli.Identify.toRrQuery;
 
 import eu.maveniverse.maven.mima.context.Context;
 import java.io.IOException;
@@ -60,7 +60,7 @@ public final class Exists extends CommandSupport {
     }
 
     private boolean exists(SearchBackend backend, Artifact artifact) throws IOException {
-        Query query = toQuery(artifact);
+        Query query = toRrQuery(artifact);
         SearchRequest searchRequest = new SearchRequest(query);
         SearchResponse searchResponse = backend.search(searchRequest);
         return searchResponse.getTotalHits() == 1;

@@ -52,7 +52,10 @@ public final class Identify extends CommandSupport {
         return 0;
     }
 
-    static Query toQuery(Artifact artifact) {
+    /**
+     * Query out of {@link Artifact} for RR backend: it maps all that are given.
+     */
+    static Query toRrQuery(Artifact artifact) {
         Query result = fieldQuery(MAVEN.GROUP_ID, artifact.getGroupId());
         result = and(result, fieldQuery(MAVEN.ARTIFACT_ID, artifact.getArtifactId()));
         result = and(result, fieldQuery(MAVEN.VERSION, artifact.getVersion()));
@@ -60,6 +63,47 @@ public final class Identify extends CommandSupport {
             result = and(result, fieldQuery(MAVEN.CLASSIFIER, artifact.getClassifier()));
         }
         result = and(result, fieldQuery(MAVEN.FILE_EXTENSION, artifact.getExtension()));
+
+        return result;
+    }
+
+    /**
+     * Query out of {@link Artifact} for SMO backend: SMO "have no idea" what file extension is, it handles only
+     * "packaging", so we map here {@link Artifact#getExtension()} into "packaging" instead. Also, if we query
+     * fields with value "*" SMO throws HTTP 400, so we simply omit "*" from queries, but they still allow us to
+     * enter "*:*:1.0" that translates to "version=1.0" query.
+     */
+    static Query toSmoQuery(Artifact artifact) {
+        Query result = null;
+        if (!"*".equals(artifact.getGroupId())) {
+            result = result != null
+                    ? and(result, fieldQuery(MAVEN.GROUP_ID, artifact.getGroupId()))
+                    : fieldQuery(MAVEN.GROUP_ID, artifact.getGroupId());
+        }
+        if (!"*".equals(artifact.getArtifactId())) {
+            result = result != null
+                    ? and(result, fieldQuery(MAVEN.ARTIFACT_ID, artifact.getArtifactId()))
+                    : fieldQuery(MAVEN.ARTIFACT_ID, artifact.getArtifactId());
+        }
+        if (!"*".equals(artifact.getVersion())) {
+            result = result != null
+                    ? and(result, fieldQuery(MAVEN.VERSION, artifact.getVersion()))
+                    : fieldQuery(MAVEN.VERSION, artifact.getVersion());
+        }
+        if (!"*".equals(artifact.getClassifier()) && !"".equals(artifact.getClassifier())) {
+            result = result != null
+                    ? and(result, fieldQuery(MAVEN.CLASSIFIER, artifact.getClassifier()))
+                    : fieldQuery(MAVEN.CLASSIFIER, artifact.getClassifier());
+        }
+        if (!"*".equals(artifact.getExtension())) {
+            result = result != null
+                    ? and(result, fieldQuery(MAVEN.PACKAGING, artifact.getExtension()))
+                    : fieldQuery(MAVEN.PACKAGING, artifact.getExtension());
+        }
+
+        if (result == null) {
+            throw new IllegalArgumentException("Too broad query expression");
+        }
         return result;
     }
 

@@ -17,6 +17,7 @@ import picocli.CommandLine;
             Identify.class,
             Install.class,
             List.class,
+            Search.class,
             Repl.class,
             Resolve.class
         },
