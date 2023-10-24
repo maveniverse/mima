@@ -10,11 +10,13 @@ import org.apache.maven.search.SearchRequest;
 import org.apache.maven.search.SearchResponse;
 import org.apache.maven.search.backend.remoterepository.RemoteRepositorySearchBackendFactory;
 import org.apache.maven.search.request.Query;
+import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.util.artifact.SubArtifact;
 import picocli.CommandLine;
 
 /**
- * List.
+ * Exists.
  */
 @CommandLine.Command(name = "exists", description = "Checks Maven Artifact existence")
 public final class Exists extends CommandSupport {
@@ -22,22 +24,45 @@ public final class Exists extends CommandSupport {
     @CommandLine.Parameters(index = "0", description = "The GAV to check")
     private String gav;
 
+    @CommandLine.Option(
+            names = {"--sources"},
+            description = "Download sources JARs as well (best effort)")
+    private boolean sources;
+
+    @CommandLine.Option(
+            names = {"--javadoc"},
+            description = "Download javadoc JARs as well (best effort)")
+    private boolean javadoc;
+
     @Override
     protected Integer doCall(Context context) {
         logger.info("Exists {}", gav);
 
         try {
             try (SearchBackend backend = RemoteRepositorySearchBackendFactory.createDefaultMavenCentral()) {
-                Query query = toQuery(new DefaultArtifact(gav));
-                SearchRequest searchRequest = new SearchRequest(query);
-                SearchResponse searchResponse = backend.search(searchRequest);
-                boolean exists = searchResponse.getTotalHits() == 1;
+                Artifact artifact = new DefaultArtifact(gav);
+                boolean exists = exists(backend, artifact);
                 logger.info("");
-                logger.info("It {}", exists ? "EXISTS" : "NOT EXISTS");
+                logger.info("Artifact {} {}", artifact, exists ? "EXISTS" : "NOT EXISTS");
+                if (sources) {
+                    Artifact sources = new SubArtifact(artifact, "sources", "jar");
+                    logger.info("    {} {}", sources, exists(backend, sources) ? "EXISTS" : "NOT EXISTS");
+                }
+                if (javadoc) {
+                    Artifact javadoc = new SubArtifact(artifact, "javadoc", "jar");
+                    logger.info("    {} {}", javadoc, exists(backend, javadoc) ? "EXISTS" : "NOT EXISTS");
+                }
                 return exists ? 0 : 1;
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    private boolean exists(SearchBackend backend, Artifact artifact) throws IOException {
+        Query query = toQuery(artifact);
+        SearchRequest searchRequest = new SearchRequest(query);
+        SearchResponse searchResponse = backend.search(searchRequest);
+        return searchResponse.getTotalHits() == 1;
     }
 }
