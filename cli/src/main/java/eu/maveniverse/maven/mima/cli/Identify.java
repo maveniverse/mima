@@ -1,7 +1,7 @@
 package eu.maveniverse.maven.mima.cli;
 
-import static org.apache.maven.search.request.BooleanQuery.and;
-import static org.apache.maven.search.request.FieldQuery.fieldQuery;
+import static org.apache.maven.search.api.request.BooleanQuery.and;
+import static org.apache.maven.search.api.request.FieldQuery.fieldQuery;
 
 import eu.maveniverse.maven.mima.context.Context;
 import java.io.IOException;
@@ -10,13 +10,13 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.maven.search.MAVEN;
-import org.apache.maven.search.Record;
-import org.apache.maven.search.SearchBackend;
-import org.apache.maven.search.SearchRequest;
-import org.apache.maven.search.SearchResponse;
+import org.apache.maven.search.api.MAVEN;
+import org.apache.maven.search.api.Record;
+import org.apache.maven.search.api.SearchBackend;
+import org.apache.maven.search.api.SearchRequest;
+import org.apache.maven.search.api.SearchResponse;
+import org.apache.maven.search.api.request.Query;
 import org.apache.maven.search.backend.smo.SmoSearchBackendFactory;
-import org.apache.maven.search.request.Query;
 import org.eclipse.aether.artifact.Artifact;
 import picocli.CommandLine;
 
