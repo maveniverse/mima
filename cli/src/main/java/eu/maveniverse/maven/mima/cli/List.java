@@ -1,6 +1,5 @@
 package eu.maveniverse.maven.mima.cli;
 
-import static eu.maveniverse.maven.mima.cli.Identify.renderPage;
 import static org.apache.maven.search.api.request.BooleanQuery.and;
 import static org.apache.maven.search.api.request.FieldQuery.fieldQuery;
 
@@ -13,14 +12,13 @@ import org.apache.maven.search.api.SearchBackend;
 import org.apache.maven.search.api.SearchRequest;
 import org.apache.maven.search.api.SearchResponse;
 import org.apache.maven.search.api.request.Query;
-import org.apache.maven.search.backend.remoterepository.RemoteRepositorySearchBackendFactory;
 import picocli.CommandLine;
 
 /**
  * List.
  */
 @CommandLine.Command(name = "list", description = "Lists Maven Artifacts")
-public final class List extends CommandSupport {
+public final class List extends SearchSupport {
 
     @CommandLine.Parameters(index = "0", description = "The GAV-oid to list (G or G:A or G:A:V)")
     private String gavoid;
@@ -30,7 +28,8 @@ public final class List extends CommandSupport {
         logger.info("List {}", gavoid);
 
         try {
-            try (SearchBackend backend = RemoteRepositorySearchBackendFactory.createDefaultMavenCentral()) {
+            try (SearchBackend backend =
+                    getRemoteRepositoryBackend(repositoryId, repositoryBaseUri, repositoryVendor)) {
                 String[] elements = gavoid.split(":");
                 if (elements.length < 1 || elements.length > 3) {
                     throw new IllegalArgumentException("Invalid gavoid");

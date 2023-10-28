@@ -1,7 +1,5 @@
 package eu.maveniverse.maven.mima.cli;
 
-import static eu.maveniverse.maven.mima.cli.Identify.renderPage;
-import static eu.maveniverse.maven.mima.cli.Identify.toSmoQuery;
 import static org.apache.maven.search.api.request.Query.query;
 
 import eu.maveniverse.maven.mima.context.Context;
@@ -12,7 +10,6 @@ import org.apache.maven.search.api.SearchBackend;
 import org.apache.maven.search.api.SearchRequest;
 import org.apache.maven.search.api.SearchResponse;
 import org.apache.maven.search.api.request.Query;
-import org.apache.maven.search.backend.smo.SmoSearchBackendFactory;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import picocli.CommandLine;
 
@@ -20,7 +17,7 @@ import picocli.CommandLine;
  * Search.
  */
 @CommandLine.Command(name = "search", description = "Searches Maven Artifacts")
-public final class Search extends CommandSupport {
+public final class Search extends SearchSupport {
 
     @CommandLine.Parameters(index = "0", description = "The expression to search for")
     private String expression;
@@ -30,7 +27,7 @@ public final class Search extends CommandSupport {
         logger.info("Search {}", expression);
 
         try {
-            try (SearchBackend backend = new SmoSearchBackendFactory().createDefault()) {
+            try (SearchBackend backend = getSmoBackend(repositoryId)) {
                 Query query;
                 try {
                     query = toSmoQuery(new DefaultArtifact(expression));

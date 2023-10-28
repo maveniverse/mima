@@ -19,7 +19,8 @@ import picocli.CommandLine;
             List.class,
             Search.class,
             Repl.class,
-            Resolve.class
+            Resolve.class,
+            Verify.class
         },
         version = "1.0",
         description = "MIMA CLI")

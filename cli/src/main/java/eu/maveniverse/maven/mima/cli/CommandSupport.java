@@ -13,7 +13,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Settings;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -63,6 +65,8 @@ public abstract class CommandSupport implements Callable<Integer> {
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
+    private final ConcurrentHashMap<String, Object> context = new ConcurrentHashMap<>();
+
     private static final AtomicBoolean VWO = new AtomicBoolean(false);
 
     protected void writeVersionOnce(Runtime runtime) {
@@ -70,6 +74,10 @@ public abstract class CommandSupport implements Callable<Integer> {
             logger.info("MIMA (Runtime '{}' version {})", runtime.name(), runtime.version());
             logger.info("====");
         }
+    }
+
+    protected Object getOrCreate(String key, Supplier<? extends Object> supplier) {
+        return context.computeIfAbsent(key, k -> supplier.get());
     }
 
     protected void mayDumpEnv(Runtime runtime, Context context) {
