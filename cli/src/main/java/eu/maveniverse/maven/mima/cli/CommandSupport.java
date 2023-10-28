@@ -65,7 +65,7 @@ public abstract class CommandSupport implements Callable<Integer> {
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final ConcurrentHashMap<String, Object> executionContext = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Object> EXECUTION_CONTEXT = new ConcurrentHashMap<>();
 
     private static final AtomicBoolean VWO = new AtomicBoolean(false);
 
@@ -77,7 +77,11 @@ public abstract class CommandSupport implements Callable<Integer> {
     }
 
     protected Object getOrCreate(String key, Supplier<? extends Object> supplier) {
-        return executionContext.computeIfAbsent(key, k -> supplier.get());
+        return EXECUTION_CONTEXT.computeIfAbsent(key, k -> supplier.get());
+    }
+
+    protected Object set(String key, Object object) {
+        return EXECUTION_CONTEXT.put(key, object);
     }
 
     protected void mayDumpEnv(Runtime runtime, Context context) {
