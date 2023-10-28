@@ -3,9 +3,7 @@ package eu.maveniverse.maven.mima.cli;
 import static org.apache.maven.search.api.request.BooleanQuery.and;
 import static org.apache.maven.search.api.request.FieldQuery.fieldQuery;
 
-import eu.maveniverse.maven.mima.context.Context;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import org.apache.maven.search.api.MAVEN;
 import org.apache.maven.search.api.SearchBackend;
 import org.apache.maven.search.api.SearchRequest;
@@ -19,7 +17,7 @@ import picocli.CommandLine;
  * Verify.
  */
 @CommandLine.Command(name = "verify", description = "Verifies Maven Artifact")
-public final class Verify extends SearchSupport {
+public final class Verify extends SearchCommandSupport {
 
     @CommandLine.Parameters(index = "0", description = "The GAV to check")
     private String gav;
@@ -28,20 +26,15 @@ public final class Verify extends SearchSupport {
     private String sha1;
 
     @Override
-    protected Integer doCall(Context context) {
+    protected Integer doCall() throws IOException {
         logger.info("Verify {}", gav);
 
-        try {
-            try (SearchBackend backend =
-                    getRemoteRepositoryBackend(repositoryId, repositoryBaseUri, repositoryVendor)) {
-                Artifact artifact = new DefaultArtifact(gav);
-                boolean verified = verify(backend, new DefaultArtifact(gav), sha1);
-                logger.info("");
-                logger.info("Artifact SHA1({})={}: {}", artifact, sha1, verified ? "MATCHED" : "NOT MATCHED");
-                return verified ? 0 : 1;
-            }
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
+        try (SearchBackend backend = getRemoteRepositoryBackend(repositoryId, repositoryBaseUri, repositoryVendor)) {
+            Artifact artifact = new DefaultArtifact(gav);
+            boolean verified = verify(backend, new DefaultArtifact(gav), sha1);
+            logger.info("");
+            logger.info("Artifact SHA1({})={}: {}", artifact, sha1, verified ? "MATCHED" : "NOT MATCHED");
+            return verified ? 0 : 1;
         }
     }
 

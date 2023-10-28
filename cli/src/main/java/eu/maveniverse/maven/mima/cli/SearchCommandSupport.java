@@ -24,7 +24,7 @@ import picocli.CommandLine;
 /**
  * Search support.
  */
-public abstract class SearchSupport extends CommandSupport {
+public abstract class SearchCommandSupport extends CommandSupport {
     @CommandLine.Option(
             names = {"--repositoryId"},
             defaultValue = "central",
@@ -172,5 +172,19 @@ public abstract class SearchSupport extends CommandSupport {
             }
         }
         return result;
+    }
+
+    @Override
+    public final Integer call() {
+        try {
+            return doCall();
+        } catch (Exception e) {
+            logger.error("Error", e);
+            return 1;
+        }
+    }
+
+    protected Integer doCall() throws Exception {
+        throw new RuntimeException("Not implemented; you should override this method in subcommand");
     }
 }

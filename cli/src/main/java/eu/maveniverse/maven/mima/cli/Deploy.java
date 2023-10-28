@@ -14,7 +14,7 @@ import picocli.CommandLine;
  * Deploy.
  */
 @CommandLine.Command(name = "deploy", description = "Deploys Maven Artifacts")
-public final class Deploy extends CommandSupport {
+public final class Deploy extends ResolverCommandSupport {
 
     @CommandLine.Parameters(index = "0", description = "The GAV to deploy")
     private String gav;
@@ -29,7 +29,7 @@ public final class Deploy extends CommandSupport {
     private String repoUrl;
 
     @Override
-    protected Integer doCall(Context context) {
+    protected Integer doCall(Context context) throws DeploymentException {
         logger.info("Deploying {}", gav);
 
         Artifact jarArtifact = new DefaultArtifact(gav);
@@ -43,11 +43,7 @@ public final class Deploy extends CommandSupport {
         DeployRequest deployRequest = new DeployRequest();
         deployRequest.addArtifact(jarArtifact).addArtifact(pomArtifact).setRepository(remoteRepository);
 
-        try {
-            context.repositorySystem().deploy(context.repositorySystemSession(), deployRequest);
-        } catch (DeploymentException e) {
-            throw new RuntimeException(e);
-        }
+        context.repositorySystem().deploy(getRepositorySystemSession(), deployRequest);
         return 0;
     }
 }

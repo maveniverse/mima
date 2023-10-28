@@ -1,7 +1,6 @@
 package eu.maveniverse.maven.mima.cli;
 
 import eu.maveniverse.maven.mima.context.Context;
-import eu.maveniverse.maven.mima.context.Runtime;
 import picocli.CommandLine;
 
 /**
@@ -12,6 +11,7 @@ import picocli.CommandLine;
         subcommands = {
             Classpath.class,
             Deploy.class,
+            Dump.class,
             Exists.class,
             Graph.class,
             Identify.class,
@@ -27,10 +27,9 @@ import picocli.CommandLine;
 public class Main extends CommandSupport {
     @Override
     public Integer call() {
-        Runtime runtime = getRuntime();
-        try (Context context = runtime.create(createContextOverrides())) {
+        try (Context context = getContext()) {
             verbose = true;
-            mayDumpEnv(runtime, context);
+            mayDumpEnv(getRuntime(), context);
         }
         return 0;
     }
