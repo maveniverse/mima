@@ -25,8 +25,8 @@ public final class Deploy extends ResolverCommandSupport {
     @CommandLine.Parameters(index = "2", description = "The artifact POM file")
     private Path pom;
 
-    @CommandLine.Parameters(index = "3", description = "The RemoteRepository baseUrl")
-    private String repoUrl;
+    @CommandLine.Parameters(index = "3", description = "The RemoteRepository spec (id::url)")
+    private String remoteRepositorySpec;
 
     @Override
     protected Integer doCall(Context context) throws DeploymentException {
@@ -38,7 +38,10 @@ public final class Deploy extends ResolverCommandSupport {
         Artifact pomArtifact = new SubArtifact(jarArtifact, "", "pom");
         pomArtifact = pomArtifact.setFile(pom.toFile());
 
-        RemoteRepository remoteRepository = new RemoteRepository.Builder("target", "default", repoUrl).build();
+        RemoteRepository remoteRepository = getContext()
+                .repositorySystem()
+                .newDeploymentRepository(
+                        getRepositorySystemSession(), buildRemoteRepositoryFromSpec(remoteRepositorySpec));
 
         DeployRequest deployRequest = new DeployRequest();
         deployRequest.addArtifact(jarArtifact).addArtifact(pomArtifact).setRepository(remoteRepository);
