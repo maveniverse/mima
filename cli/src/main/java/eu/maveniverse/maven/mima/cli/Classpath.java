@@ -17,13 +17,13 @@ import picocli.CommandLine;
  * Classpath.
  */
 @CommandLine.Command(name = "classpath", description = "Resolves Maven Artifact and prints out the classpath")
-public final class Classpath extends CommandSupport {
+public final class Classpath extends ResolverCommandSupport {
 
     @CommandLine.Parameters(index = "0", description = "The GAV to print classpath for")
     private String gav;
 
     @Override
-    protected Integer doCall(Context context) {
+    protected Integer doCall(Context context) throws DependencyResolutionException {
         logger.info("Classpath {}", gav);
 
         Artifact artifact = new DefaultArtifact(gav);
@@ -34,17 +34,13 @@ public final class Classpath extends CommandSupport {
         DependencyRequest dependencyRequest =
                 new DependencyRequest(collectRequest, DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE));
 
-        try {
-            DependencyResult dependencyResult = context.repositorySystem()
-                    .resolveDependencies(context.repositorySystemSession(), dependencyRequest);
+        DependencyResult dependencyResult =
+                context.repositorySystem().resolveDependencies(getRepositorySystemSession(), dependencyRequest);
 
-            PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
-            dependencyResult.getRoot().accept(nlg);
-            logger.info("");
-            logger.info("{}", nlg.getClassPath());
-        } catch (DependencyResolutionException e) {
-            throw new RuntimeException(e);
-        }
+        PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
+        dependencyResult.getRoot().accept(nlg);
+        logger.info("");
+        logger.info("{}", nlg.getClassPath());
         return 0;
     }
 }

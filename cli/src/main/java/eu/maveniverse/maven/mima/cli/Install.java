@@ -13,7 +13,7 @@ import picocli.CommandLine;
  * Install.
  */
 @CommandLine.Command(name = "install", description = "Installs Maven Artifacts")
-public final class Install extends CommandSupport {
+public final class Install extends ResolverCommandSupport {
 
     @CommandLine.Parameters(index = "0", description = "The GAV to install")
     private String gav;
@@ -25,7 +25,7 @@ public final class Install extends CommandSupport {
     private Path pom;
 
     @Override
-    protected Integer doCall(Context context) {
+    protected Integer doCall(Context context) throws InstallationException {
         logger.info("Installing {}", gav);
 
         Artifact jarArtifact = new DefaultArtifact(gav);
@@ -37,11 +37,7 @@ public final class Install extends CommandSupport {
         InstallRequest installRequest = new InstallRequest();
         installRequest.addArtifact(jarArtifact).addArtifact(pomArtifact);
 
-        try {
-            context.repositorySystem().install(context.repositorySystemSession(), installRequest);
-        } catch (InstallationException e) {
-            throw new RuntimeException(e);
-        }
+        context.repositorySystem().install(getRepositorySystemSession(), installRequest);
         return 0;
     }
 }

@@ -33,7 +33,7 @@ import picocli.CommandLine;
  * Graph.
  */
 @CommandLine.Command(name = "graph", description = "Displays dependency graph")
-public final class Graph extends CommandSupport {
+public final class Graph extends ResolverCommandSupport {
 
     @CommandLine.Parameters(index = "0", description = "The GAV to graph")
     private String gav;
@@ -52,7 +52,7 @@ public final class Graph extends CommandSupport {
     private String[] excludeScopes;
 
     @Override
-    protected Integer doCall(Context context) {
+    protected Integer doCall(Context context) throws DependencyCollectionException {
         logger.info("Collecting {}", gav);
 
         DefaultRepositorySystemSession session = new DefaultRepositorySystemSession(context.repositorySystemSession());
@@ -79,15 +79,11 @@ public final class Graph extends CommandSupport {
         collectRequest.setRoot(new Dependency(artifact, ""));
         collectRequest.setRepositories(context.remoteRepositories());
 
-        try {
-            logger.info("");
-            context.repositorySystem()
-                    .collectDependencies(session, collectRequest)
-                    .getRoot()
-                    .accept(new DependencyGraphDumper(logger::info));
-        } catch (DependencyCollectionException e) {
-            throw new RuntimeException(e);
-        }
+        logger.info("");
+        context.repositorySystem()
+                .collectDependencies(session, collectRequest)
+                .getRoot()
+                .accept(new DependencyGraphDumper(logger::info));
         return 0;
     }
 

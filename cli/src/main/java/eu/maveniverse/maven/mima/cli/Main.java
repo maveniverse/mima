@@ -1,7 +1,6 @@
 package eu.maveniverse.maven.mima.cli;
 
 import eu.maveniverse.maven.mima.context.Context;
-import eu.maveniverse.maven.mima.context.Runtime;
 import picocli.CommandLine;
 
 /**
@@ -12,24 +11,27 @@ import picocli.CommandLine;
         subcommands = {
             Classpath.class,
             Deploy.class,
+            DeployRecorded.class,
+            Dump.class,
             Exists.class,
             Graph.class,
             Identify.class,
             Install.class,
             List.class,
             Search.class,
+            Record.class,
             Repl.class,
-            Resolve.class
+            Resolve.class,
+            Verify.class
         },
         version = "1.0",
         description = "MIMA CLI")
 public class Main extends CommandSupport {
     @Override
     public Integer call() {
-        Runtime runtime = getRuntime();
-        try (Context context = runtime.create(createContextOverrides())) {
+        try (Context context = getContext()) {
             verbose = true;
-            mayDumpEnv(runtime, context);
+            mayDumpEnv(getRuntime(), context);
         }
         return 0;
     }
