@@ -8,6 +8,7 @@ import eu.maveniverse.maven.mima.context.MavenUserHome;
 import eu.maveniverse.maven.mima.context.Runtime;
 import eu.maveniverse.maven.mima.context.Runtimes;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -65,7 +66,7 @@ public abstract class CommandSupport implements Callable<Integer> {
 
     protected Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static final ConcurrentHashMap<String, Object> EXECUTION_CONTEXT = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, ArrayDeque<Object>> EXECUTION_CONTEXT = new ConcurrentHashMap<>();
 
     private static final AtomicBoolean VWO = new AtomicBoolean(false);
 
@@ -76,12 +77,33 @@ public abstract class CommandSupport implements Callable<Integer> {
         }
     }
 
-    protected Object getOrCreate(String key, Supplier<? extends Object> supplier) {
-        return EXECUTION_CONTEXT.computeIfAbsent(key, k -> supplier.get());
+    protected Object getOrCreate(String key, Supplier<?> supplier) {
+        ArrayDeque<Object> deque = EXECUTION_CONTEXT.computeIfAbsent(key, k -> new ArrayDeque<>());
+        if (deque.isEmpty()) {
+            deque.push(supplier.get());
+        }
+        return deque.peek();
     }
 
-    protected Object set(String key, Object object) {
-        return EXECUTION_CONTEXT.put(key, object);
+    protected void push(String key, Object object) {
+        ArrayDeque<Object> deque = EXECUTION_CONTEXT.computeIfAbsent(key, k -> new ArrayDeque<>());
+        deque.push(object);
+    }
+
+    protected Object pop(String key) {
+        ArrayDeque<Object> deque = EXECUTION_CONTEXT.get(key);
+        if (deque == null || deque.isEmpty()) {
+            throw new IllegalStateException("No element to pop");
+        }
+        return deque.pop();
+    }
+
+    protected Object peek(String key) {
+        ArrayDeque<Object> deque = EXECUTION_CONTEXT.get(key);
+        if (deque == null || deque.isEmpty()) {
+            throw new IllegalStateException("No element to peek");
+        }
+        return deque.peek();
     }
 
     protected void mayDumpEnv(Runtime runtime, Context context) {

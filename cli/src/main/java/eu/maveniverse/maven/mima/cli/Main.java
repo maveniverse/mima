@@ -11,6 +11,7 @@ import picocli.CommandLine;
         subcommands = {
             Classpath.class,
             Deploy.class,
+            DeployRecorded.class,
             Dump.class,
             Exists.class,
             Graph.class,
@@ -18,6 +19,7 @@ import picocli.CommandLine;
             Install.class,
             List.class,
             Search.class,
+            Record.class,
             Repl.class,
             Resolve.class,
             Verify.class

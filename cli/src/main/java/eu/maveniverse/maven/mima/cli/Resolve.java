@@ -6,11 +6,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import org.eclipse.aether.AbstractRepositoryListener;
 import org.eclipse.aether.DefaultRepositorySystemSession;
-import org.eclipse.aether.RepositoryEvent;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
@@ -56,11 +53,11 @@ public final class Resolve extends ResolverCommandSupport {
         logger.info("Resolving {}", gav);
 
         DefaultRepositorySystemSession session = new DefaultRepositorySystemSession(getRepositorySystemSession());
-        ArtifactCollector collector = new ArtifactCollector();
+        ArtifactRecorder recorder = new ArtifactRecorder();
         session.setRepositoryListener(
                 session.getRepositoryListener() != null
-                        ? ChainedRepositoryListener.newInstance(session.getRepositoryListener(), collector)
-                        : collector);
+                        ? ChainedRepositoryListener.newInstance(session.getRepositoryListener(), recorder)
+                        : recorder);
 
         CollectRequest collectRequest = new CollectRequest();
         collectRequest.setRoot(new Dependency(new DefaultArtifact(gav), JavaScopes.COMPILE));
@@ -68,12 +65,13 @@ public final class Resolve extends ResolverCommandSupport {
         DependencyRequest dependencyRequest =
                 new DependencyRequest(collectRequest, DependencyFilterUtils.classpathFilter(scope));
 
-        context.repositorySystem().resolveDependencies(getRepositorySystemSession(), dependencyRequest);
+        context.repositorySystem().resolveDependencies(session, dependencyRequest);
 
         ArrayList<ArtifactRequest> artifactRequests = new ArrayList<>();
-        for (Map.Entry<RemoteRepository, ArrayList<Artifact>> entry : collector.artifacts.entrySet()) {
+        for (Map.Entry<RemoteRepository, ArrayList<Artifact>> entry :
+                recorder.getArtifactsMap().entrySet()) {
             List<RemoteRepository> repositories =
-                    entry.getKey() == collector.sentinel ? null : Collections.singletonList(entry.getKey());
+                    entry.getKey() == recorder.getSentinel() ? null : Collections.singletonList(entry.getKey());
             for (Artifact artifact : entry.getValue()) {
                 if ("jar".equals(artifact.getExtension()) && "".equals(artifact.getClassifier())) {
                     if (sources) {
@@ -94,26 +92,9 @@ public final class Resolve extends ResolverCommandSupport {
         }
 
         logger.info("");
-        for (Artifact artifact : collector.artifacts.values().stream()
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList())) {
+        for (Artifact artifact : recorder.getArtifacts()) {
             logger.info("{} -> {}", artifact, artifact.getFile());
         }
         return 0;
-    }
-
-    private static final class ArtifactCollector extends AbstractRepositoryListener {
-        private final RemoteRepository sentinel = new RemoteRepository.Builder("none", "default", "fake").build();
-        private final ConcurrentHashMap<RemoteRepository, ArrayList<Artifact>> artifacts = new ConcurrentHashMap<>();
-
-        @Override
-        public void artifactResolved(RepositoryEvent event) {
-            if (event.getException() == null) {
-                RemoteRepository repository = event.getRepository() instanceof RemoteRepository
-                        ? (RemoteRepository) event.getRepository()
-                        : sentinel;
-                artifacts.computeIfAbsent(repository, k -> new ArrayList<>()).add(event.getArtifact());
-            }
-        }
     }
 }

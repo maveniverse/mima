@@ -30,6 +30,8 @@ public class Repl extends CommandSupport {
     public Integer call() {
         Class<?> tp = JansiTerminalProvider.class;
         Context context = getContext();
+        Context derivedContext = context.customize(context.contextOverrides());
+        push(Context.class.getName(), derivedContext);
 
         // set up JLine built-in commands
         ConfigurationPath configPath = new ConfigurationPath(context.basedir(), context.basedir());
@@ -83,6 +85,8 @@ public class Repl extends CommandSupport {
         } catch (Exception e) {
             logger.error("REPL Failure: ", e);
             return 1;
+        } finally {
+            context.close();
         }
     }
 }
