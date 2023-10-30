@@ -13,8 +13,8 @@ import picocli.CommandLine;
  */
 @CommandLine.Command(name = "deployRecorded", description = "Deploys recorded Maven Artifacts")
 public final class DeployRecorded extends ResolverCommandSupport {
-    @CommandLine.Parameters(index = "0", description = "The RemoteRepository baseUrl")
-    private String repoUrl;
+    @CommandLine.Parameters(index = "0", description = "The RemoteRepository spec (id::url)")
+    private String remoteRepositorySpec;
 
     @Override
     protected Integer doCall(Context context) throws DeploymentException {
@@ -22,14 +22,18 @@ public final class DeployRecorded extends ResolverCommandSupport {
 
         ArtifactRecorder recorder = (ArtifactRecorder) pop(ArtifactRecorder.class.getName());
         DeployRequest deployRequest = new DeployRequest();
-        deployRequest.setRepository(new RemoteRepository.Builder("target", "default", repoUrl).build());
+        RemoteRepository remoteRepository = getContext()
+                .repositorySystem()
+                .newDeploymentRepository(
+                        getRepositorySystemSession(), buildRemoteRepositoryFromSpec(remoteRepositorySpec));
+        deployRequest.setRepository(remoteRepository);
         Set<Artifact> uniqueArtifacts = recorder.getUniqueArtifacts();
         uniqueArtifacts.forEach(deployRequest::addArtifact);
 
         context.repositorySystem().deploy(getRepositorySystemSession(), deployRequest);
 
         logger.info("");
-        logger.info("Deployed recorded {} artifacts", uniqueArtifacts.size());
+        logger.info("Deployed recorded {} artifacts to {}", uniqueArtifacts.size(), remoteRepository);
         return 0;
     }
 }
