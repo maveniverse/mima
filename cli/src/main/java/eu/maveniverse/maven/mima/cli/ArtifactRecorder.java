@@ -2,8 +2,10 @@ package eu.maveniverse.maven.mima.cli;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import org.eclipse.aether.AbstractRepositoryListener;
@@ -33,7 +35,11 @@ final class ArtifactRecorder extends AbstractRepositoryListener {
         return artifactsMap;
     }
 
-    public List<Artifact> getArtifacts() {
+    public List<Artifact> getAllArtifacts() {
         return artifactsMap.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+    }
+
+    public Set<Artifact> getUniqueArtifacts() {
+        return new HashSet<>(getAllArtifacts());
     }
 }

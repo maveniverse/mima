@@ -44,6 +44,9 @@ public final class Deploy extends ResolverCommandSupport {
         deployRequest.addArtifact(jarArtifact).addArtifact(pomArtifact).setRepository(remoteRepository);
 
         context.repositorySystem().deploy(getRepositorySystemSession(), deployRequest);
+
+        logger.info("");
+        logger.info("Deployed {}", gav);
         return 0;
     }
 }

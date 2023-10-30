@@ -90,8 +90,12 @@ public final class Resolve extends ResolverCommandSupport {
         }
 
         logger.info("");
-        for (Artifact artifact : recorder.getArtifacts()) {
-            logger.info("{} -> {}", artifact, artifact.getFile());
+        if (verbose) {
+            for (Artifact artifact : recorder.getAllArtifacts()) {
+                logger.info("{} -> {}", artifact, artifact.getFile());
+            }
+        } else {
+            logger.info("Resolved {} artifacts", recorder.getAllArtifacts().size());
         }
         return 0;
     }

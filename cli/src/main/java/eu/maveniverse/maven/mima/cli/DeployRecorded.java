@@ -1,6 +1,8 @@
 package eu.maveniverse.maven.mima.cli;
 
 import eu.maveniverse.maven.mima.context.Context;
+import java.util.Set;
+import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.deployment.DeployRequest;
 import org.eclipse.aether.deployment.DeploymentException;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -21,9 +23,13 @@ public final class DeployRecorded extends ResolverCommandSupport {
         ArtifactRecorder recorder = (ArtifactRecorder) pop(ArtifactRecorder.class.getName());
         DeployRequest deployRequest = new DeployRequest();
         deployRequest.setRepository(new RemoteRepository.Builder("target", "default", repoUrl).build());
-        recorder.getArtifacts().forEach(deployRequest::addArtifact);
+        Set<Artifact> uniqueArtifacts = recorder.getUniqueArtifacts();
+        uniqueArtifacts.forEach(deployRequest::addArtifact);
 
         context.repositorySystem().deploy(getRepositorySystemSession(), deployRequest);
+
+        logger.info("");
+        logger.info("Deployed recorded {} artifacts", uniqueArtifacts.size());
         return 0;
     }
 }
