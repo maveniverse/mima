@@ -66,12 +66,8 @@ public abstract class SearchCommandSupport extends CommandSupport {
         if (!"central".equals(repositoryId)) {
             throw new IllegalArgumentException("The SMO service is offered for Central only");
         }
-        return new SmoSearchBackendFactory()
-                .create(
-                        repositoryId + "-smo",
-                        repositoryId,
-                        "https://search.maven.org/solrsearch/select",
-                        getTransport());
+        return SmoSearchBackendFactory.create(
+                repositoryId + "-smo", repositoryId, "https://search.maven.org/solrsearch/select", getTransport());
     }
 
     /**
