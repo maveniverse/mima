@@ -293,7 +293,7 @@
             <goals>
               <goal>jar-no-fork</goal>
             </goals>
-            <phase>verify</phase>
+            <phase>prepare-package</phase>
           </execution>
         </executions>
       </plugin>
