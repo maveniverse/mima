@@ -59,7 +59,7 @@
     <!-- Dependency versions -->
     <version.resolver>1.9.16</version.resolver>
     <version.maven>3.9.5</version.maven>
-    <version.mase>1.0.0</version.mase>
+    <version.mase>1.0.1-SNAPSHOT</version.mase>
     <version.sisu>0.9.0.M2</version.sisu>
     <version.slf4j>1.7.36</version.slf4j>
     <version.picocli>4.7.5</version.picocli>
@@ -101,6 +101,11 @@
       <dependency>
         <groupId>eu.maveniverse.maven.mima.runtime</groupId>
         <artifactId>standalone-static-uber</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>eu.maveniverse.maven.mima.runtime</groupId>
+        <artifactId>standalone-static-module</artifactId>
         <version>${project.version}</version>
       </dependency>
 

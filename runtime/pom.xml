@@ -20,5 +20,6 @@
     <module>standalone-sisu-uber</module>
     <module>standalone-static</module>
     <module>standalone-static-uber</module>
+    <module>standalone-static-module</module>
   </modules>
 </project>
