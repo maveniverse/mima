@@ -57,7 +57,7 @@
     <requireBuildtimeJavaVersion.version>[17.0.6,)</requireBuildtimeJavaVersion.version>
 
     <!-- Dependency versions -->
-    <version.resolver>1.9.16</version.resolver>
+    <version.resolver>1.9.18</version.resolver>
     <version.maven>3.9.5</version.maven>
     <version.mase>1.0.0</version.mase>
     <version.sisu>0.9.0.M2</version.sisu>
@@ -213,7 +213,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>32.1.1-jre</version>
+        <version>32.1.3-jre</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.sisu</groupId>
@@ -263,7 +263,7 @@
       <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-api</artifactId>
-        <version>5.10.0</version>
+        <version>5.10.1</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
