@@ -203,6 +203,33 @@
         <artifactId>maven-resolver-provider</artifactId>
         <version>${version.maven}</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-xml-impl</artifactId>
+        <version>${version.maven}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.eclipse.sisu</groupId>
+            <artifactId>org.eclipse.sisu.plexus</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-xml</artifactId>
+        <version>4.0.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-utils</artifactId>
+        <version>4.0.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-cipher</artifactId>
+        <version>2.0</version>
+      </dependency>
 
       <!-- DI -->
       <dependency>
@@ -224,6 +251,7 @@
         <groupId>org.eclipse.sisu</groupId>
         <artifactId>org.eclipse.sisu.inject</artifactId>
         <version>${version.sisu}</version>
+        <classifier>no_asm</classifier>
       </dependency>
 
       <!-- Maven Indexer -->

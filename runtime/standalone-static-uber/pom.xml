@@ -49,6 +49,8 @@
                 <exclude>META-INF/NOTICE</exclude>
                 <exclude>META-INF/NOTICE.txt</exclude>
                 <exclude>META-INF/services/javax.annotation.processing.Processor</exclude>
+                <exclude>**/module-info.class</exclude>
+                <exclude>licenses/**</exclude>
               </excludes>
             </filter>
           </filters>
