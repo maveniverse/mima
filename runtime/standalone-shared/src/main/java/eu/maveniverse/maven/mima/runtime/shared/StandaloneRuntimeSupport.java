@@ -49,7 +49,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.eclipse.aether.ConfigurationProperties;
 import org.eclipse.aether.DefaultRepositoryCache;
 import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.RepositorySystemSession.CloseableSession;
 import org.eclipse.aether.RepositorySystemSession.SessionBuilder;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
@@ -181,7 +181,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                         .build();
             }
 
-            RepositorySystemSession session = newRepositorySession(
+            CloseableSession session = newRepositorySession(
                     alteredOverrides, mavenUserHomeImpl, repositorySystem, settings, settingsDecrypter);
 
             // settings: active profile repositories (if enabled), strictly preserve order
@@ -230,7 +230,13 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                     session,
                     repositorySystem.newResolutionRepositories(session, new ArrayList<>(remoteRepositories.values())),
                     httpProxy,
-                    managedCloser);
+                    () -> {
+                        try {
+                            session.close();
+                        } finally {
+                            managedCloser.run();
+                        }
+                    });
         } catch (Exception e) {
             throw new IllegalStateException("Cannot create context from scratch", e);
         }
@@ -348,7 +354,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         return new ArrayList<>(result.values());
     }
 
-    protected RepositorySystemSession newRepositorySession(
+    protected CloseableSession newRepositorySession(
             ContextOverrides overrides,
             MavenUserHome mavenUserHome,
             RepositorySystem repositorySystem,
@@ -487,7 +493,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
 
         newLocalRepositoryManager(mavenUserHome.localRepository(), repositorySystem, session);
 
-        return session;
+        return session.build();
     }
 
     protected String getUserAgent() {

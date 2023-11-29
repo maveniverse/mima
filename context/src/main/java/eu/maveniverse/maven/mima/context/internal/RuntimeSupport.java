@@ -119,7 +119,7 @@ public abstract class RuntimeSupport implements Runtime {
                 ((MavenUserHomeImpl) context.mavenUserHome()).derive(overrides),
                 ((MavenSystemHomeImpl) context.mavenSystemHome()).derive(overrides),
                 context.repositorySystem(),
-                session,
+                session.build(),
                 context.repositorySystem().newResolutionRepositories(session, remoteRepositories),
                 context.httpProxy(),
                 null); // derived context: close should NOT shut down repositorySystem

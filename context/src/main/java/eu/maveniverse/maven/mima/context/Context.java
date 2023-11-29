@@ -152,8 +152,6 @@ public final class Context implements Closeable {
      */
     @Override
     public void close() {
-        // in the future session may become closeable as well
-        // repositorySystemSession.close();
         if (managedCloser != null) {
             managedCloser.run();
         }
