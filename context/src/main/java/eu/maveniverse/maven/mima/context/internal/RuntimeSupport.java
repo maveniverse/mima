@@ -16,12 +16,11 @@ import org.eclipse.aether.DefaultRepositoryCache;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.DefaultSessionData;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession.MutableSession;
 import org.eclipse.aether.repository.LocalRepository;
-import org.eclipse.aether.repository.LocalRepositoryManager;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.util.ConfigUtils;
-import org.eclipse.aether.util.repository.ChainedLocalRepositoryManager;
 
 /**
  * Support class for {@link Runtime} implementations.
@@ -30,8 +29,6 @@ public abstract class RuntimeSupport implements Runtime {
     public static final String UNKNOWN = "(unknown)";
 
     private static final String MAVEN_REPO_LOCAL_TAIL = "maven.repo.local.tail";
-
-    private static final String MAVEN_REPO_LOCAL_TAIL_IGNORE_AVAILABILITY = "maven.repo.local.tail.ignoreAvailability";
 
     public static final Path DEFAULT_BASEDIR =
             Paths.get(System.getProperty("user.dir")).toAbsolutePath();
@@ -84,7 +81,7 @@ public abstract class RuntimeSupport implements Runtime {
 
     protected Context customizeContext(
             RuntimeSupport runtime, ContextOverrides overrides, Context context, boolean reset) {
-        DefaultRepositorySystemSession session = new DefaultRepositorySystemSession(context.repositorySystemSession());
+        MutableSession session = new DefaultRepositorySystemSession(context.repositorySystemSession());
         if (reset) {
             session.setCache(new DefaultRepositoryCache());
             session.setData(new DefaultSessionData());
@@ -128,7 +125,7 @@ public abstract class RuntimeSupport implements Runtime {
                 null); // derived context: close should NOT shut down repositorySystem
     }
 
-    protected void customizeLocalRepositoryManager(Context context, DefaultRepositorySystemSession session) {
+    protected void customizeLocalRepositoryManager(Context context, MutableSession session) {
         Path localRepoPath = session.getLocalRepository().getBasedir().toPath();
         if (context.mavenUserHome().localRepository().equals(localRepoPath)) {
             return;
@@ -137,28 +134,22 @@ public abstract class RuntimeSupport implements Runtime {
     }
 
     protected void newLocalRepositoryManager(
-            Path localRepoPath, RepositorySystem repositorySystem, DefaultRepositorySystemSession session) {
-        LocalRepository localRepo = new LocalRepository(localRepoPath.toFile());
-        LocalRepositoryManager lrm = repositorySystem.newLocalRepositoryManager(session, localRepo);
-
+            Path localRepoPath, RepositorySystem repositorySystem, MutableSession session) {
+        ArrayList<LocalRepository> localRepositories = new ArrayList<>();
+        localRepositories.add(new LocalRepository(localRepoPath.toFile()));
         String localRepoTail = ConfigUtils.getString(session, null, MAVEN_REPO_LOCAL_TAIL);
         if (localRepoTail != null) {
-            boolean ignoreTailAvailability =
-                    ConfigUtils.getBoolean(session, true, MAVEN_REPO_LOCAL_TAIL_IGNORE_AVAILABILITY);
-            ArrayList<LocalRepositoryManager> tail = new ArrayList<>();
             List<String> paths = Arrays.stream(localRepoTail.split(","))
                     .filter(p -> p != null && !p.trim().isEmpty())
                     .collect(toList());
             for (String path : paths) {
-                tail.add(repositorySystem.newLocalRepositoryManager(session, new LocalRepository(path)));
+                localRepositories.add(new LocalRepository(path));
             }
-            session.setLocalRepositoryManager(new ChainedLocalRepositoryManager(lrm, tail, ignoreTailAvailability));
-        } else {
-            session.setLocalRepositoryManager(lrm);
         }
+        session.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(session, localRepositories));
     }
 
-    protected void customizeChecksumPolicy(ContextOverrides overrides, DefaultRepositorySystemSession session) {
+    protected void customizeChecksumPolicy(ContextOverrides overrides, MutableSession session) {
         if (overrides.getChecksumPolicy() != null) {
             switch (overrides.getChecksumPolicy()) {
                 case FAIL:
@@ -174,7 +165,7 @@ public abstract class RuntimeSupport implements Runtime {
         }
     }
 
-    protected void customizeSnapshotUpdatePolicy(ContextOverrides overrides, DefaultRepositorySystemSession session) {
+    protected void customizeSnapshotUpdatePolicy(ContextOverrides overrides, MutableSession session) {
         if (overrides.getSnapshotUpdatePolicy() != null) {
             switch (overrides.getSnapshotUpdatePolicy()) {
                 case ALWAYS:

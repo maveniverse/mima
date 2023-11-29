@@ -164,7 +164,12 @@
       </dependency>
       <dependency>
         <groupId>org.apache.maven.resolver</groupId>
-        <artifactId>maven-resolver-transport-http</artifactId>
+        <artifactId>maven-resolver-transport-apache</artifactId>
+        <version>${version.resolver}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.resolver</groupId>
+        <artifactId>maven-resolver-transport-jdk</artifactId>
         <version>${version.resolver}</version>
       </dependency>
       <dependency>

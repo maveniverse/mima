@@ -27,7 +27,6 @@ import org.apache.maven.model.building.ModelProblemCollector;
 import org.apache.maven.model.building.ModelProblemCollectorRequest;
 import org.apache.maven.model.profile.DefaultProfileActivationContext;
 import org.apache.maven.model.profile.ProfileSelector;
-import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.apache.maven.settings.Activation;
 import org.apache.maven.settings.ActivationOS;
 import org.apache.maven.settings.ActivationProperty;
@@ -49,10 +48,12 @@ import org.apache.maven.settings.merge.MavenSettingsMerger;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.eclipse.aether.ConfigurationProperties;
 import org.eclipse.aether.DefaultRepositoryCache;
-import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.RepositorySystemSession.SessionBuilder;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
+import org.eclipse.aether.supplier.SessionBuilderSupplier;
 import org.eclipse.aether.util.repository.AuthenticationBuilder;
 import org.eclipse.aether.util.repository.DefaultAuthenticationSelector;
 import org.eclipse.aether.util.repository.DefaultMirrorSelector;
@@ -180,7 +181,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                         .build();
             }
 
-            DefaultRepositorySystemSession session = newRepositorySession(
+            RepositorySystemSession session = newRepositorySession(
                     alteredOverrides, mavenUserHomeImpl, repositorySystem, settings, settingsDecrypter);
 
             // settings: active profile repositories (if enabled), strictly preserve order
@@ -347,13 +348,13 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         return new ArrayList<>(result.values());
     }
 
-    protected DefaultRepositorySystemSession newRepositorySession(
+    protected RepositorySystemSession newRepositorySession(
             ContextOverrides overrides,
             MavenUserHome mavenUserHome,
             RepositorySystem repositorySystem,
             Settings settings,
             SettingsDecrypter settingsDecrypter) {
-        DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
+        SessionBuilder session = new SessionBuilderSupplier(repositorySystem).get();
 
         session.setCache(new DefaultRepositoryCache());
 
