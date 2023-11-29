@@ -1,15 +1,24 @@
 package eu.maveniverse.maven.mima.runtime.shared;
 
+import static java.util.stream.Collectors.toMap;
+
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
+import eu.maveniverse.maven.mima.context.HTTPProxy;
+import eu.maveniverse.maven.mima.context.MavenSystemHome;
+import eu.maveniverse.maven.mima.context.MavenUserHome;
+import eu.maveniverse.maven.mima.context.internal.MavenSystemHomeImpl;
+import eu.maveniverse.maven.mima.context.internal.MavenUserHomeImpl;
 import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,6 +37,7 @@ import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Repository;
 import org.apache.maven.settings.Server;
 import org.apache.maven.settings.Settings;
+import org.apache.maven.settings.TrackableBase;
 import org.apache.maven.settings.building.DefaultSettingsBuildingRequest;
 import org.apache.maven.settings.building.SettingsBuilder;
 import org.apache.maven.settings.building.SettingsBuildingException;
@@ -35,6 +45,7 @@ import org.apache.maven.settings.building.SettingsProblem;
 import org.apache.maven.settings.crypto.DefaultSettingsDecryptionRequest;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
+import org.apache.maven.settings.merge.MavenSettingsMerger;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.eclipse.aether.ConfigurationProperties;
 import org.eclipse.aether.DefaultRepositoryCache;
@@ -67,22 +78,117 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         return result;
     }
 
+    protected PreBoot preBoot(ContextOverrides overrides) {
+        Map<String, String> systemProperties = defaultSystemProperties();
+        systemProperties.putAll(overrides.getSystemProperties());
+        Map<String, String> userProperties = new HashMap<>(overrides.getUserProperties());
+        Map<String, Object> configProperties = new HashMap<>(systemProperties);
+        configProperties.putAll(userProperties);
+        configProperties.putAll(overrides.getConfigProperties());
+
+        Path localRepositoryOverride = safeAbsolute(overrides.getLocalRepositoryOverride());
+        if (localRepositoryOverride == null) {
+            String localRepoPath = (String) configProperties.get("maven.repo.local");
+            if (localRepoPath != null) {
+                localRepositoryOverride = Paths.get(localRepoPath).toAbsolutePath();
+            }
+        }
+
+        Path mavenSystemHome = safeAbsolute(overrides.getMavenSystemHomeOverride());
+        if (mavenSystemHome == null) {
+            String mavenHome = (String) configProperties.get("maven.home");
+            if (mavenHome == null) {
+                mavenHome = (String) configProperties.get("env.MAVEN_HOME");
+            }
+            if (mavenHome != null) {
+                mavenSystemHome = Paths.get(mavenHome).toAbsolutePath();
+            }
+        }
+
+        ContextOverrides alteredOverrides = overrides.toBuilder()
+                .systemProperties(systemProperties)
+                .userProperties(userProperties)
+                .configProperties(configProperties)
+                .withLocalRepositoryOverride(localRepositoryOverride)
+                .build();
+
+        MavenUserHomeImpl mavenUserHomeImpl = defaultMavenUserHome().derive(alteredOverrides);
+        MavenSystemHomeImpl mavenSystemHomeImpl =
+                mavenSystemHome != null ? new MavenSystemHomeImpl(mavenSystemHome).derive(alteredOverrides) : null;
+        Path baseDir =
+                alteredOverrides.getBasedirOverride() != null ? alteredOverrides.getBasedirOverride() : DEFAULT_BASEDIR;
+
+        return new PreBoot(alteredOverrides, mavenUserHomeImpl, mavenSystemHomeImpl, baseDir);
+    }
+
     protected Context buildContext(
             StandaloneRuntimeSupport runtime,
-            ContextOverrides overrides,
+            PreBoot preBoot,
             RepositorySystem repositorySystem,
             SettingsBuilder settingsBuilder,
             SettingsDecrypter settingsDecrypter,
             ProfileSelector profileSelector,
             Runnable managedCloser) {
         try {
-            Settings settings = newEffectiveSettings(overrides, settingsBuilder);
-            DefaultRepositorySystemSession session =
-                    newRepositorySession(overrides, repositorySystem, settings, settingsDecrypter);
-            final ArrayList<RemoteRepository> remoteRepositories = new ArrayList<>();
-            if (overrides.isAppendRepositories() || overrides.getRepositories().isEmpty()) {
-                remoteRepositories.add(ContextOverrides.CENTRAL); // first: best practice
-                List<Profile> activeProfiles = activeProfilesByActivation(overrides, settings, profileSelector);
+            ContextOverrides alteredOverrides = preBoot.getOverrides();
+            MavenUserHomeImpl mavenUserHomeImpl = preBoot.getMavenUserHome();
+            MavenSystemHomeImpl mavenSystemHomeImpl = preBoot.getMavenSystemHome();
+            Path baseDir = preBoot.getBaseDir();
+
+            Settings settings =
+                    newEffectiveSettings(alteredOverrides, mavenUserHomeImpl, mavenSystemHomeImpl, settingsBuilder);
+
+            // settings: local repository
+            if (settings.getLocalRepository() != null && alteredOverrides.getLocalRepositoryOverride() == null) {
+                mavenUserHomeImpl = mavenUserHomeImpl.withLocalRepository(
+                        Paths.get(settings.getLocalRepository()).toAbsolutePath());
+            }
+
+            // settings: active proxy
+            Proxy proxy = settings.getActiveProxy();
+            HTTPProxy httpProxy = null;
+            if (proxy != null) {
+                httpProxy = toHTTPProxy(proxy);
+            }
+
+            // settings: active profiles
+            List<Profile> activeProfiles =
+                    activeProfilesByActivation(alteredOverrides, baseDir, settings, profileSelector);
+            if (!activeProfiles.isEmpty()) {
+                alteredOverrides = alteredOverrides.toBuilder()
+                        .withActiveProfileIds(
+                                activeProfiles.stream().map(Profile::getId).collect(Collectors.toList()))
+                        .build();
+            }
+
+            // settings: active profile properties
+            // In MIMA there is no "project context", but to support Resolver configuration
+            // via settings.xml (MNG-7590) we push them into user properties.
+            // Note: putIfAbsent used, as if key is present, it means it was added via override already
+            HashMap<String, String> profileProperties = new HashMap<>();
+            for (Profile profile : activeProfiles) {
+                profile.getProperties()
+                        .stringPropertyNames()
+                        .forEach(n ->
+                                profileProperties.put(n, profile.getProperties().getProperty(n)));
+            }
+            if (!profileProperties.isEmpty()) {
+                Map<String, String> profileUserProperties = new HashMap<>(alteredOverrides.getUserProperties());
+                profileProperties.forEach(profileUserProperties::putIfAbsent);
+                alteredOverrides = alteredOverrides.toBuilder()
+                        .userProperties(profileUserProperties)
+                        .build();
+            }
+
+            DefaultRepositorySystemSession session = newRepositorySession(
+                    alteredOverrides, mavenUserHomeImpl, repositorySystem, settings, settingsDecrypter);
+
+            // settings: active profile repositories (if enabled), strictly preserve order
+            final LinkedHashMap<String, RemoteRepository> remoteRepositories = new LinkedHashMap<>();
+            if (alteredOverrides.addRepositoriesOp() != ContextOverrides.AddRepositoriesOp.REPLACE) {
+                if (alteredOverrides.addRepositoriesOp() == ContextOverrides.AddRepositoriesOp.PREPEND) {
+                    alteredOverrides.getRepositories().forEach(r -> remoteRepositories.put(r.getId(), r));
+                }
                 for (Profile profile : activeProfiles) {
                     for (Repository repository : profile.getRepositories()) {
                         RemoteRepository.Builder builder = new RemoteRepository.Builder(
@@ -103,39 +209,53 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                         } else {
                             builder.setSnapshotPolicy(new RepositoryPolicy(false, null, null));
                         }
-                        addReplace(remoteRepositories, builder.build());
+                        RemoteRepository remoteRepository = builder.build();
+                        remoteRepositories.put(remoteRepository.getId(), remoteRepository);
                     }
                 }
-            }
-            if (!overrides.getRepositories().isEmpty()) {
-                if (!overrides.isAppendRepositories()) {
-                    remoteRepositories.clear();
+                if (alteredOverrides.addRepositoriesOp() == ContextOverrides.AddRepositoriesOp.APPEND) {
+                    alteredOverrides.getRepositories().forEach(r -> remoteRepositories.put(r.getId(), r));
                 }
-                overrides.getRepositories().forEach(r -> addReplace(remoteRepositories, r));
+            } else {
+                alteredOverrides.getRepositories().forEach(r -> remoteRepositories.put(r.getId(), r));
             }
             return new Context(
                     runtime,
-                    overrides,
+                    alteredOverrides,
+                    baseDir,
+                    mavenUserHomeImpl,
+                    mavenSystemHomeImpl,
                     repositorySystem,
                     session,
-                    repositorySystem.newResolutionRepositories(session, remoteRepositories),
+                    repositorySystem.newResolutionRepositories(session, new ArrayList<>(remoteRepositories.values())),
+                    httpProxy,
                     managedCloser);
         } catch (Exception e) {
             throw new IllegalStateException("Cannot create context from scratch", e);
         }
     }
 
-    protected void addReplace(List<RemoteRepository> remoteRepositories, RemoteRepository repository) {
-        remoteRepositories.removeIf(r -> Objects.equals(repository.getId(), r.getId()));
-        remoteRepositories.add(repository);
+    private HTTPProxy toHTTPProxy(Proxy proxy) {
+        HashMap<String, Object> data = new HashMap<>();
+        if (proxy.getUsername() != null) {
+            data.put("username", proxy.getUsername());
+        }
+        if (proxy.getPassword() != null) {
+            data.put("password", proxy.getPassword());
+        }
+        return new HTTPProxy(proxy.getProtocol(), proxy.getHost(), proxy.getPort(), proxy.getNonProxyHosts(), data);
     }
 
-    protected Settings newEffectiveSettings(ContextOverrides overrides, SettingsBuilder settingsBuilder)
+    protected Settings newEffectiveSettings(
+            ContextOverrides overrides,
+            MavenUserHome mavenUserHome,
+            MavenSystemHome mavenSystemHome,
+            SettingsBuilder settingsBuilder)
             throws SettingsBuildingException {
         if (!overrides.isWithUserSettings()) {
             return new Settings();
         }
-        if (overrides.getEffectiveSettings() != null) {
+        if (overrides.getEffectiveSettings() instanceof Settings) {
             return (Settings) overrides.getEffectiveSettings();
         }
         DefaultSettingsBuildingRequest settingsBuilderRequest = new DefaultSettingsBuildingRequest();
@@ -146,25 +266,41 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         Properties userProperties = new Properties();
         userProperties.putAll(overrides.getUserProperties());
         settingsBuilderRequest.setUserProperties(userProperties);
-        if (overrides.getGlobalSettingsXmlOverride() != null) {
+        if (mavenSystemHome != null) {
             settingsBuilderRequest.setGlobalSettingsFile(
-                    overrides.getGlobalSettingsXmlOverride().toFile());
-        } else if (overrides.getMavenSystemHome() != null) {
-            settingsBuilderRequest.setGlobalSettingsFile(
-                    overrides.getMavenSystemHome().settingsXml().toFile());
+                    mavenSystemHome.settingsXml().toFile());
         }
-        settingsBuilderRequest.setUserSettingsFile(
-                overrides.getMavenUserHome().settingsXml().toFile());
-        return settingsBuilder.build(settingsBuilderRequest).getEffectiveSettings();
+        settingsBuilderRequest.setUserSettingsFile(mavenUserHome.settingsXml().toFile());
+        Settings result = settingsBuilder.build(settingsBuilderRequest).getEffectiveSettings();
+        if (overrides.getEffectiveSettingsMixin() instanceof Settings) {
+            settingsMixin(result, (Settings) overrides.getEffectiveSettingsMixin());
+        }
+        return result;
+    }
+
+    protected void settingsMixin(Settings settings, Settings mixin) {
+        // Special care for mixin that is about to add Proxy:
+        // - disable all other proxies, if exists
+        // Hence:
+        // - if mixin proxy is active, it prevails
+        // - if mixin proxy is inactive, shuts down proxy
+        boolean mixinAddsProxy = !mixin.getProxies().isEmpty();
+        if (mixinAddsProxy) {
+            for (Proxy proxy : settings.getProxies()) {
+                proxy.setActive(false);
+            }
+            settings.flushActiveProxy();
+        }
+        new MavenSettingsMerger().merge(settings, mixin, TrackableBase.GLOBAL_LEVEL);
     }
 
     protected List<Profile> activeProfilesByActivation(
-            ContextOverrides overrides, Settings settings, ProfileSelector profileSelector) {
+            ContextOverrides overrides, Path basedir, Settings settings, ProfileSelector profileSelector) {
         if (profileSelector == null) {
             return activeProfiles(settings);
         } else {
             DefaultProfileActivationContext context = new DefaultProfileActivationContext();
-            context.setProjectDirectory(overrides.getBasedir().toFile());
+            context.setProjectDirectory(basedir.toFile());
             context.setActiveProfileIds(
                     Stream.concat(settings.getActiveProfiles().stream(), overrides.getActiveProfileIds().stream())
                             .distinct()
@@ -213,6 +349,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
 
     protected DefaultRepositorySystemSession newRepositorySession(
             ContextOverrides overrides,
+            MavenUserHome mavenUserHome,
             RepositorySystem repositorySystem,
             Settings settings,
             SettingsDecrypter settingsDecrypter) {
@@ -221,13 +358,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         session.setCache(new DefaultRepositoryCache());
 
         LinkedHashMap<Object, Object> configProps = new LinkedHashMap<>(overrides.getConfigProperties());
-        configProps.put(ConfigurationProperties.USER_AGENT, getUserAgent());
-
-        // First add properties populated from settings.xml
-        List<Profile> activeProfiles = activeProfiles(settings);
-        for (Profile profile : activeProfiles) {
-            configProps.putAll(profile.getProperties());
-        }
+        configProps.putIfAbsent(ConfigurationProperties.USER_AGENT, getUserAgent());
 
         // internal things, these should not be overridden
         configProps.put(ConfigurationProperties.INTERACTIVE, false);
@@ -353,7 +484,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             session.setRepositoryListener(overrides.getRepositoryListener());
         }
 
-        newLocalRepositoryManager(overrides.getMavenUserHome().localRepository(), repositorySystem, session);
+        newLocalRepositoryManager(mavenUserHome.localRepository(), repositorySystem, session);
 
         return session;
     }
@@ -361,6 +492,33 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
     protected String getUserAgent() {
         return "Apache-Maven/" + mavenVersion() + " (Java " + System.getProperty("java.version") + "; "
                 + System.getProperty("os.name") + " " + System.getProperty("os.version") + "; MIMA " + version() + ")";
+    }
+
+    /**
+     * Collects (Maven) system properties as Maven does: it is a mixture of {@link System#getenv()} prefixed with
+     * {@code "env."} and Java System properties.
+     */
+    protected static Map<String, String> defaultSystemProperties() {
+        HashMap<String, String> result = new HashMap<>();
+        // Env variables prefixed with "env."
+        result.putAll(System.getenv().entrySet().stream()
+                .map(e -> new AbstractMap.SimpleEntry<>("env." + e.getKey(), e.getValue()))
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue)));
+        // Java System properties
+        result.putAll(System.getProperties().entrySet().stream()
+                .collect(toMap(e -> (String) e.getKey(), e -> (String) e.getValue())));
+
+        return result;
+    }
+
+    /**
+     * Helper to safely make nullable {@link Path} instances absolute.
+     */
+    protected static Path safeAbsolute(Path path) {
+        if (path == null) {
+            return null;
+        }
+        return path.toAbsolutePath();
     }
 
     // SettingsUtils copy BEGIN

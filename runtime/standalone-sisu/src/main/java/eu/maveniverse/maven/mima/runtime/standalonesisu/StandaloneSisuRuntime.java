@@ -2,6 +2,7 @@ package eu.maveniverse.maven.mima.runtime.standalonesisu;
 
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
+import eu.maveniverse.maven.mima.runtime.shared.PreBoot;
 import eu.maveniverse.maven.mima.runtime.shared.StandaloneRuntimeSupport;
 import eu.maveniverse.maven.mima.runtime.standalonesisu.internal.SisuBooter;
 import javax.inject.Inject;
@@ -48,12 +49,13 @@ public final class StandaloneSisuRuntime extends StandaloneRuntimeSupport {
 
     @Override
     public Context create(ContextOverrides overrides) {
+        PreBoot preBoot = preBoot(overrides);
         // managed or unmanaged context: depending on how we booted
         if (repositorySystem == null) {
-            SisuBooter booter = SisuBooter.newSisuBooter(overrides);
+            SisuBooter booter = SisuBooter.newSisuBooter(preBoot);
             return buildContext(
                     this,
-                    overrides,
+                    preBoot,
                     booter.repositorySystem,
                     booter.settingsBuilder,
                     booter.settingsDecrypter,
@@ -61,7 +63,7 @@ public final class StandaloneSisuRuntime extends StandaloneRuntimeSupport {
                     booter::close);
         } else {
             return buildContext(
-                    this, overrides, repositorySystem, settingsBuilder, settingsDecrypter, profileSelector, null);
+                    this, preBoot, repositorySystem, settingsBuilder, settingsDecrypter, profileSelector, null);
         }
     }
 }

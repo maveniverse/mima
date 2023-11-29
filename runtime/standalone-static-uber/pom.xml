@@ -5,7 +5,7 @@
   <parent>
     <groupId>eu.maveniverse.maven.mima.runtime</groupId>
     <artifactId>runtime</artifactId>
-    <version>2.3.6-SNAPSHOT</version>
+    <version>2.4.4-SNAPSHOT</version>
   </parent>
 
   <artifactId>standalone-static-uber</artifactId>
@@ -55,6 +55,7 @@
           <shadedClassifierName />
           <transformers>
             <transformer implementation="org.apache.maven.plugins.shade.resource.SisuIndexResourceTransformer" />
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer" />
           </transformers>
         </configuration>
         <executions>
@@ -63,6 +64,52 @@
               <goal>shade</goal>
             </goals>
             <phase>package</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <configuration>
+          <skipSource>true</skipSource>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>source-dependencies</id>
+            <goals>
+              <goal>unpack-dependencies</goal>
+            </goals>
+            <phase>prepare-package</phase>
+            <configuration>
+              <classifier>sources</classifier>
+              <failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
+              <outputDirectory>${project.build.directory}/sources</outputDirectory>
+              <excludeGroupIds>org.slf4j</excludeGroupIds>
+              <includes>**/*.java</includes>
+              <includeScope>runtime</includeScope>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>uber-source</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <descriptors>
+                <descriptor>${project.basedir}/src/assemblies/uber-source.xml</descriptor>
+              </descriptors>
+            </configuration>
           </execution>
         </executions>
       </plugin>
