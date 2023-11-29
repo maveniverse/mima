@@ -115,6 +115,8 @@ public abstract class RuntimeSupport implements Runtime {
         List<RemoteRepository> remoteRepositories =
                 customizeRemoteRepositories(overrides, context.remoteRepositories());
 
+        session.setReadOnly();
+
         return new Context(
                 runtime,
                 overrides,
