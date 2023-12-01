@@ -17,4 +17,11 @@ public interface MavenUserHome {
     Path toolchainsXml();
 
     Path localRepository();
+
+    /**
+     * Derives new maven user home from itself with overrides applied.
+     *
+     * @since 2.4.4
+     */
+    MavenUserHome derive(ContextOverrides contextOverrides);
 }
