@@ -230,13 +230,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                     session,
                     repositorySystem.newResolutionRepositories(session, new ArrayList<>(remoteRepositories.values())),
                     httpProxy,
-                    () -> {
-                        try {
-                            session.close();
-                        } finally {
-                            managedCloser.run();
-                        }
-                    });
+                    managedCloser);
         } catch (Exception e) {
             throw new IllegalStateException("Cannot create context from scratch", e);
         }
@@ -491,7 +485,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             session.setRepositoryListener(overrides.getRepositoryListener());
         }
 
-        newLocalRepositoryManager(mavenUserHome.localRepository(), repositorySystem, session);
+        newLocalRepositoryManager(overrides, mavenUserHome.localRepository(), session);
 
         return session.build();
     }

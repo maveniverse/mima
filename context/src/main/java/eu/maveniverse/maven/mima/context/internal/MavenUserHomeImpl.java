@@ -47,6 +47,7 @@ public final class MavenUserHomeImpl implements MavenUserHome {
                 localRepository);
     }
 
+    @Override
     public MavenUserHomeImpl derive(ContextOverrides contextOverrides) {
         return new MavenUserHomeImpl(
                 contextOverrides.getMavenUserHomeOverride() != null

@@ -17,4 +17,6 @@ public interface MavenUserHome {
     Path toolchainsXml();
 
     Path localRepository();
+
+    MavenUserHome derive(ContextOverrides contextOverrides);
 }

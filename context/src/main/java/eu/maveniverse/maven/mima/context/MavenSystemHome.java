@@ -23,4 +23,6 @@ public interface MavenSystemHome {
     Path settingsXml();
 
     Path toolchainsXml();
+
+    MavenSystemHome derive(ContextOverrides contextOverrides);
 }
