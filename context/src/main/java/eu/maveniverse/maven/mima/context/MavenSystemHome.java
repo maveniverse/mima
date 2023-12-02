@@ -24,5 +24,10 @@ public interface MavenSystemHome {
 
     Path toolchainsXml();
 
+    /**
+     * Derives new maven system home from itself with overrides applied.
+     *
+     * @since 2.4.4
+     */
     MavenSystemHome derive(ContextOverrides contextOverrides);
 }
