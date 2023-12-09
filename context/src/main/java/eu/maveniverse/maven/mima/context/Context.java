@@ -30,6 +30,7 @@ import org.eclipse.aether.repository.RemoteRepository;
  */
 public final class Context implements Closeable {
     private final AtomicBoolean closed;
+
     private final RuntimeSupport runtime;
 
     private final ContextOverrides contextOverrides;
