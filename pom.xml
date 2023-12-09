@@ -5,12 +5,12 @@
   <parent>
     <groupId>eu.maveniverse.maven.parent</groupId>
     <artifactId>parent</artifactId>
-    <version>6</version>
+    <version>7</version>
   </parent>
 
   <groupId>eu.maveniverse.maven.mima</groupId>
   <artifactId>mima</artifactId>
-  <version>2.4.4-SNAPSHOT</version>
+  <version>2.4.5-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>${project.groupId}:${project.artifactId}</name>
@@ -48,7 +48,7 @@
   </ciManagement>
 
   <properties>
-    <project.build.outputTimestamp>2023-11-25T21:19:07Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2023-12-09T13:00:37Z</project.build.outputTimestamp>
 
     <!--
     Build time: latest Maven and LTS Java.
@@ -57,9 +57,9 @@
     <requireBuildtimeJavaVersion.version>[17.0.6,)</requireBuildtimeJavaVersion.version>
 
     <!-- Dependency versions -->
-    <version.resolver>2.0.0-SNAPSHOT</version.resolver>
+    <version.resolver>2.0.0-alpha-3</version.resolver>
     <version.maven>4.0.0-alpha-8</version.maven>
-    <version.mase>1.0.0</version.mase>
+    <version.mase>1.0.1</version.mase>
     <version.sisu>0.9.0.M2</version.sisu>
     <version.slf4j>1.7.36</version.slf4j>
     <version.picocli>4.7.5</version.picocli>
