@@ -5,7 +5,7 @@
   <parent>
     <groupId>eu.maveniverse.maven.parent</groupId>
     <artifactId>parent</artifactId>
-    <version>6</version>
+    <version>7</version>
   </parent>
 
   <groupId>eu.maveniverse.maven.mima</groupId>
@@ -58,7 +58,7 @@
 
     <!-- Dependency versions -->
     <version.resolver>1.9.18</version.resolver>
-    <version.maven>3.9.5</version.maven>
+    <version.maven>3.9.6</version.maven>
     <version.mase>1.0.0</version.mase>
     <version.sisu>0.9.0.M2</version.sisu>
     <version.slf4j>1.7.36</version.slf4j>
