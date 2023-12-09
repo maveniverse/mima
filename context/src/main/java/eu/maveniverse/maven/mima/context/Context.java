@@ -6,6 +6,8 @@ import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
 import java.io.Closeable;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -28,6 +30,7 @@ import org.eclipse.aether.repository.RemoteRepository;
  * @see Runtime#create(ContextOverrides)
  */
 public final class Context implements Closeable {
+    private final AtomicBoolean closed;
     private final RuntimeSupport runtime;
 
     private final ContextOverrides contextOverrides;
@@ -59,6 +62,7 @@ public final class Context implements Closeable {
             List<RemoteRepository> remoteRepositories,
             HTTPProxy httpProxy,
             Runnable managedCloser) {
+        this.closed = new AtomicBoolean(false);
         this.runtime = requireNonNull(runtime);
         this.contextOverrides = requireNonNull(contextOverrides);
         this.basedir = requireNonNull(basedir);
@@ -144,6 +148,9 @@ public final class Context implements Closeable {
      * instance as "base".
      */
     public Context customize(ContextOverrides overrides) {
+        if (closed.get()) {
+            throw new IllegalStateException("context is closed");
+        }
         return runtime.customizeContext(overrides, this, false);
     }
 
@@ -152,10 +159,12 @@ public final class Context implements Closeable {
      */
     @Override
     public void close() {
-        // in the future session may become closeable as well
-        // repositorySystemSession.close();
-        if (managedCloser != null) {
-            managedCloser.run();
+        if (closed.compareAndSet(false, true)) {
+            // in the future session may become closeable as well
+            // repositorySystemSession.close();
+            if (managedCloser != null) {
+                managedCloser.run();
+            }
         }
     }
 }
