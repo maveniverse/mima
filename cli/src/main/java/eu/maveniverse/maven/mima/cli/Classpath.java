@@ -24,7 +24,7 @@ public final class Classpath extends ResolverCommandSupport {
 
     @Override
     protected Integer doCall(Context context) throws DependencyResolutionException {
-        logger.info("Classpath {}", gav);
+        info("Classpath {}", gav);
 
         Artifact artifact = new DefaultArtifact(gav);
 
@@ -39,8 +39,8 @@ public final class Classpath extends ResolverCommandSupport {
 
         PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
         dependencyResult.getRoot().accept(nlg);
-        logger.info("");
-        logger.info("{}", nlg.getClassPath());
+        info("");
+        info("{}", nlg.getClassPath());
         return 0;
     }
 }
