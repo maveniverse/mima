@@ -18,7 +18,7 @@ public final class DeployRecorded extends ResolverCommandSupport {
 
     @Override
     protected Integer doCall(Context context) throws DeploymentException {
-        logger.info("Deploying recorded");
+        info("Deploying recorded");
 
         ArtifactRecorder recorder = (ArtifactRecorder) pop(ArtifactRecorder.class.getName());
         DeployRequest deployRequest = new DeployRequest();
@@ -32,8 +32,8 @@ public final class DeployRecorded extends ResolverCommandSupport {
 
         context.repositorySystem().deploy(getRepositorySystemSession(), deployRequest);
 
-        logger.info("");
-        logger.info("Deployed recorded {} artifacts to {}", uniqueArtifacts.size(), remoteRepository);
+        info("");
+        info("Deployed recorded {} artifacts to {}", uniqueArtifacts.size(), remoteRepository);
         return 0;
     }
 }

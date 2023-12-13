@@ -30,7 +30,7 @@ public abstract class ResolverCommandSupport extends CommandSupport {
         try (Context context = getContext()) {
             return doCall(context);
         } catch (Exception e) {
-            logger.error("Error", e);
+            error("Error", e);
             return 1;
         }
     }

@@ -48,7 +48,7 @@ public final class Resolve extends ResolverCommandSupport {
 
     @Override
     protected Integer doCall(Context context) throws DependencyResolutionException {
-        logger.info("Resolving {}", gav);
+        info("Resolving {}", gav);
 
         DefaultRepositorySystemSession session = new DefaultRepositorySystemSession(getRepositorySystemSession());
         ArtifactRecorder recorder = new ArtifactRecorder();
@@ -89,13 +89,13 @@ public final class Resolve extends ResolverCommandSupport {
             // log
         }
 
-        logger.info("");
+        info("");
         if (verbose) {
             for (Artifact artifact : recorder.getAllArtifacts()) {
-                logger.info("{} -> {}", artifact, artifact.getFile());
+                info("{} -> {}", artifact, artifact.getFile());
             }
         } else {
-            logger.info("Resolved {} artifacts", recorder.getAllArtifacts().size());
+            info("Resolved {} artifacts", recorder.getAllArtifacts().size());
         }
         return 0;
     }

@@ -21,18 +21,18 @@ public final class Identify extends SearchCommandSupport {
 
     @Override
     protected Integer doCall() throws IOException {
-        logger.info("Identify {}", sha1);
+        info("Identify {}", sha1);
 
         try (SearchBackend backend = getSmoBackend(repositoryId)) {
             SearchRequest searchRequest = new SearchRequest(fieldQuery(MAVEN.SHA1, sha1));
             SearchResponse searchResponse = backend.search(searchRequest);
-            logger.info("");
+            info("");
             AtomicInteger counter = new AtomicInteger();
-            renderPage(counter, searchResponse.getPage()).forEach(logger::info);
+            renderPage(counter, searchResponse.getPage()).forEach(this::info);
             while (searchResponse.getCurrentHits() > 0) {
                 searchResponse =
                         backend.search(searchResponse.getSearchRequest().nextPage());
-                renderPage(counter, searchResponse.getPage()).forEach(logger::info);
+                renderPage(counter, searchResponse.getPage()).forEach(this::info);
             }
         }
         return 0;
