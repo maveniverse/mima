@@ -8,8 +8,8 @@ The MIMA Demo showcases its usage outside and inside of Maven.
 
 It consists of 4 modules:
 
-* `library` - the reusable "library" that uses MIMA to perform some Resolver task (in this example it 
-resolves transitive dependencies of an artifact and simply returns the String containing
+* `library` - the reusable "library" that uses MIMA to perform some Resolver task. In this example it 
+resolves transitive dependencies of an artifact and simply returns a String containing
 OS correct classpath for given artifact.
 * `library-standalone-sisu` - mimics an "application" that reuses "library" in a "standalone" scenario
 and uses Eclipse Sisu DI (hence, "standalone-sisu-uber" runtime is used). It merely invokes the
