@@ -30,7 +30,7 @@ public final class Deploy extends ResolverCommandSupport {
 
     @Override
     protected Integer doCall(Context context) throws DeploymentException {
-        logger.info("Deploying {}", gav);
+        info("Deploying {}", gav);
 
         Artifact jarArtifact = new DefaultArtifact(gav);
         jarArtifact = jarArtifact.setFile(jar.toFile());
@@ -48,8 +48,8 @@ public final class Deploy extends ResolverCommandSupport {
 
         context.repositorySystem().deploy(getRepositorySystemSession(), deployRequest);
 
-        logger.info("");
-        logger.info("Deployed {}", gav);
+        info("");
+        info("Deployed {}", gav);
         return 0;
     }
 }

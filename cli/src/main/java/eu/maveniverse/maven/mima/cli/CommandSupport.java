@@ -7,6 +7,7 @@ import eu.maveniverse.maven.mima.context.MavenSystemHome;
 import eu.maveniverse.maven.mima.context.MavenUserHome;
 import eu.maveniverse.maven.mima.context.Runtime;
 import eu.maveniverse.maven.mima.context.Runtimes;
+import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -20,8 +21,7 @@ import java.util.function.Supplier;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Settings;
 import org.eclipse.aether.repository.RemoteRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.helpers.MessageFormatter;
 import picocli.CommandLine;
 
 /**
@@ -64,16 +64,14 @@ public abstract class CommandSupport implements Callable<Integer> {
             description = "Define a HTTP proxy (host:port)")
     protected String proxy;
 
-    protected Logger logger = LoggerFactory.getLogger(getClass());
-
     private static final ConcurrentHashMap<String, ArrayDeque<Object>> EXECUTION_CONTEXT = new ConcurrentHashMap<>();
 
     private static final AtomicBoolean VWO = new AtomicBoolean(false);
 
     protected void writeVersionOnce(Runtime runtime) {
         if (VWO.compareAndSet(false, true)) {
-            logger.info("MIMA (Runtime '{}' version {})", runtime.name(), runtime.version());
-            logger.info("====");
+            info("MIMA (Runtime '{}' version {})", runtime.name(), runtime.version());
+            info("====");
         }
     }
 
@@ -108,69 +106,68 @@ public abstract class CommandSupport implements Callable<Integer> {
 
     protected void mayDumpEnv(Runtime runtime, Context context) {
         writeVersionOnce(runtime);
-        logger.info("          Maven version {}", runtime.mavenVersion());
-        logger.info("                Managed {}", runtime.managedRepositorySystem());
-        logger.info("                Basedir {}", context.basedir());
-        logger.info(
-                "                Offline {}", context.repositorySystemSession().isOffline());
+        info("          Maven version {}", runtime.mavenVersion());
+        info("                Managed {}", runtime.managedRepositorySystem());
+        info("                Basedir {}", context.basedir());
+        info("                Offline {}", context.repositorySystemSession().isOffline());
 
         MavenSystemHome mavenSystemHome = context.mavenSystemHome();
-        logger.info("");
-        logger.info("             MAVEN_HOME {}", mavenSystemHome == null ? "undefined" : mavenSystemHome.basedir());
+        info("");
+        info("             MAVEN_HOME {}", mavenSystemHome == null ? "undefined" : mavenSystemHome.basedir());
         if (mavenSystemHome != null) {
-            logger.info("           settings.xml {}", mavenSystemHome.settingsXml());
-            logger.info("         toolchains.xml {}", mavenSystemHome.toolchainsXml());
+            info("           settings.xml {}", mavenSystemHome.settingsXml());
+            info("         toolchains.xml {}", mavenSystemHome.toolchainsXml());
         }
 
         MavenUserHome mavenUserHome = context.mavenUserHome();
-        logger.info("");
-        logger.info("              USER_HOME {}", mavenUserHome.basedir());
-        logger.info("           settings.xml {}", mavenUserHome.settingsXml());
-        logger.info("  settings-security.xml {}", mavenUserHome.settingsSecurityXml());
-        logger.info("       local repository {}", mavenUserHome.localRepository());
+        info("");
+        info("              USER_HOME {}", mavenUserHome.basedir());
+        info("           settings.xml {}", mavenUserHome.settingsXml());
+        info("  settings-security.xml {}", mavenUserHome.settingsSecurityXml());
+        info("       local repository {}", mavenUserHome.localRepository());
 
-        logger.info("");
-        logger.info("               PROFILES");
-        logger.info("                 Active {}", context.contextOverrides().getActiveProfileIds());
-        logger.info("               Inactive {}", context.contextOverrides().getInactiveProfileIds());
+        info("");
+        info("               PROFILES");
+        info("                 Active {}", context.contextOverrides().getActiveProfileIds());
+        info("               Inactive {}", context.contextOverrides().getInactiveProfileIds());
 
-        logger.info("");
-        logger.info("    REMOTE REPOSITORIES");
+        info("");
+        info("    REMOTE REPOSITORIES");
         for (RemoteRepository repository : context.remoteRepositories()) {
             if (repository.getMirroredRepositories().isEmpty()) {
-                logger.info("                        {}", repository);
+                info("                        {}", repository);
             } else {
-                logger.info("                        {}, mirror of", repository);
+                info("                        {}, mirror of", repository);
                 for (RemoteRepository mirrored : repository.getMirroredRepositories()) {
-                    logger.info("                          {}", mirrored);
+                    info("                          {}", mirrored);
                 }
             }
         }
 
         if (context.httpProxy() != null) {
             HTTPProxy proxy = context.httpProxy();
-            logger.info("");
-            logger.info("             HTTP PROXY");
-            logger.info("                    url {}://{}:{}", proxy.getProtocol(), proxy.getHost(), proxy.getPort());
-            logger.info("          nonProxyHosts {}", proxy.getNonProxyHosts());
+            info("");
+            info("             HTTP PROXY");
+            info("                    url {}://{}:{}", proxy.getProtocol(), proxy.getHost(), proxy.getPort());
+            info("          nonProxyHosts {}", proxy.getNonProxyHosts());
         }
 
         if (verbose) {
-            logger.info("");
-            logger.info("        USER PROPERTIES");
+            info("");
+            info("        USER PROPERTIES");
             context.contextOverrides().getUserProperties().entrySet().stream()
                     .sorted(Map.Entry.comparingByKey())
-                    .forEach(e -> logger.info("                         {}={}", e.getKey(), e.getValue()));
-            logger.info("      SYSTEM PROPERTIES");
+                    .forEach(e -> info("                         {}={}", e.getKey(), e.getValue()));
+            info("      SYSTEM PROPERTIES");
             context.contextOverrides().getSystemProperties().entrySet().stream()
                     .sorted(Map.Entry.comparingByKey())
-                    .forEach(e -> logger.info("                         {}={}", e.getKey(), e.getValue()));
-            logger.info("      CONFIG PROPERTIES");
+                    .forEach(e -> info("                         {}={}", e.getKey(), e.getValue()));
+            info("      CONFIG PROPERTIES");
             context.contextOverrides().getConfigProperties().entrySet().stream()
                     .sorted(Map.Entry.comparingByKey())
-                    .forEach(e -> logger.info("                         {}={}", e.getKey(), e.getValue()));
+                    .forEach(e -> info("                         {}={}", e.getKey(), e.getValue()));
         }
-        logger.info("");
+        info("");
     }
 
     protected Runtime getRuntime() {
@@ -244,5 +241,111 @@ public abstract class CommandSupport implements Callable<Integer> {
 
     protected Context getContext() {
         return (Context) getOrCreate(Context.class.getName(), () -> getRuntime().create(getContextOverrides()));
+    }
+
+    protected void info(String message) {
+        log(System.out, message);
+    }
+
+    protected void info(String format, Object arg1) {
+        log(System.out, MessageFormatter.format(format, arg1).getMessage());
+    }
+
+    protected void info(String format, Object arg1, Object arg2) {
+        log(System.out, MessageFormatter.format(format, arg1, arg2).getMessage());
+    }
+
+    protected void info(String format, Object arg1, Object arg2, Object arg3) {
+        log(
+                System.out,
+                MessageFormatter.arrayFormat(format, new Object[] {arg1, arg2, arg3})
+                        .getMessage());
+    }
+
+    protected void error(String message, Throwable throwable) {
+        log(System.err, failure(message), throwable);
+    }
+
+    private void log(PrintStream ps, String message) {
+        log(ps, message, null);
+    }
+
+    private void log(PrintStream ps, String message, Throwable throwable) {
+        ps.println(message);
+        writeThrowable(throwable, ps);
+    }
+
+    private static String failure(String format) {
+        return "\u001b[1;31m" + format + "\u001b[m";
+    }
+
+    private static String strong(String format) {
+        return "\u001b[1m" + format + "\u001b[m";
+    }
+
+    private void writeThrowable(Throwable t, PrintStream stream) {
+        if (t == null) {
+            return;
+        }
+        String builder = failure(t.getClass().getName());
+        if (t.getMessage() != null) {
+            builder += ": " + failure(t.getMessage());
+        }
+        stream.println(builder);
+
+        printStackTrace(t, stream, "");
+    }
+
+    private void printStackTrace(Throwable t, PrintStream stream, String prefix) {
+        StringBuilder builder = new StringBuilder();
+        for (StackTraceElement e : t.getStackTrace()) {
+            builder.append(prefix);
+            builder.append("    ");
+            builder.append(strong("at"));
+            builder.append(" ");
+            builder.append(e.getClassName());
+            builder.append(".");
+            builder.append(e.getMethodName());
+            builder.append(" (");
+            builder.append(strong(getLocation(e)));
+            builder.append(")");
+            stream.println(builder);
+            builder.setLength(0);
+        }
+        for (Throwable se : t.getSuppressed()) {
+            writeThrowable(se, stream, "Suppressed", prefix + "    ");
+        }
+        Throwable cause = t.getCause();
+        if (cause != null && t != cause) {
+            writeThrowable(cause, stream, "Caused by", prefix);
+        }
+    }
+
+    private void writeThrowable(Throwable t, PrintStream stream, String caption, String prefix) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(prefix)
+                .append(strong(caption))
+                .append(": ")
+                .append(t.getClass().getName());
+        if (t.getMessage() != null) {
+            builder.append(": ").append(failure(t.getMessage()));
+        }
+        stream.println(builder);
+
+        printStackTrace(t, stream, prefix);
+    }
+
+    protected String getLocation(final StackTraceElement e) {
+        assert e != null;
+
+        if (e.isNativeMethod()) {
+            return "Native Method";
+        } else if (e.getFileName() == null) {
+            return "Unknown Source";
+        } else if (e.getLineNumber() >= 0) {
+            return e.getFileName() + ":" + e.getLineNumber();
+        } else {
+            return e.getFileName();
+        }
     }
 }
