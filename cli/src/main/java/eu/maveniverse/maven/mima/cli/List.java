@@ -23,7 +23,7 @@ public final class List extends SearchCommandSupport {
 
     @Override
     protected Integer doCall() throws IOException {
-        logger.info("List {}", gavoid);
+        info("List {}", gavoid);
 
         try (SearchBackend backend = getRemoteRepositoryBackend(repositoryId, repositoryBaseUri, repositoryVendor)) {
             String[] elements = gavoid.split(":");
@@ -40,9 +40,9 @@ public final class List extends SearchCommandSupport {
             }
             SearchRequest searchRequest = new SearchRequest(query);
             SearchResponse searchResponse = backend.search(searchRequest);
-            logger.info("");
+            info("");
             AtomicInteger counter = new AtomicInteger();
-            renderPage(counter, searchResponse.getPage()).forEach(logger::info);
+            renderPage(counter, searchResponse.getPage()).forEach(this::info);
         }
         return 0;
     }

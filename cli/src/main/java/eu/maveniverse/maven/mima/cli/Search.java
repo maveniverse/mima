@@ -22,7 +22,7 @@ public final class Search extends SearchCommandSupport {
 
     @Override
     protected Integer doCall() throws IOException {
-        logger.info("Search {}", expression);
+        info("Search {}", expression);
 
         try (SearchBackend backend = getSmoBackend(repositoryId)) {
             Query query;
@@ -33,13 +33,13 @@ public final class Search extends SearchCommandSupport {
             }
             SearchRequest searchRequest = new SearchRequest(query);
             SearchResponse searchResponse = backend.search(searchRequest);
-            logger.info("");
+            info("");
             AtomicInteger counter = new AtomicInteger();
-            renderPage(counter, searchResponse.getPage()).forEach(logger::info);
+            renderPage(counter, searchResponse.getPage()).forEach(this::info);
             while (searchResponse.getCurrentHits() > 0) {
                 searchResponse =
                         backend.search(searchResponse.getSearchRequest().nextPage());
-                renderPage(counter, searchResponse.getPage()).forEach(logger::info);
+                renderPage(counter, searchResponse.getPage()).forEach(this::info);
             }
         }
         return 0;

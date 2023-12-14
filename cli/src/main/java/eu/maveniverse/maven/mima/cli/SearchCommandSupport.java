@@ -175,7 +175,7 @@ public abstract class SearchCommandSupport extends CommandSupport {
         try {
             return doCall();
         } catch (Exception e) {
-            logger.error("Error", e);
+            error("Error", e);
             return 1;
         }
     }

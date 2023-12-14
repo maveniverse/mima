@@ -83,7 +83,7 @@ public class Repl extends CommandSupport {
                 }
             }
         } catch (Exception e) {
-            logger.error("REPL Failure: ", e);
+            error("REPL Failure: ", e);
             return 1;
         } finally {
             context.close();
