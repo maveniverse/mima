@@ -18,28 +18,28 @@ import picocli.CommandLine;
 @CommandLine.Command(name = "exists", description = "Checks Maven Artifact existence")
 public final class Exists extends SearchCommandSupport {
 
-    @CommandLine.Parameters(description = "The GAV to check")
+    @CommandLine.Parameters(description = "The GAVs to check")
     private List<String> gavs;
 
     @CommandLine.Option(
             names = {"--pom"},
-            description = "Check POM presence as well")
+            description = "Check POM presence as well (derive coordinates from GAV)")
     private boolean pom;
 
     @CommandLine.Option(
             names = {"--sources"},
-            description = "Check sources JARs as well")
+            description = "Check sources JARs as well (derive coordinates from GAV)")
     private boolean sources;
 
     @CommandLine.Option(
             names = {"--javadoc"},
-            description = "Check javadoc JARs as well")
+            description = "Check javadoc JARs as well (derive coordinates from GAV)")
     private boolean javadoc;
 
     @CommandLine.Option(
             names = {"--all-required"},
             description =
-                    "If set, any missing artifact will be reported as failure (otherwise just the given GAVs presence are required)")
+                    "If set, any missing derived artifact will be reported as failure as well (otherwise just the specified GAVs presence is required)")
     private boolean allRequired;
 
     @Override
