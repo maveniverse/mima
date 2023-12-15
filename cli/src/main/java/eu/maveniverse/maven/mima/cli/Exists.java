@@ -39,7 +39,7 @@ public final class Exists extends SearchCommandSupport {
     @CommandLine.Option(
             names = {"--all-required"},
             description =
-                    "If set, missing sources or javadoc will be reported as failure (otherwise just the given GAVs presence are required)")
+                    "If set, any missing artifact will be reported as failure (otherwise just the given GAVs presence are required)")
     private boolean allRequired;
 
     @Override
