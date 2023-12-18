@@ -38,6 +38,12 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>org.eclipse.sisu</groupId>
+      <artifactId>org.eclipse.sisu.inject</artifactId>
+      <classifier>no_asm</classifier>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-component-annotations</artifactId>
       <version>2.1.0</version>
