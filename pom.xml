@@ -57,11 +57,11 @@
     <requireBuildtimeJavaVersion.version>[17.0.6,)</requireBuildtimeJavaVersion.version>
 
     <!-- Dependency versions -->
-    <version.resolver>2.0.0-alpha-5</version.resolver>
-    <version.maven>4.0.0-alpha-10</version.maven>
+    <version.resolver>2.0.0-alpha-6</version.resolver>
+    <version.maven>4.0.0-alpha-12</version.maven>
     <version.mase>1.0.1</version.mase>
     <version.sisu>0.9.0.M2</version.sisu>
-    <version.slf4j>1.7.36</version.slf4j>
+    <version.slf4j>2.0.11</version.slf4j>
     <version.picocli>4.7.5</version.picocli>
   </properties>
 
