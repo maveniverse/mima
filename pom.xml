@@ -308,18 +308,6 @@
   </dependencyManagement>
 
   <repositories>
-    <!-- Remove when Resolver 2.0.0-alpha-4 is on Maven Central -->
-    <repository>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>maven-2050</id>
-      <name>Maven 4.0.0-alpha-10 staging</name>
-      <url>https://repository.apache.org/content/repositories/maven-2050</url>
-    </repository>
     <repository>
       <releases>
         <enabled>false</enabled>
