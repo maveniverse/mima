@@ -1,0 +1,10 @@
+{
+  "catalogs": {},
+  "aliases": {
+    "mima": {
+      "script-ref": "eu.maveniverse.maven.mima:cli:RELEASE",
+      "java-agents": []
+    }
+  },
+  "templates": {}
+}
