@@ -44,9 +44,6 @@ public final class Exists extends SearchCommandSupport {
 
     @Override
     protected Integer doCall() throws IOException {
-        info("Exists {}", gavs);
-        info("");
-
         ArrayList<Artifact> missingOnes = new ArrayList<>();
         ArrayList<Artifact> existingOnes = new ArrayList<>();
         try (SearchBackend backend = getRemoteRepositoryBackend(repositoryId, repositoryBaseUri, repositoryVendor)) {

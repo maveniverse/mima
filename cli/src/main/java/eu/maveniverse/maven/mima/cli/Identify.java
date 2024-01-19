@@ -3,7 +3,6 @@ package eu.maveniverse.maven.mima.cli;
 import static org.apache.maven.search.api.request.FieldQuery.fieldQuery;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.maven.search.api.MAVEN;
 import org.apache.maven.search.api.SearchBackend;
 import org.apache.maven.search.api.SearchRequest;
@@ -21,18 +20,15 @@ public final class Identify extends SearchCommandSupport {
 
     @Override
     protected Integer doCall() throws IOException {
-        info("Identify {}", sha1);
-
         try (SearchBackend backend = getSmoBackend(repositoryId)) {
             SearchRequest searchRequest = new SearchRequest(fieldQuery(MAVEN.SHA1, sha1));
             SearchResponse searchResponse = backend.search(searchRequest);
-            info("");
-            AtomicInteger counter = new AtomicInteger();
-            renderPage(counter, searchResponse.getPage()).forEach(this::info);
+
+            renderPage(searchResponse.getPage()).forEach(this::info);
             while (searchResponse.getCurrentHits() > 0) {
                 searchResponse =
                         backend.search(searchResponse.getSearchRequest().nextPage());
-                renderPage(counter, searchResponse.getPage()).forEach(this::info);
+                renderPage(searchResponse.getPage()).forEach(this::info);
             }
         }
         return 0;
