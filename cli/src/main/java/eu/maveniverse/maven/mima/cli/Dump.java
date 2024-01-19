@@ -9,7 +9,7 @@ import picocli.CommandLine;
 public final class Dump extends CommandSupport {
     @Override
     public Integer call() {
-        mayDumpEnv(getRuntime(), getContext());
+        mayDumpEnv(getRuntime(), getContext(), true);
         return 0;
     }
 }

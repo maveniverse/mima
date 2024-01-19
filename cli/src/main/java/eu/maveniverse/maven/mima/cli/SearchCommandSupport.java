@@ -6,7 +6,6 @@ import static org.apache.maven.search.api.request.FieldQuery.fieldQuery;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.maven.search.api.MAVEN;
 import org.apache.maven.search.api.Record;
 import org.apache.maven.search.api.SearchBackend;
@@ -125,7 +124,7 @@ public abstract class SearchCommandSupport extends CommandSupport {
         return result;
     }
 
-    protected java.util.List<String> renderPage(AtomicInteger counter, java.util.List<Record> page) {
+    protected java.util.List<String> renderPage(java.util.List<Record> page) {
         ArrayList<String> result = new ArrayList<>();
         for (Record record : page) {
             StringBuilder sb = new StringBuilder();
@@ -162,7 +161,7 @@ public abstract class SearchCommandSupport extends CommandSupport {
                 remarks.add("hasJavadoc=" + record.getValue(MAVEN.HAS_JAVADOC));
             }
 
-            result.add(counter.incrementAndGet() + ". " + sb);
+            result.add("- " + sb);
             if (!remarks.isEmpty()) {
                 result.add("   " + remarks);
             }

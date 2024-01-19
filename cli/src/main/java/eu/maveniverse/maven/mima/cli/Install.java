@@ -26,8 +26,6 @@ public final class Install extends ResolverCommandSupport {
 
     @Override
     protected Integer doCall(Context context) throws InstallationException {
-        info("Installing {}", gav);
-
         Artifact jarArtifact = new DefaultArtifact(gav);
         jarArtifact = jarArtifact.setFile(jar.toFile());
 

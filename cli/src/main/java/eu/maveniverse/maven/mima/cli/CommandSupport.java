@@ -104,7 +104,7 @@ public abstract class CommandSupport implements Callable<Integer> {
         return deque.peek();
     }
 
-    protected void mayDumpEnv(Runtime runtime, Context context) {
+    protected void mayDumpEnv(Runtime runtime, Context context, boolean verbose) {
         writeVersionOnce(runtime);
         info("          Maven version {}", runtime.mavenVersion());
         info("                Managed {}", runtime.managedRepositorySystem());
@@ -171,9 +171,7 @@ public abstract class CommandSupport implements Callable<Integer> {
     }
 
     protected Runtime getRuntime() {
-        Runtime runtime = (Runtime) getOrCreate(Runtime.class.getName(), Runtimes.INSTANCE::getRuntime);
-        writeVersionOnce(runtime);
-        return runtime;
+        return (Runtime) getOrCreate(Runtime.class.getName(), Runtimes.INSTANCE::getRuntime);
     }
 
     protected ContextOverrides getContextOverrides() {

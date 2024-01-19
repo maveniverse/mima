@@ -4,7 +4,6 @@ import static org.apache.maven.search.api.request.BooleanQuery.and;
 import static org.apache.maven.search.api.request.FieldQuery.fieldQuery;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.maven.search.api.MAVEN;
 import org.apache.maven.search.api.SearchBackend;
 import org.apache.maven.search.api.SearchRequest;
@@ -23,8 +22,6 @@ public final class List extends SearchCommandSupport {
 
     @Override
     protected Integer doCall() throws IOException {
-        info("List {}", gavoid);
-
         try (SearchBackend backend = getRemoteRepositoryBackend(repositoryId, repositoryBaseUri, repositoryVendor)) {
             String[] elements = gavoid.split(":");
             if (elements.length < 1 || elements.length > 3) {
@@ -40,9 +37,8 @@ public final class List extends SearchCommandSupport {
             }
             SearchRequest searchRequest = new SearchRequest(query);
             SearchResponse searchResponse = backend.search(searchRequest);
-            info("");
-            AtomicInteger counter = new AtomicInteger();
-            renderPage(counter, searchResponse.getPage()).forEach(this::info);
+
+            renderPage(searchResponse.getPage()).forEach(this::info);
         }
         return 0;
     }
