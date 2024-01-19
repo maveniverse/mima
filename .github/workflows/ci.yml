@@ -35,7 +35,7 @@ jobs:
     strategy:
       matrix:
         java: ['8', '11', '17', '21']
-        maven: ['4.0.0-alpha-9', '3.9.5', '3.8.8']
+        maven: ['4.0.0-alpha-12', '3.9.6', '3.8.8']
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-java@v3
