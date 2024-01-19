@@ -161,7 +161,7 @@ public abstract class SearchCommandSupport extends CommandSupport {
                 remarks.add("hasJavadoc=" + record.getValue(MAVEN.HAS_JAVADOC));
             }
 
-            result.add("- " + sb);
+            result.add("" + sb);
             if (!remarks.isEmpty()) {
                 result.add("   " + remarks);
             }
