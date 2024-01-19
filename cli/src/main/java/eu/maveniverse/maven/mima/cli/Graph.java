@@ -53,8 +53,6 @@ public final class Graph extends ResolverCommandSupport {
 
     @Override
     protected Integer doCall(Context context) throws DependencyCollectionException {
-        info("Collecting {}", gav);
-
         DefaultRepositorySystemSession session = new DefaultRepositorySystemSession(context.repositorySystemSession());
         session.setConfigProperty(ConflictResolver.CONFIG_PROP_VERBOSE, ConflictResolver.Verbosity.FULL);
         session.setConfigProperty(DependencyManagerUtils.CONFIG_PROP_VERBOSE, true);
@@ -79,7 +77,6 @@ public final class Graph extends ResolverCommandSupport {
         collectRequest.setRoot(new Dependency(artifact, ""));
         collectRequest.setRepositories(context.remoteRepositories());
 
-        info("");
         context.repositorySystem()
                 .collectDependencies(session, collectRequest)
                 .getRoot()

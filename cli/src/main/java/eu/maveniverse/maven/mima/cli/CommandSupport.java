@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Settings;
@@ -66,15 +65,6 @@ public abstract class CommandSupport implements Callable<Integer> {
 
     private static final ConcurrentHashMap<String, ArrayDeque<Object>> EXECUTION_CONTEXT = new ConcurrentHashMap<>();
 
-    private static final AtomicBoolean VWO = new AtomicBoolean(false);
-
-    protected void writeVersionOnce(Runtime runtime) {
-        if (VWO.compareAndSet(false, true)) {
-            info("MIMA (Runtime '{}' version {})", runtime.name(), runtime.version());
-            info("====");
-        }
-    }
-
     protected Object getOrCreate(String key, Supplier<?> supplier) {
         ArrayDeque<Object> deque = EXECUTION_CONTEXT.computeIfAbsent(key, k -> new ArrayDeque<>());
         if (deque.isEmpty()) {
@@ -104,8 +94,9 @@ public abstract class CommandSupport implements Callable<Integer> {
         return deque.peek();
     }
 
-    protected void mayDumpEnv(Runtime runtime, Context context) {
-        writeVersionOnce(runtime);
+    protected void mayDumpEnv(Runtime runtime, Context context, boolean verbose) {
+        info("MIMA (Runtime '{}' version {})", runtime.name(), runtime.version());
+        info("====");
         info("          Maven version {}", runtime.mavenVersion());
         info("                Managed {}", runtime.managedRepositorySystem());
         info("                Basedir {}", context.basedir());
@@ -171,9 +162,7 @@ public abstract class CommandSupport implements Callable<Integer> {
     }
 
     protected Runtime getRuntime() {
-        Runtime runtime = (Runtime) getOrCreate(Runtime.class.getName(), Runtimes.INSTANCE::getRuntime);
-        writeVersionOnce(runtime);
-        return runtime;
+        return (Runtime) getOrCreate(Runtime.class.getName(), Runtimes.INSTANCE::getRuntime);
     }
 
     protected ContextOverrides getContextOverrides() {

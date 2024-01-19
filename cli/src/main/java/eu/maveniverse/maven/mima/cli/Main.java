@@ -30,8 +30,8 @@ public class Main extends CommandSupport {
     @Override
     public Integer call() {
         try (Context context = getContext()) {
-            verbose = true;
-            mayDumpEnv(getRuntime(), context);
+            mayDumpEnv(getRuntime(), context, false);
+            new Repl().call();
         }
         return 0;
     }

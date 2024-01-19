@@ -27,12 +27,10 @@ public final class Verify extends SearchCommandSupport {
 
     @Override
     protected Integer doCall() throws IOException {
-        info("Verify {}", gav);
-
         try (SearchBackend backend = getRemoteRepositoryBackend(repositoryId, repositoryBaseUri, repositoryVendor)) {
             Artifact artifact = new DefaultArtifact(gav);
             boolean verified = verify(backend, new DefaultArtifact(gav), sha1);
-            info("");
+
             info("Artifact SHA1({})={}: {}", artifact, sha1, verified ? "MATCHED" : "NOT MATCHED");
             return verified ? 0 : 1;
         }
