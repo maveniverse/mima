@@ -25,7 +25,8 @@ import picocli.CommandLine;
             Verify.class
         },
         version = "1.0",
-        description = "MIMA CLI")
+        description = "MIMA CLI",
+        mixinStandardHelpOptions = true)
 public class Main extends CommandSupport {
     @Override
     public Integer call() {
