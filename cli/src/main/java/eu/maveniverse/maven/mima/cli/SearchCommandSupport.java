@@ -162,7 +162,7 @@ public abstract class SearchCommandSupport extends CommandSupport {
             }
 
             result.add("" + sb);
-            if (!remarks.isEmpty()) {
+            if (verbose && !remarks.isEmpty()) {
                 result.add("   " + remarks);
             }
         }
