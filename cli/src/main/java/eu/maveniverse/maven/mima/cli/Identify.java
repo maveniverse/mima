@@ -30,7 +30,6 @@ public final class Identify extends SearchCommandSupport {
         if (Files.exists(Paths.get(target))) {
             try {
                 MessageDigest sha1md = MessageDigest.getInstance("SHA-1");
-
                 byte[] buf = new byte[8192];
                 int read;
                 try (FileInputStream fis = new FileInputStream(target)) {
