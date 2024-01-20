@@ -77,7 +77,7 @@ public final class Graph extends ResolverCommandSupport {
         collectRequest.setRoot(new Dependency(artifact, ""));
         collectRequest.setRepositories(context.remoteRepositories());
 
-        verbose("Collecting dependencies {}", collectRequest);
+        verbose("Collecting {}", collectRequest);
         context.repositorySystem()
                 .collectDependencies(session, collectRequest)
                 .getRoot()
