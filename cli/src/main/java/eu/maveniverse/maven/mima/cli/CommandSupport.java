@@ -20,6 +20,8 @@ import java.util.function.Supplier;
 import org.apache.maven.settings.Proxy;
 import org.apache.maven.settings.Settings;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.util.version.GenericVersionScheme;
+import org.eclipse.aether.version.VersionScheme;
 import org.slf4j.helpers.MessageFormatter;
 import picocli.CommandLine;
 
@@ -230,6 +232,10 @@ public abstract class CommandSupport implements Callable<Integer> {
 
     protected Context getContext() {
         return (Context) getOrCreate(Context.class.getName(), () -> getRuntime().create(getContextOverrides()));
+    }
+
+    protected VersionScheme getVersionScheme() {
+        return new GenericVersionScheme();
     }
 
     protected void verbose(String message) {
