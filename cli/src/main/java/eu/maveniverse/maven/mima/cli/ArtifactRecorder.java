@@ -13,6 +13,9 @@ import org.eclipse.aether.RepositoryEvent;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.repository.RemoteRepository;
 
+/**
+ * Records in-memory all the resolved artifacts.
+ */
 final class ArtifactRecorder extends AbstractRepositoryListener {
     private final RemoteRepository sentinel = new RemoteRepository.Builder("none", "default", "fake").build();
     private final ConcurrentHashMap<RemoteRepository, ArrayList<Artifact>> artifactsMap = new ConcurrentHashMap<>();

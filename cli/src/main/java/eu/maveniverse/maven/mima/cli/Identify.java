@@ -16,7 +16,7 @@ import org.eclipse.aether.util.ChecksumUtils;
 import picocli.CommandLine;
 
 /**
- * Identify.
+ * Identify artifact, either by provided SHA-1 or calculated SHA-1 of a file pointed at.
  */
 @CommandLine.Command(name = "identify", description = "Identifies Maven Artifacts")
 public final class Identify extends SearchCommandSupport {

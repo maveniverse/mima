@@ -14,7 +14,7 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import picocli.CommandLine;
 
 /**
- * Verify.
+ * Verifies artifact against known SHA-1.
  */
 @CommandLine.Command(name = "verify", description = "Verifies Maven Artifact")
 public final class Verify extends SearchCommandSupport {

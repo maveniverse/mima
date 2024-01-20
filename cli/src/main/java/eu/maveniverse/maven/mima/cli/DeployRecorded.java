@@ -9,7 +9,7 @@ import org.eclipse.aether.repository.RemoteRepository;
 import picocli.CommandLine;
 
 /**
- * Deploy recorded.
+ * Deploys recorded artifacts to remote repository.
  */
 @CommandLine.Command(name = "deployRecorded", description = "Deploys recorded Maven Artifacts")
 public final class DeployRecorded extends ResolverCommandSupport {

@@ -26,7 +26,7 @@ import org.slf4j.helpers.MessageFormatter;
 import picocli.CommandLine;
 
 /**
- * Support.
+ * Support class.
  */
 public abstract class CommandSupport implements Callable<Integer> {
     @CommandLine.Option(

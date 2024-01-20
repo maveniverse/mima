@@ -14,7 +14,7 @@ import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
 import picocli.CommandLine;
 
 /**
- * Classpath.
+ * Resolves transitively a given GAV and outputs classpath path.
  */
 @CommandLine.Command(name = "classpath", description = "Resolves Maven Artifact and prints out the classpath")
 public final class Classpath extends ResolverCommandSupport {

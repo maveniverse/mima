@@ -11,7 +11,7 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import picocli.CommandLine;
 
 /**
- * Search.
+ * Searches artifacts using SMO service.
  */
 @CommandLine.Command(name = "search", description = "Searches Maven Artifacts")
 public final class Search extends SearchCommandSupport {

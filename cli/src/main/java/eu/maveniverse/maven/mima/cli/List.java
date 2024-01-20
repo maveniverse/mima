@@ -16,7 +16,7 @@ import org.eclipse.aether.version.VersionScheme;
 import picocli.CommandLine;
 
 /**
- * List.
+ * Lists remote repository by given "gavoid" (G or G:A or G:A:V where V may be version constraint).
  */
 @CommandLine.Command(name = "list", description = "Lists Maven Artifacts")
 public final class List extends SearchCommandSupport {

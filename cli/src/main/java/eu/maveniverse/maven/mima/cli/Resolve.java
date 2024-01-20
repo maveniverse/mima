@@ -22,7 +22,7 @@ import org.eclipse.aether.util.listener.ChainedRepositoryListener;
 import picocli.CommandLine;
 
 /**
- * Resolve.
+ * Resolves transitively given artifact.
  */
 @CommandLine.Command(name = "resolve", description = "Resolves Maven Artifacts")
 public final class Resolve extends ResolverCommandSupport {

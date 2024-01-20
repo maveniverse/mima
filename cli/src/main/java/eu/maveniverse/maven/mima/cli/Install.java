@@ -10,7 +10,7 @@ import org.eclipse.aether.util.artifact.SubArtifact;
 import picocli.CommandLine;
 
 /**
- * Install.
+ * Installs an artifact into local repository.
  */
 @CommandLine.Command(name = "install", description = "Installs Maven Artifacts")
 public final class Install extends ResolverCommandSupport {

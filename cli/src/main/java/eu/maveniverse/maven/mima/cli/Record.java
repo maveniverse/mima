@@ -8,7 +8,7 @@ import org.eclipse.aether.util.listener.ChainedRepositoryListener;
 import picocli.CommandLine;
 
 /**
- * Record.
+ * Records resolved artifacts.
  */
 @CommandLine.Command(name = "record", description = "Records resolved Maven Artifacts")
 public final class Record extends ResolverCommandSupport {

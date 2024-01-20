@@ -30,7 +30,7 @@ import org.eclipse.aether.util.graph.visitor.DependencyGraphDumper;
 import picocli.CommandLine;
 
 /**
- * Graph.
+ * Collects given GAV and output its dependency graph.
  */
 @CommandLine.Command(name = "graph", description = "Displays dependency graph")
 public final class Graph extends ResolverCommandSupport {

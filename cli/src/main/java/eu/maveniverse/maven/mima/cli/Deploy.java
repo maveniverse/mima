@@ -11,7 +11,7 @@ import org.eclipse.aether.util.artifact.SubArtifact;
 import picocli.CommandLine;
 
 /**
- * Deploy.
+ * Deploys an artifact into remote repository.
  */
 @CommandLine.Command(name = "deploy", description = "Deploys Maven Artifacts")
 public final class Deploy extends ResolverCommandSupport {

@@ -13,7 +13,7 @@ import org.eclipse.aether.util.artifact.SubArtifact;
 import picocli.CommandLine;
 
 /**
- * Exists.
+ * Checks given GAV for existence in a remote repository.
  */
 @CommandLine.Command(name = "exists", description = "Checks Maven Artifact existence")
 public final class Exists extends SearchCommandSupport {
