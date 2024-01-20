@@ -29,6 +29,7 @@ public final class Identify extends SearchCommandSupport {
         String sha1;
         if (Files.exists(Paths.get(target))) {
             try {
+                verbose("Calculating SHA1 of file {}", target);
                 MessageDigest sha1md = MessageDigest.getInstance("SHA-1");
                 byte[] buf = new byte[8192];
                 int read;

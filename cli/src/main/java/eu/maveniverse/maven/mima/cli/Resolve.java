@@ -84,6 +84,7 @@ public final class Resolve extends ResolverCommandSupport {
             }
         }
         try {
+            verbose("Resolving {}", artifactRequests);
             context.repositorySystem().resolveArtifacts(session, artifactRequests);
         } catch (ArtifactResolutionException e) {
             // log
