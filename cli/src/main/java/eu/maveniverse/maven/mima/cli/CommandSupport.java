@@ -232,20 +232,41 @@ public abstract class CommandSupport implements Callable<Integer> {
         return (Context) getOrCreate(Context.class.getName(), () -> getRuntime().create(getContextOverrides()));
     }
 
+    protected void verbose(String message) {
+        log(true, System.out, message);
+    }
+
+    protected void verbose(String format, Object arg1) {
+        log(true, System.out, MessageFormatter.format(format, arg1).getMessage());
+    }
+
+    protected void verbose(String format, Object arg1, Object arg2) {
+        log(true, System.out, MessageFormatter.format(format, arg1, arg2).getMessage());
+    }
+
+    protected void verbose(String format, Object arg1, Object arg2, Object arg3) {
+        log(
+                true,
+                System.out,
+                MessageFormatter.arrayFormat(format, new Object[] {arg1, arg2, arg3})
+                        .getMessage());
+    }
+
     protected void info(String message) {
-        log(System.out, message);
+        log(false, System.out, message);
     }
 
     protected void info(String format, Object arg1) {
-        log(System.out, MessageFormatter.format(format, arg1).getMessage());
+        log(false, System.out, MessageFormatter.format(format, arg1).getMessage());
     }
 
     protected void info(String format, Object arg1, Object arg2) {
-        log(System.out, MessageFormatter.format(format, arg1, arg2).getMessage());
+        log(false, System.out, MessageFormatter.format(format, arg1, arg2).getMessage());
     }
 
     protected void info(String format, Object arg1, Object arg2, Object arg3) {
         log(
+                false,
                 System.out,
                 MessageFormatter.arrayFormat(format, new Object[] {arg1, arg2, arg3})
                         .getMessage());
@@ -255,7 +276,10 @@ public abstract class CommandSupport implements Callable<Integer> {
         log(System.err, failure(message), throwable);
     }
 
-    private void log(PrintStream ps, String message) {
+    private void log(boolean verbose, PrintStream ps, String message) {
+        if (verbose && !this.verbose) {
+            return;
+        }
         log(ps, message, null);
     }
 
