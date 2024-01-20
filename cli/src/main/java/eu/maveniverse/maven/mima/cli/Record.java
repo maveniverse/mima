@@ -15,8 +15,6 @@ public final class Record extends ResolverCommandSupport {
 
     @Override
     protected Integer doCall(Context context) throws DependencyResolutionException {
-        info("Recording...");
-
         ArtifactRecorder recorder = new ArtifactRecorder();
         DefaultRepositorySystemSession session = new DefaultRepositorySystemSession(getRepositorySystemSession());
         session.setRepositoryListener(
@@ -26,7 +24,7 @@ public final class Record extends ResolverCommandSupport {
         push(ArtifactRecorder.class.getName(), recorder);
         push(RepositorySystemSession.class.getName(), session);
 
-        info("");
+        info("Recording...");
         return 0;
     }
 }

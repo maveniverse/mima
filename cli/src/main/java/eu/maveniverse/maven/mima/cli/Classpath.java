@@ -32,6 +32,7 @@ public final class Classpath extends ResolverCommandSupport {
         DependencyRequest dependencyRequest =
                 new DependencyRequest(collectRequest, DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE));
 
+        verbose("Resolving {}", dependencyRequest);
         DependencyResult dependencyResult =
                 context.repositorySystem().resolveDependencies(getRepositorySystemSession(), dependencyRequest);
 
