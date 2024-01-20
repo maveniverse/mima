@@ -51,11 +51,11 @@ public final class Identify extends SearchCommandSupport {
             SearchRequest searchRequest = new SearchRequest(fieldQuery(MAVEN.SHA1, sha1));
             SearchResponse searchResponse = backend.search(searchRequest);
 
-            renderPage(searchResponse.getPage()).forEach(this::info);
+            renderPage(searchResponse.getPage(), null).forEach(this::info);
             while (searchResponse.getCurrentHits() > 0) {
                 searchResponse =
                         backend.search(searchResponse.getSearchRequest().nextPage());
-                renderPage(searchResponse.getPage()).forEach(this::info);
+                renderPage(searchResponse.getPage(), null).forEach(this::info);
             }
         }
         return 0;
