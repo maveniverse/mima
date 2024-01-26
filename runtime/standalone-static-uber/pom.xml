@@ -21,7 +21,11 @@
   <name>${project.groupId}:${project.artifactId}</name>
 
   <!-- Note: this plugin has no sources, is just shaded :standalone-static,
-  still Central requires presence of soueces/javadocs JARs, so they are faked. -->
+  still Central requires presence of sources/javadocs JARs, so they are faked. -->
+
+  <properties>
+    <Automatic-Module-Name>eu.maveniverse.maven.mima.runtime.standalonestatic</Automatic-Module-Name>
+  </properties>
 
   <dependencies>
     <dependency>

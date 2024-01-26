@@ -20,6 +20,10 @@
   <artifactId>context</artifactId>
   <name>${project.groupId}:${project.artifactId}</name>
 
+  <properties>
+    <Automatic-Module-Name>eu.maveniverse.maven.mima.context</Automatic-Module-Name>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.maven.resolver</groupId>
