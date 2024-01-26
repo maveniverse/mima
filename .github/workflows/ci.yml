@@ -34,7 +34,7 @@ jobs:
     needs: build
     strategy:
       matrix:
-        java: ['8', '11', '17', '21']
+        java: ['11', '17', '21']
         maven: ['4.0.0-alpha-12', '3.9.6', '3.8.8']
     steps:
       - uses: actions/checkout@v3
