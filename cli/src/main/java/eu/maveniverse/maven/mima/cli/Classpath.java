@@ -19,8 +19,17 @@ import picocli.CommandLine;
 @CommandLine.Command(name = "classpath", description = "Resolves Maven Artifact and prints out the classpath")
 public final class Classpath extends ResolverCommandSupport {
 
+    enum ClasspathScope {
+        runtime,
+        compile,
+        test;
+    }
+
     @CommandLine.Parameters(index = "0", description = "The GAV to print classpath for")
     private String gav;
+
+    @CommandLine.Option(names = "--scope", defaultValue = "runtime")
+    private ClasspathScope scope;
 
     @Override
     protected Integer doCall(Context context) throws DependencyResolutionException {
@@ -30,7 +39,7 @@ public final class Classpath extends ResolverCommandSupport {
         collectRequest.setRoot(new Dependency(artifact, JavaScopes.COMPILE));
         collectRequest.setRepositories(context.remoteRepositories());
         DependencyRequest dependencyRequest =
-                new DependencyRequest(collectRequest, DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE));
+                new DependencyRequest(collectRequest, DependencyFilterUtils.classpathFilter(scope.name()));
 
         verbose("Resolving {}", dependencyRequest);
         DependencyResult dependencyResult =
