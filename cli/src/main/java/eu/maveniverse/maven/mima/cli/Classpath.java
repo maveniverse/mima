@@ -1,6 +1,8 @@
 package eu.maveniverse.maven.mima.cli;
 
 import eu.maveniverse.maven.mima.context.Context;
+import java.io.File;
+import java.util.stream.Collectors;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
@@ -47,7 +49,8 @@ public final class Classpath extends ResolverCommandSupport {
 
         PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
         dependencyResult.getRoot().accept(nlg);
-        info("{}", nlg.getClassPath());
+        // TODO: Do not use PreorderNodeListGenerator#getClassPath() until MRESOLVER-438 is fixed/released
+        info("{}", nlg.getFiles().stream().map(File::getAbsolutePath).collect(Collectors.joining(File.pathSeparator)));
         return 0;
     }
 }
