@@ -49,7 +49,7 @@ public final class Classpath extends ResolverCommandSupport {
 
         PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
         dependencyResult.getRoot().accept(nlg);
-        // TODO: Do not use PreorderNodeListGenerator#getClassPath() until MRESOLVER-438 is fixed/released
+        // TODO: Do not use PreorderNodeListGenerator#getClassPath() until MRESOLVER-483 is fixed/released
         info("{}", nlg.getFiles().stream().map(File::getAbsolutePath).collect(Collectors.joining(File.pathSeparator)));
         return 0;
     }
