@@ -7,17 +7,16 @@
  */
 package eu.maveniverse.maven.mima.runtime.maven;
 
-import eu.maveniverse.maven.mima.context.Context;
-import eu.maveniverse.maven.mima.context.ContextOverrides;
-import eu.maveniverse.maven.mima.context.HTTPProxy;
-import eu.maveniverse.maven.mima.context.MavenSystemHome;
-import eu.maveniverse.maven.mima.context.MavenUserHome;
+import eu.maveniverse.maven.mima.context.*;
 import eu.maveniverse.maven.mima.context.internal.MavenSystemHomeImpl;
 import eu.maveniverse.maven.mima.context.internal.MavenUserHomeImpl;
 import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -26,6 +25,8 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.rtinfo.RuntimeInformation;
 import org.apache.maven.settings.Proxy;
+import org.codehaus.plexus.PlexusContainer;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 
@@ -34,17 +35,23 @@ import org.eclipse.aether.RepositorySystemSession;
 public final class MavenRuntime extends RuntimeSupport {
     private final RepositorySystem repositorySystem;
 
+    private final PlexusContainer plexusContainer;
+
     private final Provider<MavenSession> mavenSessionProvider;
 
     @Inject
     public MavenRuntime(
-            RepositorySystem repositorySystem, Provider<MavenSession> mavenSessionProvider, RuntimeInformation rt) {
+            RepositorySystem repositorySystem,
+            PlexusContainer plexusContainer,
+            Provider<MavenSession> mavenSessionProvider,
+            RuntimeInformation rt) {
         super(
                 "embedded-maven",
                 discoverArtifactVersion("eu.maveniverse.maven.mima.runtime", "embedded-maven", UNKNOWN),
                 10,
                 mavenVersion(rt));
         this.repositorySystem = repositorySystem;
+        this.plexusContainer = plexusContainer;
         this.mavenSessionProvider = mavenSessionProvider;
     }
 
@@ -100,6 +107,34 @@ public final class MavenRuntime extends RuntimeSupport {
                         session,
                         repositorySystem.newResolutionRepositories(session, effective.getRepositories()),
                         toHTTPProxy(mavenSession.getSettings().getActiveProxy()),
+                        new Lookup() {
+                            @Override
+                            public <T> Optional<T> lookup(Class<T> type) {
+                                try {
+                                    return Optional.of(plexusContainer.lookup(type));
+                                } catch (ComponentLookupException e) {
+                                    return Optional.empty();
+                                }
+                            }
+
+                            @Override
+                            public <T> Optional<T> lookup(Class<T> type, String name) {
+                                try {
+                                    return Optional.of(plexusContainer.lookup(type, name));
+                                } catch (ComponentLookupException e) {
+                                    return Optional.empty();
+                                }
+                            }
+
+                            @Override
+                            public <T> Map<String, T> lookupMap(Class<T> type) {
+                                try {
+                                    return plexusContainer.lookupMap(type);
+                                } catch (ComponentLookupException e) {
+                                    return Collections.emptyMap();
+                                }
+                            }
+                        },
                         null),
                 false); // unmanaged context: close should NOT shut down repositorySystem
     }

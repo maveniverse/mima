@@ -18,8 +18,13 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyNode;
+import org.eclipse.aether.impl.OfflineController;
+import org.eclipse.aether.impl.RemoteRepositoryManager;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
+import org.eclipse.aether.transfer.RepositoryOfflineException;
 import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +49,13 @@ public class Classpath {
 
     private String doClasspath(Context context, Artifact artifact) throws DependencyResolutionException {
         logger.info("doClasspath: {}", context.remoteRepositories());
+
+        RemoteRepositoryManager remoteRepositoryManager = context.lookup().lookup(RemoteRepositoryManager.class).orElseThrow(() -> new IllegalStateException("offline controller not found"));
+        for (RemoteRepository repository : context.remoteRepositories()) {
+            RepositoryPolicy policy = remoteRepositoryManager.getPolicy(context.repositorySystemSession(), repository, !artifact.isSnapshot(), artifact.isSnapshot());
+            logger.info("Repository {} effective policy: {}", repository.getId(), policy);
+        }
+
         Dependency dependency = new Dependency(artifact, "runtime");
         CollectRequest collectRequest = new CollectRequest();
         collectRequest.setRoot(dependency);
