@@ -2,11 +2,7 @@ package eu.maveniverse.maven.mima.runtime.shared;
 
 import static java.util.stream.Collectors.toMap;
 
-import eu.maveniverse.maven.mima.context.Context;
-import eu.maveniverse.maven.mima.context.ContextOverrides;
-import eu.maveniverse.maven.mima.context.HTTPProxy;
-import eu.maveniverse.maven.mima.context.MavenSystemHome;
-import eu.maveniverse.maven.mima.context.MavenUserHome;
+import eu.maveniverse.maven.mima.context.*;
 import eu.maveniverse.maven.mima.context.internal.MavenSystemHomeImpl;
 import eu.maveniverse.maven.mima.context.internal.MavenUserHomeImpl;
 import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
@@ -128,6 +124,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             SettingsBuilder settingsBuilder,
             SettingsDecrypter settingsDecrypter,
             ProfileSelector profileSelector,
+            Lookup lookup,
             Runnable managedCloser) {
         try {
             ContextOverrides alteredOverrides = preBoot.getOverrides();
@@ -229,6 +226,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                     session,
                     repositorySystem.newResolutionRepositories(session, new ArrayList<>(remoteRepositories.values())),
                     httpProxy,
+                    lookup,
                     managedCloser);
         } catch (Exception e) {
             throw new IllegalStateException("Cannot create context from scratch", e);

@@ -5,6 +5,7 @@ import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.runtime.shared.PreBoot;
 import eu.maveniverse.maven.mima.runtime.shared.StandaloneRuntimeSupport;
 import eu.maveniverse.maven.mima.runtime.standalonesisu.internal.SisuBooter;
+import eu.maveniverse.maven.mima.runtime.standalonesisu.internal.SisuLookup;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -12,6 +13,7 @@ import org.apache.maven.model.profile.ProfileSelector;
 import org.apache.maven.settings.building.SettingsBuilder;
 import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.sisu.inject.MutableBeanLocator;
 
 @Singleton
 @Named
@@ -25,8 +27,10 @@ public final class StandaloneSisuRuntime extends StandaloneRuntimeSupport {
 
     private final ProfileSelector profileSelector;
 
+    private final MutableBeanLocator locator;
+
     public StandaloneSisuRuntime() {
-        this(null, null, null, null);
+        this(null, null, null, null, null);
     }
 
     @Inject
@@ -34,12 +38,14 @@ public final class StandaloneSisuRuntime extends StandaloneRuntimeSupport {
             RepositorySystem repositorySystem,
             SettingsBuilder settingsBuilder,
             SettingsDecrypter settingsDecrypter,
-            ProfileSelector profileSelector) {
+            ProfileSelector profileSelector,
+            MutableBeanLocator locator) {
         super("standalone-sisu", 30);
         this.repositorySystem = repositorySystem;
         this.settingsBuilder = settingsBuilder;
         this.settingsDecrypter = settingsDecrypter;
         this.profileSelector = profileSelector;
+        this.locator = locator;
     }
 
     @Override
@@ -60,10 +66,18 @@ public final class StandaloneSisuRuntime extends StandaloneRuntimeSupport {
                     booter.settingsBuilder,
                     booter.settingsDecrypter,
                     booter.profileSelector,
+                    new SisuLookup(booter.locator),
                     booter::close);
         } else {
             return buildContext(
-                    this, preBoot, repositorySystem, settingsBuilder, settingsDecrypter, profileSelector, null);
+                    this,
+                    preBoot,
+                    repositorySystem,
+                    settingsBuilder,
+                    settingsDecrypter,
+                    profileSelector,
+                    new SisuLookup(locator),
+                    null);
         }
     }
 }

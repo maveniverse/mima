@@ -49,6 +49,8 @@ public final class Context implements Closeable {
 
     private final HTTPProxy httpProxy;
 
+    private final Lookup lookup;
+
     private final Runnable managedCloser;
 
     public Context(
@@ -61,6 +63,7 @@ public final class Context implements Closeable {
             RepositorySystemSession repositorySystemSession,
             List<RemoteRepository> remoteRepositories,
             HTTPProxy httpProxy,
+            Lookup lookup,
             Runnable managedCloser) {
         this.closed = new AtomicBoolean(false);
         this.runtime = requireNonNull(runtime);
@@ -72,6 +75,7 @@ public final class Context implements Closeable {
         this.repositorySystem = requireNonNull(repositorySystem);
         this.remoteRepositories = requireNonNull(remoteRepositories);
         this.httpProxy = httpProxy;
+        this.lookup = requireNonNull(lookup);
         this.managedCloser = managedCloser;
     }
 
@@ -141,6 +145,15 @@ public final class Context implements Closeable {
      */
     public HTTPProxy httpProxy() {
         return httpProxy;
+    }
+
+    /**
+     * Returns {@link Lookup} instance usable to look up resolver components, never {@code null}.
+     *
+     * @since TBD
+     */
+    public Lookup lookup() {
+        return lookup;
     }
 
     /**
