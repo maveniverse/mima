@@ -7,14 +7,12 @@ import java.util.List;
 import java.util.Map;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.DependencyRequest;
-import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.artifact.SubArtifact;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
@@ -46,10 +44,15 @@ public final class Resolve extends ResolverCommandSupport {
             description = "Scope to resolve")
     private String scope;
 
-    @Override
-    protected Integer doCall(Context context) throws DependencyResolutionException {
-        info("Resolving {}", gav);
+    @CommandLine.Option(
+            names = {"--boms"},
+            defaultValue = "",
+            split = ",",
+            description = "Comma separated list of BOMs to apply")
+    private String[] boms;
 
+    @Override
+    protected Integer doCall(Context context) throws Exception {
         DefaultRepositorySystemSession session = new DefaultRepositorySystemSession(getRepositorySystemSession());
         ArtifactRecorder recorder = new ArtifactRecorder();
         session.setRepositoryListener(
@@ -57,9 +60,13 @@ public final class Resolve extends ResolverCommandSupport {
                         ? ChainedRepositoryListener.newInstance(session.getRepositoryListener(), recorder)
                         : recorder);
 
+        java.util.List<Dependency> managedDependencies = importBoms(context, boms);
+        Artifact resolvedArtifact = parseGav(gav, managedDependencies);
+
         CollectRequest collectRequest = new CollectRequest();
-        collectRequest.setRoot(new Dependency(new DefaultArtifact(gav), JavaScopes.COMPILE));
+        collectRequest.setRoot(new Dependency(resolvedArtifact, JavaScopes.COMPILE));
         collectRequest.setRepositories(context.remoteRepositories());
+        collectRequest.setManagedDependencies(managedDependencies);
         DependencyRequest dependencyRequest =
                 new DependencyRequest(collectRequest, DependencyFilterUtils.classpathFilter(scope));
 
