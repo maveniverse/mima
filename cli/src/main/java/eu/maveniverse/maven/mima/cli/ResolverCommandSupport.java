@@ -2,6 +2,7 @@ package eu.maveniverse.maven.mima.cli;
 
 import eu.maveniverse.maven.mima.context.Context;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -34,16 +35,20 @@ public abstract class ResolverCommandSupport extends CommandSupport {
 
     protected java.util.List<Dependency> importBoms(Context context, String... boms)
             throws ArtifactDescriptorException {
-        ArrayList<Dependency> managedDependencies = new ArrayList<>();
+        LinkedHashSet<Dependency> managedDependencies = new LinkedHashSet<>();
         for (String bomGav : boms) {
             Artifact bom = new DefaultArtifact(bomGav);
             ArtifactDescriptorRequest artifactDescriptorRequest =
                     new ArtifactDescriptorRequest(bom, context.remoteRepositories(), "");
             ArtifactDescriptorResult artifactDescriptorResult = context.repositorySystem()
                     .readArtifactDescriptor(context.repositorySystemSession(), artifactDescriptorRequest);
-            managedDependencies.addAll(artifactDescriptorResult.getManagedDependencies());
+            artifactDescriptorResult.getManagedDependencies().forEach(d -> {
+                if (!managedDependencies.add(d)) {
+                    info("W: BOM {} introduced an already managed dependency {}", bom, d);
+                }
+            });
         }
-        return managedDependencies;
+        return new ArrayList<>(managedDependencies);
     }
 
     protected Artifact parseGav(String gav, java.util.List<Dependency> managedDependencies) {
