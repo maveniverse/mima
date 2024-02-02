@@ -66,8 +66,7 @@ public class MemoizingRepositorySystemSupplier extends RepositorySystemSupplier 
         return Optional.ofNullable(lookupMap(type).get(name));
     }
 
-    @Override
-    public <T> Map<String, T> lookupMap(Class<T> type) {
+    private <T> Map<String, T> lookupMap(Class<T> type) {
         Map<String, T> result = (Map) plurals.get(type);
         if (result != null) {
             return result;

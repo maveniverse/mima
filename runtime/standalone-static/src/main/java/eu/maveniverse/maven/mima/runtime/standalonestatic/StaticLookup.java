@@ -4,7 +4,6 @@ import static java.util.Objects.requireNonNull;
 
 import eu.maveniverse.maven.mima.context.Lookup;
 import eu.maveniverse.maven.mima.runtime.shared.PreBoot;
-import java.util.Map;
 import java.util.Optional;
 import org.apache.maven.model.profile.ProfileSelector;
 import org.apache.maven.settings.building.SettingsBuilder;
@@ -41,10 +40,5 @@ public class StaticLookup implements Lookup {
     @Override
     public <T> Optional<T> lookup(Class<T> type, String name) {
         return repositorySystemSupplier.lookup(type, name);
-    }
-
-    @Override
-    public <T> Map<String, T> lookupMap(Class<T> type) {
-        return repositorySystemSupplier.lookupMap(type);
     }
 }

@@ -4,7 +4,6 @@ import com.google.inject.Key;
 import com.google.inject.name.Names;
 import eu.maveniverse.maven.mima.context.Lookup;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Optional;
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -36,10 +35,5 @@ public class SisuLookup implements Lookup {
     @Override
     public <T> Optional<T> lookup(Class<T> type, String name) {
         return lookupInternal(Key.get(type, Names.named(name)));
-    }
-
-    @Override
-    public <T> Map<String, T> lookupMap(Class<T> type) {
-        throw new RuntimeException("not implemented");
     }
 }
