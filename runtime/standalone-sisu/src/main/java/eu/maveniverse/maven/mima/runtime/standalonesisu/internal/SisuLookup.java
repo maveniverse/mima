@@ -1,12 +1,12 @@
 package eu.maveniverse.maven.mima.runtime.standalonesisu.internal;
 
 import com.google.inject.Key;
-import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import eu.maveniverse.maven.mima.context.Lookup;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
+import javax.inject.Named;
 import javax.inject.Provider;
 import org.eclipse.sisu.BeanEntry;
 import org.eclipse.sisu.inject.MutableBeanLocator;
@@ -30,7 +30,7 @@ public class SisuLookup implements Lookup {
 
     @Override
     public <T> Optional<T> lookup(Class<T> type) {
-        return lookupInternal(Key.get(type, com.google.inject.name.Named.class));
+        return lookupInternal(Key.get(type, Named.class));
     }
 
     @Override
