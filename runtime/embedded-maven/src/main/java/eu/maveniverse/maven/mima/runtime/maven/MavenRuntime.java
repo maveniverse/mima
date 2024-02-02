@@ -13,9 +13,7 @@ import eu.maveniverse.maven.mima.context.internal.MavenUserHomeImpl;
 import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -123,15 +121,6 @@ public final class MavenRuntime extends RuntimeSupport {
                                     return Optional.of(plexusContainer.lookup(type, name));
                                 } catch (ComponentLookupException e) {
                                     return Optional.empty();
-                                }
-                            }
-
-                            @Override
-                            public <T> Map<String, T> lookupMap(Class<T> type) {
-                                try {
-                                    return plexusContainer.lookupMap(type);
-                                } catch (ComponentLookupException e) {
-                                    return Collections.emptyMap();
                                 }
                             }
                         },

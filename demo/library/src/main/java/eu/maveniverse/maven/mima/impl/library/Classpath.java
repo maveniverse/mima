@@ -27,11 +27,6 @@ import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
-
 /**
  * This is an imaginary library class that wants to:
  * <ul>
