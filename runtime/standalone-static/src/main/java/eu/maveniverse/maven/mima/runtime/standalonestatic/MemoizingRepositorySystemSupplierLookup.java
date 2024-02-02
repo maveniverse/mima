@@ -46,12 +46,13 @@ public class MemoizingRepositorySystemSupplierLookup extends RepositorySystemSup
         return lookup(RepositorySystem.class).orElseThrow(() -> new NoSuchElementException("No value present"));
     }
 
-    private <T> T memoize(Class<T> key, T instance) {
+    protected <T> T memoize(Class<T> key, T instance) {
         singulars.put(key, instance);
         return instance;
     }
 
-    private <T> Map<String, T> memoize(Class<T> key, Map<String, T> instances) {
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    protected <T> Map<String, T> memoize(Class<T> key, Map<String, T> instances) {
         plurals.put(key, (Map) instances);
         return instances;
     }
@@ -66,6 +67,7 @@ public class MemoizingRepositorySystemSupplierLookup extends RepositorySystemSup
         return Optional.ofNullable(lookupMap(type).get(name));
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private <T> Map<String, T> lookupMap(Class<T> type) {
         Map<String, T> result = (Map) plurals.get(type);
         if (result != null) {
