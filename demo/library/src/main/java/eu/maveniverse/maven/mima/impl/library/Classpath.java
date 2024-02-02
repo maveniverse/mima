@@ -18,17 +18,29 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyNode;
-import org.eclipse.aether.impl.OfflineController;
 import org.eclipse.aether.impl.RemoteRepositoryManager;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
-import org.eclipse.aether.transfer.RepositoryOfflineException;
+import org.eclipse.aether.spi.connector.checksum.ChecksumAlgorithmFactory;
+import org.eclipse.aether.spi.connector.checksum.ChecksumAlgorithmHelper;
 import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+
+/**
+ * This is an imaginary library class that wants to:
+ * <ul>
+ *     <li>use Resolver API and components</li>
+ *     <li>needs to work standalone, but also embedded in Maven (ie as a plugin dependency)</li>
+ * </ul>
+ */
 public class Classpath {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -47,10 +59,19 @@ public class Classpath {
         }
     }
 
+    /**
+     * Implements the "logic" of this theoretical library:
+     * <ul>
+     *     <li>Logs at INFO the effective policy of all involved remote repositories (uses Resolver component)</li>
+     *     <li>Resolves the artifact (uses Resolver API)</li>
+     *     <li>Logs at INFO the SHA-1 hashes of all resolved artifacts (uses Resolver component)</li>
+     *     <li>Returns the classpath string of resolved artifact</li>
+     * </ul>
+     */
     private String doClasspath(Context context, Artifact artifact) throws DependencyResolutionException {
         logger.info("doClasspath: {}", context.remoteRepositories());
 
-        RemoteRepositoryManager remoteRepositoryManager = context.lookup().lookup(RemoteRepositoryManager.class).orElseThrow(() -> new IllegalStateException("offline controller not found"));
+        RemoteRepositoryManager remoteRepositoryManager = context.lookup().lookup(RemoteRepositoryManager.class).orElseThrow(() -> new IllegalStateException("component not found"));
         for (RemoteRepository repository : context.remoteRepositories()) {
             RepositoryPolicy policy = remoteRepositoryManager.getPolicy(context.repositorySystemSession(), repository, !artifact.isSnapshot(), artifact.isSnapshot());
             logger.info("Repository {} effective policy: {}", repository.getId(), policy);
@@ -70,6 +91,16 @@ public class Classpath {
 
         PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
         rootNode.accept(nlg);
+
+        ChecksumAlgorithmFactory sha1 = context.lookup().lookup(ChecksumAlgorithmFactory.class, "SHA-1").orElseThrow(() -> new IllegalStateException("component not found"));
+        for (File file : nlg.getFiles()) {
+            try {
+                Map<String, String> hashes = ChecksumAlgorithmHelper.calculate(file, Collections.singletonList(sha1));
+                logger.info("{}({})={}", sha1.getName(), file.getName(), hashes.get(sha1.getName()));
+            } catch (IOException e) {
+                logger.warn("IO problem while calculating sha1 of {}", file, e);
+            }
+        }
         return nlg.getClassPath();
     }
 
