@@ -39,6 +39,9 @@ public abstract class ResolverCommandSupport extends CommandSupport {
         HashSet<String> keys = new HashSet<>();
         ArrayList<Dependency> managedDependencies = new ArrayList<>();
         for (String bomGav : boms) {
+            if ("".equals(bomGav)) {
+                continue;
+            }
             Artifact bom = new DefaultArtifact(bomGav);
             ArtifactDescriptorRequest artifactDescriptorRequest =
                     new ArtifactDescriptorRequest(bom, context.remoteRepositories(), "");

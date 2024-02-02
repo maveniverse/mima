@@ -70,6 +70,7 @@ public final class Resolve extends ResolverCommandSupport {
         DependencyRequest dependencyRequest =
                 new DependencyRequest(collectRequest, DependencyFilterUtils.classpathFilter(scope));
 
+        verbose("Resolving {}", collectRequest);
         context.repositorySystem().resolveDependencies(session, dependencyRequest);
 
         ArrayList<ArtifactRequest> artifactRequests = new ArrayList<>();
