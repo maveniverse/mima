@@ -32,12 +32,12 @@ import org.eclipse.aether.spi.synccontext.SyncContextFactory;
 import org.eclipse.aether.supplier.RepositorySystemSupplier;
 import org.eclipse.aether.transport.http.ChecksumExtractor;
 
-public class MemoizingRepositorySystemSupplier extends RepositorySystemSupplier implements Lookup {
+public class MemoizingRepositorySystemSupplierLookup extends RepositorySystemSupplier implements Lookup {
     private final HashMap<Class<?>, Object> singulars = new HashMap<>();
 
     private final HashMap<Class<?>, Map<String, Object>> plurals = new HashMap<>();
 
-    public MemoizingRepositorySystemSupplier() {
+    public MemoizingRepositorySystemSupplierLookup() {
         memoize(RepositorySystem.class, super.get()); // to trigger filling up of memoized components
     }
 

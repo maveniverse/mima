@@ -11,10 +11,10 @@ import eu.maveniverse.maven.mima.context.*;
 import eu.maveniverse.maven.mima.context.internal.MavenSystemHomeImpl;
 import eu.maveniverse.maven.mima.context.internal.MavenUserHomeImpl;
 import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
+import eu.maveniverse.maven.mima.runtime.maven.internal.PlexusLookup;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -24,7 +24,6 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.rtinfo.RuntimeInformation;
 import org.apache.maven.settings.Proxy;
 import org.codehaus.plexus.PlexusContainer;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 
@@ -105,25 +104,7 @@ public final class MavenRuntime extends RuntimeSupport {
                         session,
                         repositorySystem.newResolutionRepositories(session, effective.getRepositories()),
                         toHTTPProxy(mavenSession.getSettings().getActiveProxy()),
-                        new Lookup() {
-                            @Override
-                            public <T> Optional<T> lookup(Class<T> type) {
-                                try {
-                                    return Optional.of(plexusContainer.lookup(type));
-                                } catch (ComponentLookupException e) {
-                                    return Optional.empty();
-                                }
-                            }
-
-                            @Override
-                            public <T> Optional<T> lookup(Class<T> type, String name) {
-                                try {
-                                    return Optional.of(plexusContainer.lookup(type, name));
-                                } catch (ComponentLookupException e) {
-                                    return Optional.empty();
-                                }
-                            }
-                        },
+                        new PlexusLookup(plexusContainer),
                         null),
                 false); // unmanaged context: close should NOT shut down repositorySystem
     }
