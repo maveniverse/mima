@@ -3,6 +3,7 @@ package eu.maveniverse.maven.mima.cli;
 import eu.maveniverse.maven.mima.context.Context;
 import java.util.ArrayList;
 import java.util.HashSet;
+import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -12,6 +13,7 @@ import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
 import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 import org.eclipse.aether.util.artifact.ArtifactIdUtils;
+import org.eclipse.aether.util.repository.SimpleArtifactDescriptorPolicy;
 
 /**
  * Support.
@@ -37,6 +39,8 @@ public abstract class ResolverCommandSupport extends CommandSupport {
     protected java.util.List<Dependency> importBoms(Context context, String... boms)
             throws ArtifactDescriptorException {
         HashSet<String> keys = new HashSet<>();
+        DefaultRepositorySystemSession session = new DefaultRepositorySystemSession(context.repositorySystemSession());
+        session.setArtifactDescriptorPolicy(new SimpleArtifactDescriptorPolicy(false, false));
         ArrayList<Dependency> managedDependencies = new ArrayList<>();
         for (String bomGav : boms) {
             if ("".equals(bomGav)) {
@@ -45,8 +49,8 @@ public abstract class ResolverCommandSupport extends CommandSupport {
             Artifact bom = new DefaultArtifact(bomGav);
             ArtifactDescriptorRequest artifactDescriptorRequest =
                     new ArtifactDescriptorRequest(bom, context.remoteRepositories(), "");
-            ArtifactDescriptorResult artifactDescriptorResult = context.repositorySystem()
-                    .readArtifactDescriptor(context.repositorySystemSession(), artifactDescriptorRequest);
+            ArtifactDescriptorResult artifactDescriptorResult =
+                    context.repositorySystem().readArtifactDescriptor(session, artifactDescriptorRequest);
             artifactDescriptorResult.getManagedDependencies().forEach(d -> {
                 if (keys.add(ArtifactIdUtils.toVersionlessId(d.getArtifact()))) {
                     managedDependencies.add(d);
