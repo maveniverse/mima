@@ -2,7 +2,7 @@ package eu.maveniverse.maven.mima.cli;
 
 import eu.maveniverse.maven.mima.context.Context;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -11,6 +11,7 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
 import org.eclipse.aether.resolution.ArtifactDescriptorResult;
+import org.eclipse.aether.util.artifact.ArtifactIdUtils;
 
 /**
  * Support.
@@ -35,7 +36,8 @@ public abstract class ResolverCommandSupport extends CommandSupport {
 
     protected java.util.List<Dependency> importBoms(Context context, String... boms)
             throws ArtifactDescriptorException {
-        LinkedHashSet<Dependency> managedDependencies = new LinkedHashSet<>();
+        HashSet<String> keys = new HashSet<>();
+        ArrayList<Dependency> managedDependencies = new ArrayList<>();
         for (String bomGav : boms) {
             Artifact bom = new DefaultArtifact(bomGav);
             ArtifactDescriptorRequest artifactDescriptorRequest =
@@ -43,12 +45,14 @@ public abstract class ResolverCommandSupport extends CommandSupport {
             ArtifactDescriptorResult artifactDescriptorResult = context.repositorySystem()
                     .readArtifactDescriptor(context.repositorySystemSession(), artifactDescriptorRequest);
             artifactDescriptorResult.getManagedDependencies().forEach(d -> {
-                if (!managedDependencies.add(d)) {
+                if (keys.add(ArtifactIdUtils.toVersionlessId(d.getArtifact()))) {
+                    managedDependencies.add(d);
+                } else {
                     info("W: BOM {} introduced an already managed dependency {}", bom, d);
                 }
             });
         }
-        return new ArrayList<>(managedDependencies);
+        return managedDependencies;
     }
 
     protected Artifact parseGav(String gav, java.util.List<Dependency> managedDependencies) {
