@@ -4,11 +4,9 @@ import eu.maveniverse.maven.mima.context.Context;
 import java.io.File;
 import java.util.stream.Collectors;
 import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.resolution.DependencyRequest;
-import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.resolution.DependencyResult;
 import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
@@ -33,13 +31,22 @@ public final class Classpath extends ResolverCommandSupport {
     @CommandLine.Option(names = "--scope", defaultValue = "runtime")
     private ClasspathScope scope;
 
+    @CommandLine.Option(
+            names = {"--boms"},
+            defaultValue = "",
+            split = ",",
+            description = "Comma separated list of BOMs to apply")
+    private String[] boms;
+
     @Override
-    protected Integer doCall(Context context) throws DependencyResolutionException {
-        Artifact artifact = new DefaultArtifact(gav);
+    protected Integer doCall(Context context) throws Exception {
+        java.util.List<Dependency> managedDependencies = importBoms(context, boms);
+        Artifact artifact = parseGav(gav, managedDependencies);
 
         CollectRequest collectRequest = new CollectRequest();
         collectRequest.setRoot(new Dependency(artifact, JavaScopes.COMPILE));
         collectRequest.setRepositories(context.remoteRepositories());
+        collectRequest.setManagedDependencies(managedDependencies);
         DependencyRequest dependencyRequest =
                 new DependencyRequest(collectRequest, DependencyFilterUtils.classpathFilter(scope.name()));
 

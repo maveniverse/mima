@@ -24,10 +24,15 @@ import picocli.CommandLine;
             Resolve.class,
             Verify.class
         },
-        version = "1.0",
+        versionProvider = Main.class,
         description = "MIMA CLI",
         mixinStandardHelpOptions = true)
-public class Main extends CommandSupport {
+public class Main extends CommandSupport implements CommandLine.IVersionProvider {
+    @Override
+    public String[] getVersion() {
+        return new String[] {"MIMA " + getRuntime().version()};
+    }
+
     @Override
     public Integer call() {
         try (Context context = getContext()) {
