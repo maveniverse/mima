@@ -9,9 +9,9 @@ import org.eclipse.aether.transport.jdk.JdkTransporterFactory;
  */
 public class RepositorySystemSupplier extends org.eclipse.aether.supplier.RepositorySystemSupplier {
     @Override
-    protected Map<String, TransporterFactory> getTransporterFactories() {
-        Map<String, TransporterFactory> result = super.getTransporterFactories();
-        result.put(JdkTransporterFactory.NAME, new JdkTransporterFactory());
+    protected Map<String, TransporterFactory> createTransporterFactories() {
+        Map<String, TransporterFactory> result = super.createTransporterFactories();
+        result.put(JdkTransporterFactory.NAME, new JdkTransporterFactory(getChecksumExtractor(), getPathProcessor()));
         return result;
     }
 }

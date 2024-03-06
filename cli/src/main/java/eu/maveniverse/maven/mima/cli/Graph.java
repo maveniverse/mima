@@ -6,14 +6,9 @@ import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.collection.DependencyCollectionException;
-import org.eclipse.aether.collection.DependencyManager;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.util.artifact.JavaScopes;
-import org.eclipse.aether.util.graph.manager.ClassicDependencyManager;
-import org.eclipse.aether.util.graph.manager.DefaultDependencyManager;
 import org.eclipse.aether.util.graph.manager.DependencyManagerUtils;
-import org.eclipse.aether.util.graph.manager.NoopDependencyManager;
-import org.eclipse.aether.util.graph.manager.TransitiveDependencyManager;
 import org.eclipse.aether.util.graph.selector.AndDependencySelector;
 import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector;
 import org.eclipse.aether.util.graph.selector.OptionalDependencySelector;
@@ -39,12 +34,6 @@ public final class Graph extends ResolverCommandSupport {
     private String gav;
 
     @CommandLine.Option(
-            names = {"--dependencyManager"},
-            defaultValue = "classic",
-            description = "Dependency manager to use (classic, default, noop, transitive)")
-    private String dependencyManager;
-
-    @CommandLine.Option(
             names = {"--excludeScopes"},
             defaultValue = JavaScopes.TEST,
             split = ",",
@@ -56,8 +45,6 @@ public final class Graph extends ResolverCommandSupport {
         DefaultRepositorySystemSession session = new DefaultRepositorySystemSession(context.repositorySystemSession());
         session.setConfigProperty(ConflictResolver.CONFIG_PROP_VERBOSE, ConflictResolver.Verbosity.FULL);
         session.setConfigProperty(DependencyManagerUtils.CONFIG_PROP_VERBOSE, true);
-
-        session.setDependencyManager(dependencyManager());
 
         session.setDependencySelector(new AndDependencySelector(
                 new ScopeDependencySelector(excludeScopes),
@@ -82,19 +69,5 @@ public final class Graph extends ResolverCommandSupport {
                 .getRoot()
                 .accept(new DependencyGraphDumper(this::info));
         return 0;
-    }
-
-    private DependencyManager dependencyManager() {
-        if ("classic".equalsIgnoreCase(dependencyManager)) {
-            return new ClassicDependencyManager();
-        } else if ("default".equalsIgnoreCase(dependencyManager)) {
-            return new DefaultDependencyManager();
-        } else if ("noop".equalsIgnoreCase(dependencyManager)) {
-            return new NoopDependencyManager();
-        } else if ("transitive".equalsIgnoreCase(dependencyManager)) {
-            return new TransitiveDependencyManager();
-        } else {
-            throw new IllegalArgumentException("Unknown dependency manager: " + dependencyManager);
-        }
     }
 }

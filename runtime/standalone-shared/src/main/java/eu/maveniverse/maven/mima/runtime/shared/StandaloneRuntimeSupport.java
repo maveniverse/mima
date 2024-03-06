@@ -27,6 +27,7 @@ import org.apache.maven.model.building.ModelProblemCollector;
 import org.apache.maven.model.building.ModelProblemCollectorRequest;
 import org.apache.maven.model.profile.DefaultProfileActivationContext;
 import org.apache.maven.model.profile.ProfileSelector;
+import org.apache.maven.repository.internal.MavenSessionBuilderSupplier;
 import org.apache.maven.settings.Activation;
 import org.apache.maven.settings.ActivationOS;
 import org.apache.maven.settings.ActivationProperty;
@@ -53,7 +54,6 @@ import org.eclipse.aether.RepositorySystemSession.CloseableSession;
 import org.eclipse.aether.RepositorySystemSession.SessionBuilder;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
-import org.eclipse.aether.supplier.SessionBuilderSupplier;
 import org.eclipse.aether.util.repository.AuthenticationBuilder;
 import org.eclipse.aether.util.repository.DefaultAuthenticationSelector;
 import org.eclipse.aether.util.repository.DefaultMirrorSelector;
@@ -354,7 +354,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             RepositorySystem repositorySystem,
             Settings settings,
             SettingsDecrypter settingsDecrypter) {
-        SessionBuilder session = new SessionBuilderSupplier(repositorySystem).get();
+        SessionBuilder session = new MavenSessionBuilderSupplier(repositorySystem).get();
 
         session.setCache(new DefaultRepositoryCache());
 
