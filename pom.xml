@@ -70,7 +70,7 @@
     <version.maven>3.9.6</version.maven>
     <version.mase>1.0.1</version.mase>
     <version.sisu>0.9.0.M2</version.sisu>
-    <version.slf4j>1.7.36</version.slf4j>
+    <version.slf4j>2.0.12</version.slf4j>
     <version.picocli>4.7.5</version.picocli>
   </properties>
 
