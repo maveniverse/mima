@@ -48,15 +48,15 @@
       <artifactId>jansi</artifactId>
     </dependency>
     <dependency>
-      <groupId>eu.maveniverse.maven.mase</groupId>
+      <groupId>org.apache.maven.indexer</groupId>
       <artifactId>search-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>eu.maveniverse.maven.mase</groupId>
+      <groupId>org.apache.maven.indexer</groupId>
       <artifactId>search-backend-remoterepository</artifactId>
     </dependency>
     <dependency>
-      <groupId>eu.maveniverse.maven.mase</groupId>
+      <groupId>org.apache.maven.indexer</groupId>
       <artifactId>search-backend-smo</artifactId>
     </dependency>
 

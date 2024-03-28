@@ -68,7 +68,7 @@
     <!-- Dependency versions -->
     <version.resolver>1.9.18</version.resolver>
     <version.maven>3.9.6</version.maven>
-    <version.mase>1.0.1</version.mase>
+    <version.mase>7.1.2</version.mase>
     <version.sisu>0.9.0.M2</version.sisu>
     <version.slf4j>1.7.36</version.slf4j>
     <version.picocli>4.7.5</version.picocli>
@@ -232,17 +232,17 @@
 
       <!-- Maven Indexer -->
       <dependency>
-        <groupId>eu.maveniverse.maven.mase</groupId>
+        <groupId>org.apache.maven.indexer</groupId>
         <artifactId>search-api</artifactId>
         <version>${version.mase}</version>
       </dependency>
       <dependency>
-        <groupId>eu.maveniverse.maven.mase</groupId>
+        <groupId>org.apache.maven.indexer</groupId>
         <artifactId>search-backend-remoterepository</artifactId>
         <version>${version.mase}</version>
       </dependency>
       <dependency>
-        <groupId>eu.maveniverse.maven.mase</groupId>
+        <groupId>org.apache.maven.indexer</groupId>
         <artifactId>search-backend-smo</artifactId>
         <version>${version.mase}</version>
       </dependency>
