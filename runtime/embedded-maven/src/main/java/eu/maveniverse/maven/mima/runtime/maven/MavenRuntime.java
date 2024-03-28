@@ -75,6 +75,9 @@ public final class MavenRuntime extends RuntimeSupport {
 
         ContextOverrides.Builder effectiveOverridesBuilder = overrides.toBuilder();
         effectiveOverridesBuilder.withUserSettings(true); // embedded
+        if (currentProject != null) {
+            effectiveOverridesBuilder.repositories(currentProject.getRemoteProjectRepositories());
+        }
         effectiveOverridesBuilder.systemProperties(session.getSystemProperties());
         effectiveOverridesBuilder.userProperties(session.getUserProperties());
         effectiveOverridesBuilder.configProperties(session.getConfigProperties());
