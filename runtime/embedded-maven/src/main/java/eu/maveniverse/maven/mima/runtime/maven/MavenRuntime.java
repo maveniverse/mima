@@ -24,7 +24,6 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.project.MavenProject;
 import org.apache.maven.rtinfo.RuntimeInformation;
 import org.apache.maven.settings.Proxy;
 import org.eclipse.aether.RepositorySystem;
@@ -65,18 +64,23 @@ public final class MavenRuntime extends RuntimeSupport {
     @Override
     public Context create(ContextOverrides overrides) {
         MavenSession mavenSession = mavenSessionProvider.get();
+        boolean projectPresent = mavenSession.getRequest().isProjectPresent();
 
-        MavenProject currentProject = mavenSession.getCurrentProject();
-        Path basedir =
-                currentProject != null ? currentProject.getBasedir().toPath().toAbsolutePath() : DEFAULT_BASEDIR;
+        Path basedir;
+        if (projectPresent) {
+            basedir = mavenSession.getCurrentProject().getBasedir().toPath().toAbsolutePath();
+        } else {
+            basedir = DEFAULT_BASEDIR;
+        }
         MavenUserHome mavenUserHome = discoverMavenUserHome(mavenSession.getRequest());
         MavenSystemHome mavenSystemHome = discoverMavenSystemHome(mavenSession.getRequest());
         RepositorySystemSession session = mavenSession.getRepositorySession();
 
         ContextOverrides.Builder effectiveOverridesBuilder = overrides.toBuilder();
         effectiveOverridesBuilder.withUserSettings(true); // embedded
-        if (currentProject != null) {
-            effectiveOverridesBuilder.repositories(currentProject.getRemoteProjectRepositories());
+        if (projectPresent) {
+            effectiveOverridesBuilder.repositories(
+                    mavenSession.getCurrentProject().getRemoteProjectRepositories());
         }
         effectiveOverridesBuilder.systemProperties(session.getSystemProperties());
         effectiveOverridesBuilder.userProperties(session.getUserProperties());
