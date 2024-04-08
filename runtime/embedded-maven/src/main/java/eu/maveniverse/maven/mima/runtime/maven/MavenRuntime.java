@@ -7,7 +7,11 @@
  */
 package eu.maveniverse.maven.mima.runtime.maven;
 
-import eu.maveniverse.maven.mima.context.*;
+import eu.maveniverse.maven.mima.context.Context;
+import eu.maveniverse.maven.mima.context.ContextOverrides;
+import eu.maveniverse.maven.mima.context.HTTPProxy;
+import eu.maveniverse.maven.mima.context.MavenSystemHome;
+import eu.maveniverse.maven.mima.context.MavenUserHome;
 import eu.maveniverse.maven.mima.context.internal.MavenSystemHomeImpl;
 import eu.maveniverse.maven.mima.context.internal.MavenUserHomeImpl;
 import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
