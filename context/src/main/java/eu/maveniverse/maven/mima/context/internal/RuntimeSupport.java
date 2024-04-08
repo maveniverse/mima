@@ -134,6 +134,7 @@ public abstract class RuntimeSupport implements Runtime {
                 session,
                 context.repositorySystem().newResolutionRepositories(session, remoteRepositories),
                 context.httpProxy(),
+                context.lookup(),
                 null); // derived context: close should NOT shut down repositorySystem
     }
 

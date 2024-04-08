@@ -15,6 +15,7 @@ import eu.maveniverse.maven.mima.context.MavenUserHome;
 import eu.maveniverse.maven.mima.context.internal.MavenSystemHomeImpl;
 import eu.maveniverse.maven.mima.context.internal.MavenUserHomeImpl;
 import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
+import eu.maveniverse.maven.mima.runtime.maven.internal.PlexusLookup;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.rtinfo.RuntimeInformation;
 import org.apache.maven.settings.Proxy;
+import org.codehaus.plexus.PlexusContainer;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 
@@ -34,17 +36,23 @@ import org.eclipse.aether.RepositorySystemSession;
 public final class MavenRuntime extends RuntimeSupport {
     private final RepositorySystem repositorySystem;
 
+    private final PlexusContainer plexusContainer;
+
     private final Provider<MavenSession> mavenSessionProvider;
 
     @Inject
     public MavenRuntime(
-            RepositorySystem repositorySystem, Provider<MavenSession> mavenSessionProvider, RuntimeInformation rt) {
+            RepositorySystem repositorySystem,
+            PlexusContainer plexusContainer,
+            Provider<MavenSession> mavenSessionProvider,
+            RuntimeInformation rt) {
         super(
                 "embedded-maven",
                 discoverArtifactVersion("eu.maveniverse.maven.mima.runtime", "embedded-maven", UNKNOWN),
                 10,
                 mavenVersion(rt));
         this.repositorySystem = repositorySystem;
+        this.plexusContainer = plexusContainer;
         this.mavenSessionProvider = mavenSessionProvider;
     }
 
@@ -100,6 +108,7 @@ public final class MavenRuntime extends RuntimeSupport {
                         session,
                         repositorySystem.newResolutionRepositories(session, effective.getRepositories()),
                         toHTTPProxy(mavenSession.getSettings().getActiveProxy()),
+                        new PlexusLookup(plexusContainer),
                         null),
                 false); // unmanaged context: close should NOT shut down repositorySystem
     }
