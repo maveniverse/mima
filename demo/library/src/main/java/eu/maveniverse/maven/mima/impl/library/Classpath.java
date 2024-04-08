@@ -23,7 +23,6 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
-import org.eclipse.aether.spi.io.FileProcessor;
 import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,10 +84,6 @@ public class Classpath {
 
         PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
         rootNode.accept(nlg);
-
-        // this is just for demo purpose here
-        FileProcessor fileProcessor = context.lookup().lookup(FileProcessor.class).orElseThrow(() -> new IllegalStateException("lookup failed"));
-
         return nlg.getClassPath();
     }
 
