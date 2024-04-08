@@ -157,7 +157,7 @@ public final class Context implements Closeable {
     /**
      * Returns {@link Lookup} instance usable to look up resolver components, never {@code null}.
      *
-     * @since TBD
+     * @since 2.4.10
      */
     public Lookup lookup() {
         return lookup;

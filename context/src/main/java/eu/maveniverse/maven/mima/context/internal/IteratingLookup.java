@@ -9,7 +9,7 @@ import java.util.*;
  * A {@link Lookup} implementation that is able to iterate through several lookups, applying "first deliver wins"
  * strategy.
  *
- * @since TBD
+ * @since 2.4.10
  */
 public final class IteratingLookup implements Lookup {
     private final Collection<Lookup> lookups;
