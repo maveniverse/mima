@@ -23,6 +23,7 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
+import org.eclipse.aether.spi.io.FileProcessor;
 import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,16 +86,9 @@ public class Classpath {
         PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
         rootNode.accept(nlg);
 
-        // This works only in Maven 3.9.x + Resolver 1.9.x (these classes were introduced in recent resolver)
-//        ChecksumAlgorithmFactory sha1 = context.lookup().lookup(ChecksumAlgorithmFactory.class, "SHA-1").orElseThrow(() -> new IllegalStateException("component not found"));
-//        for (File file : nlg.getFiles()) {
-//            try {
-//                Map<String, String> hashes = ChecksumAlgorithmHelper.calculate(file, Collections.singletonList(sha1));
-//                logger.info("{}({})={}", sha1.getName(), file.getName(), hashes.get(sha1.getName()));
-//            } catch (IOException e) {
-//                logger.warn("IO problem while calculating sha1 of {}", file, e);
-//            }
-//        }
+        // this is just for demo purpose here
+        FileProcessor fileProcessor = context.lookup().lookup(FileProcessor.class).orElseThrow(() -> new IllegalStateException("lookup failed"));
+
         return nlg.getClassPath();
     }
 
