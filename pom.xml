@@ -62,11 +62,11 @@
     <!--
     Build time: latest Maven and LTS Java.
     -->
-    <requireBuildtimeMavenVersion.version>[3.9.3,)</requireBuildtimeMavenVersion.version>
+    <requireBuildtimeMavenVersion.version>[3.9.6,)</requireBuildtimeMavenVersion.version>
     <requireBuildtimeJavaVersion.version>[17.0.6,)</requireBuildtimeJavaVersion.version>
 
     <!-- Dependency versions -->
-    <version.resolver>1.9.18</version.resolver>
+    <version.resolver>1.9.19</version.resolver>
     <version.maven>3.9.6</version.maven>
     <version.mase>7.1.2</version.mase>
     <version.sisu>0.9.0.M2</version.sisu>
