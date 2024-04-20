@@ -64,9 +64,12 @@ public class Classpath {
     private String doClasspath(Context context, Artifact artifact) throws DependencyResolutionException {
         logger.info("doClasspath: {}", context.remoteRepositories());
 
-        RemoteRepositoryManager remoteRepositoryManager = context.lookup().lookup(RemoteRepositoryManager.class).orElseThrow(() -> new IllegalStateException("component not found"));
+        RemoteRepositoryManager remoteRepositoryManager = context.lookup()
+                .lookup(RemoteRepositoryManager.class)
+                .orElseThrow(() -> new IllegalStateException("component not found"));
         for (RemoteRepository repository : context.remoteRepositories()) {
-            RepositoryPolicy policy = remoteRepositoryManager.getPolicy(context.repositorySystemSession(), repository, !artifact.isSnapshot(), artifact.isSnapshot());
+            RepositoryPolicy policy = remoteRepositoryManager.getPolicy(
+                    context.repositorySystemSession(), repository, !artifact.isSnapshot(), artifact.isSnapshot());
             logger.info("Repository {} effective policy: {}", repository.getId(), policy);
         }
 
