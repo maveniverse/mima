@@ -370,6 +370,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             DefaultArtifactTypeRegistry registry = (DefaultArtifactTypeRegistry) session.getArtifactTypeRegistry();
             overrides.extraArtifactTypes().forEach(registry::add);
         }
+
         session.setCache(new DefaultRepositoryCache());
 
         LinkedHashMap<Object, Object> configProps = new LinkedHashMap<>(overrides.getConfigProperties());

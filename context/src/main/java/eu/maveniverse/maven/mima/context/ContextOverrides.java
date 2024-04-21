@@ -610,6 +610,7 @@ public final class ContextOverrides {
             this.addRepositoriesOp = addRepositoriesOp;
             return this;
         }
+
         /**
          * Sets the list of {@link ArtifactType} instances you want to extend resolver with. The list will append the
          * existing list of types coming from Maven.
