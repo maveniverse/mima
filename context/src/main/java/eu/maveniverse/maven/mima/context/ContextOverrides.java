@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.eclipse.aether.RepositoryListener;
+import org.eclipse.aether.artifact.ArtifactType;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.transfer.TransferListener;
@@ -53,9 +54,7 @@ public final class ContextOverrides {
 
     public enum AddRepositoriesOp {
         PREPEND,
-
         APPEND,
-
         REPLACE
     }
 
@@ -70,6 +69,8 @@ public final class ContextOverrides {
     private final List<RemoteRepository> repositories;
 
     private final AddRepositoriesOp addRepositoriesOp;
+
+    private final List<ArtifactType> extraArtifactTypes;
 
     private final boolean offline;
 
@@ -114,6 +115,7 @@ public final class ContextOverrides {
             final Map<String, Object> configProperties,
             final List<RemoteRepository> repositories,
             final AddRepositoriesOp addRepositoriesOp,
+            final List<ArtifactType> extraArtifactTypes,
             final boolean offline,
             final SnapshotUpdatePolicy snapshotUpdatePolicy,
             final ChecksumPolicy checksumPolicy,
@@ -139,6 +141,7 @@ public final class ContextOverrides {
         this.configProperties = Collections.unmodifiableMap(configProperties);
         this.repositories = Collections.unmodifiableList(repositories);
         this.addRepositoriesOp = requireNonNull(addRepositoriesOp);
+        this.extraArtifactTypes = requireNonNull(extraArtifactTypes);
         this.offline = offline;
         this.snapshotUpdatePolicy = snapshotUpdatePolicy;
         this.checksumPolicy = checksumPolicy;
@@ -201,6 +204,15 @@ public final class ContextOverrides {
      */
     public AddRepositoriesOp addRepositoriesOp() {
         return addRepositoriesOp;
+    }
+
+    /**
+     * User added list of artifact types, never {@code null}.
+     *
+     * @since TBD
+     */
+    public List<ArtifactType> extraArtifactTypes() {
+        return extraArtifactTypes;
     }
 
     /**
@@ -473,6 +485,8 @@ public final class ContextOverrides {
 
         private AddRepositoriesOp addRepositoriesOp = AddRepositoriesOp.PREPEND;
 
+        private List<ArtifactType> extraArtifactTypes = Collections.emptyList();
+
         private boolean offline = false;
 
         private SnapshotUpdatePolicy snapshotUpdatePolicy = null;
@@ -594,6 +608,22 @@ public final class ContextOverrides {
          */
         public Builder addRepositoriesOp(AddRepositoriesOp addRepositoriesOp) {
             this.addRepositoriesOp = addRepositoriesOp;
+            return this;
+        }
+        /**
+         * Sets the list of {@link ArtifactType} instances you want to extend resolver with. The list will append the
+         * existing list of types coming from Maven.
+         * <p>
+         * In case when MIMA runs within Maven, this is ignored.
+         *
+         * @since TBD
+         */
+        public Builder extraArtifactTypes(List<ArtifactType> extraArtifactTypes) {
+            if (extraArtifactTypes != null) {
+                this.extraArtifactTypes = new ArrayList<>(extraArtifactTypes);
+            } else {
+                this.extraArtifactTypes = Collections.emptyList();
+            }
             return this;
         }
 
@@ -757,7 +787,7 @@ public final class ContextOverrides {
         /**
          * Sets Maven Effective Settings. If set, this fully replaces any discovered settings.
          * <p>
-         * Important: it must be "effective" (all paths interpolated, resolved, etc), as this object is accepted
+         * Important: it must be "effective" (all paths interpolated, resolved, etc.), as this object is accepted
          * as is, there is no any processing applied to it!
          *
          * @since 2.3.0
@@ -770,7 +800,7 @@ public final class ContextOverrides {
         /**
          * Sets Maven Effective Settings mixin. If set, this is merged into effective settings.
          * <p>
-         * Important: it must be "effective" (all paths interpolated, resolved, etc), as this object is accepted
+         * Important: it must be "effective" (all paths interpolated, resolved, etc.), as this object is accepted
          * as is, there is no any processing applied to it!
          *
          * @since 2.4.0
@@ -791,6 +821,7 @@ public final class ContextOverrides {
                     configProperties,
                     repositories,
                     addRepositoriesOp,
+                    extraArtifactTypes,
                     offline,
                     snapshotUpdatePolicy,
                     checksumPolicy,

@@ -61,6 +61,7 @@ import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
+import org.eclipse.aether.util.artifact.DefaultArtifactTypeRegistry;
 import org.eclipse.aether.util.repository.AuthenticationBuilder;
 import org.eclipse.aether.util.repository.DefaultAuthenticationSelector;
 import org.eclipse.aether.util.repository.DefaultMirrorSelector;
@@ -365,6 +366,10 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             SettingsDecrypter settingsDecrypter) {
         DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 
+        if (!overrides.extraArtifactTypes().isEmpty()) {
+            DefaultArtifactTypeRegistry registry = (DefaultArtifactTypeRegistry) session.getArtifactTypeRegistry();
+            overrides.extraArtifactTypes().forEach(registry::add);
+        }
         session.setCache(new DefaultRepositoryCache());
 
         LinkedHashMap<Object, Object> configProps = new LinkedHashMap<>(overrides.getConfigProperties());
