@@ -209,7 +209,7 @@ public final class ContextOverrides {
     /**
      * User added list of artifact types, never {@code null}.
      *
-     * @since TBD
+     * @since 2.4.11
      */
     public List<ArtifactType> extraArtifactTypes() {
         return extraArtifactTypes;
@@ -617,7 +617,7 @@ public final class ContextOverrides {
          * <p>
          * In case when MIMA runs within Maven, this is ignored.
          *
-         * @since TBD
+         * @since 2.4.11
          */
         public Builder extraArtifactTypes(List<ArtifactType> extraArtifactTypes) {
             if (extraArtifactTypes != null) {
