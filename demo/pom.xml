@@ -34,7 +34,7 @@
   <properties>
     <!-- 2.8.0 forces mvn 3.9.x -->
     <modernizer.version>2.7.0</modernizer.version>
-    <version.mima>2.4.12-SNAPSHOT</version.mima>
+    <version.mima>2.4.13-SNAPSHOT</version.mima>
     <version.slf4j>1.7.36</version.slf4j>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
