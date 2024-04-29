@@ -378,6 +378,7 @@ public final class ContextOverrides {
                 .configProperties(configProperties)
                 .repositories(repositories)
                 .addRepositoriesOp(addRepositoriesOp)
+                .extraArtifactTypes(extraArtifactTypes)
                 .offline(offline)
                 .snapshotUpdatePolicy(snapshotUpdatePolicy)
                 .checksumPolicy(checksumPolicy)
@@ -415,6 +416,7 @@ public final class ContextOverrides {
                 && Objects.equals(configProperties, that.configProperties)
                 && Objects.equals(repositories, that.repositories)
                 && addRepositoriesOp == that.addRepositoriesOp
+                && Objects.equals(extraArtifactTypes, that.extraArtifactTypes)
                 && snapshotUpdatePolicy == that.snapshotUpdatePolicy
                 && checksumPolicy == that.checksumPolicy
                 && Objects.equals(activeProfileIds, that.activeProfileIds)
@@ -442,6 +444,7 @@ public final class ContextOverrides {
                 configProperties,
                 repositories,
                 addRepositoriesOp,
+                extraArtifactTypes,
                 offline,
                 snapshotUpdatePolicy,
                 checksumPolicy,
