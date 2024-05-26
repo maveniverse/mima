@@ -105,6 +105,8 @@ public abstract class RuntimeSupport implements Runtime {
 
         session.setOffline(overrides.isOffline());
 
+        session.setIgnoreArtifactDescriptorRepositories(overrides.isIgnoreArtifactDescriptorRepositories());
+
         customizeLocalRepositoryManager(context, session);
 
         customizeChecksumPolicy(overrides, session);

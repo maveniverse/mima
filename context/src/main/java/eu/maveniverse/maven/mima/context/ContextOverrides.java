@@ -74,6 +74,8 @@ public final class ContextOverrides {
 
     private final boolean offline;
 
+    private final boolean ignoreArtifactDescriptorRepositories;
+
     private final SnapshotUpdatePolicy snapshotUpdatePolicy;
 
     private final ChecksumPolicy checksumPolicy;
@@ -117,6 +119,7 @@ public final class ContextOverrides {
             final AddRepositoriesOp addRepositoriesOp,
             final List<ArtifactType> extraArtifactTypes,
             final boolean offline,
+            final boolean ignoreArtifactDescriptorRepositories,
             final SnapshotUpdatePolicy snapshotUpdatePolicy,
             final ChecksumPolicy checksumPolicy,
             final boolean withUserSettings,
@@ -143,6 +146,7 @@ public final class ContextOverrides {
         this.addRepositoriesOp = requireNonNull(addRepositoriesOp);
         this.extraArtifactTypes = requireNonNull(extraArtifactTypes);
         this.offline = offline;
+        this.ignoreArtifactDescriptorRepositories = ignoreArtifactDescriptorRepositories;
         this.snapshotUpdatePolicy = snapshotUpdatePolicy;
         this.checksumPolicy = checksumPolicy;
         this.withUserSettings = withUserSettings;
@@ -220,6 +224,15 @@ public final class ContextOverrides {
      */
     public boolean isOffline() {
         return offline;
+    }
+
+    /**
+     * Is ignore Artifact Descriptor Repositories (transitive dependency introduced repositories)?
+     *
+     * @since 2.4.13
+     */
+    public boolean isIgnoreArtifactDescriptorRepositories() {
+        return ignoreArtifactDescriptorRepositories;
     }
 
     /**
@@ -492,6 +505,8 @@ public final class ContextOverrides {
 
         private boolean offline = false;
 
+        private boolean ignoreArtifactDescriptorRepositories;
+
         private SnapshotUpdatePolicy snapshotUpdatePolicy = null;
 
         private ChecksumPolicy checksumPolicy = null;
@@ -636,6 +651,16 @@ public final class ContextOverrides {
          */
         public Builder offline(boolean offline) {
             this.offline = offline;
+            return this;
+        }
+
+        /**
+         * Sets ignore artifact descriptor repositories.
+         *
+         * @since 2.4.13
+         */
+        public Builder ignoreArtifactDescriptorRepositories(boolean ignoreArtifactDescriptorRepositories) {
+            this.ignoreArtifactDescriptorRepositories = ignoreArtifactDescriptorRepositories;
             return this;
         }
 
@@ -827,6 +852,7 @@ public final class ContextOverrides {
                     addRepositoriesOp,
                     extraArtifactTypes,
                     offline,
+                    ignoreArtifactDescriptorRepositories,
                     snapshotUpdatePolicy,
                     checksumPolicy,
                     withUserSettings,

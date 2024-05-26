@@ -382,6 +382,8 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
 
         session.setOffline(overrides.isOffline());
 
+        session.setIgnoreArtifactDescriptorRepositories(overrides.isIgnoreArtifactDescriptorRepositories());
+
         customizeChecksumPolicy(overrides, session);
 
         customizeSnapshotUpdatePolicy(overrides, session);
