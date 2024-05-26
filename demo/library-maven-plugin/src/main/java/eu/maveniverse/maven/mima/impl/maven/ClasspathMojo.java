@@ -35,7 +35,7 @@ public class ClasspathMojo extends AbstractMojo {
             getLog().info(cp);
             getLog().info("");
         } catch (Exception e) {
-            throw new MojoExecutionException(e);
+            throw new MojoExecutionException("Error:", e);
         }
     }
 }

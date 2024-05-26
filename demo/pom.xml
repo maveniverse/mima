@@ -44,7 +44,7 @@
     <maven.deploy.skip>true</maven.deploy.skip>
 
     <!-- Allow much broader range of Maven and Java -->
-    <requireBuildtimeMavenVersion.version>[3.8.6,)</requireBuildtimeMavenVersion.version>
+    <requireBuildtimeMavenVersion.version>[3.6.3,)</requireBuildtimeMavenVersion.version>
     <requireBuildtimeJavaVersion.version>[8,)</requireBuildtimeJavaVersion.version>
 
     <!-- Demo is Java 8 -->
