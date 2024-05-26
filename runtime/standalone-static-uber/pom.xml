@@ -58,6 +58,7 @@
                 <exclude>META-INF/NOTICE</exclude>
                 <exclude>META-INF/NOTICE.txt</exclude>
                 <exclude>META-INF/services/javax.annotation.processing.Processor</exclude>
+                <exclude>META-INF/versions/9/module-info.class</exclude>
               </excludes>
             </filter>
           </filters>
