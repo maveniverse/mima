@@ -33,7 +33,7 @@
 
   <properties>
     <!-- 2.8.0 forces mvn 3.9.x -->
-    <modernizer.version>2.7.0</modernizer.version>
+    <modernizer.version>2.9.0</modernizer.version>
     <version.mima>2.4.13-SNAPSHOT</version.mima>
     <version.slf4j>1.7.36</version.slf4j>
 
@@ -44,7 +44,7 @@
     <maven.deploy.skip>true</maven.deploy.skip>
 
     <!-- Allow much broader range of Maven and Java -->
-    <requireBuildtimeMavenVersion.version>[3.8.4,)</requireBuildtimeMavenVersion.version>
+    <requireBuildtimeMavenVersion.version>[3.8.6,)</requireBuildtimeMavenVersion.version>
     <requireBuildtimeJavaVersion.version>[8,)</requireBuildtimeJavaVersion.version>
 
     <!-- Demo is Java 8 -->
