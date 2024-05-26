@@ -71,7 +71,7 @@
     <version.mase>7.1.3</version.mase>
     <version.sisu>0.9.0.M2</version.sisu>
     <version.slf4j>1.7.36</version.slf4j>
-    <version.picocli>4.7.5</version.picocli>
+    <version.picocli>4.7.6</version.picocli>
   </properties>
 
   <dependencyManagement>
