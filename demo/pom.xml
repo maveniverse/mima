@@ -47,7 +47,7 @@
     <requireBuildtimeMavenVersion.version>[3.6.3,)</requireBuildtimeMavenVersion.version>
     <requireBuildtimeJavaVersion.version>[8,)</requireBuildtimeJavaVersion.version>
 
-    <!-- Demo is Java 8 -->
+    <!-- Demo is Java 8+ -->
     <maven.compiler.source>8</maven.compiler.source>
     <maven.compiler.target>8</maven.compiler.target>
     <!--

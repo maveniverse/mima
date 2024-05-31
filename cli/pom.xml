@@ -23,6 +23,7 @@
   <properties>
     <maven.compiler.release>11</maven.compiler.release>
     <mainClass>eu.maveniverse.maven.mima.cli.Main</mainClass>
+    <Automatic-Module-Name>eu.maveniverse.maven.mima.cli</Automatic-Module-Name>
   </properties>
 
   <dependencies>

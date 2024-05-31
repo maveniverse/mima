@@ -20,6 +20,10 @@
   <artifactId>standalone-sisu</artifactId>
   <name>${project.groupId}:${project.artifactId}</name>
 
+  <properties>
+    <Automatic-Module-Name>eu.maveniverse.maven.mima.runtime.standalonesisu</Automatic-Module-Name>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>eu.maveniverse.maven.mima</groupId>
