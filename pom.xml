@@ -58,7 +58,6 @@
 
   <properties>
     <project.build.outputTimestamp>2024-05-26T20:22:04Z</project.build.outputTimestamp>
-    <project.build.outputTimestamp>2024-01-20T16:29:03Z</project.build.outputTimestamp>
 
     <!--
     Build time: latest Maven and LTS Java.
