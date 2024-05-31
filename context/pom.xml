@@ -21,7 +21,6 @@
   <name>${project.groupId}:${project.artifactId}</name>
 
   <properties>
-    <maven.compiler.release>11</maven.compiler.release>
     <Automatic-Module-Name>eu.maveniverse.maven.mima.context</Automatic-Module-Name>
   </properties>
 
