@@ -33,19 +33,19 @@
     <dependency>
       <groupId>org.apache.maven.resolver</groupId>
       <artifactId>maven-resolver-api</artifactId>
-      <version>1.9.18</version>
+      <version>1.9.20</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.resolver</groupId>
       <artifactId>maven-resolver-spi</artifactId>
-      <version>1.9.18</version>
+      <version>1.9.20</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.resolver</groupId>
       <artifactId>maven-resolver-impl</artifactId>
-      <version>1.9.18</version>
+      <version>1.9.20</version>
       <scope>provided</scope>
     </dependency>
     <!-- runtime dependency (dormant outside of Maven) -->
