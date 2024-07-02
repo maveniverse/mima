@@ -36,7 +36,6 @@
   <modules>
     <module>context</module>
     <module>runtime</module>
-    <module>cli</module>
   </modules>
 
   <scm>
