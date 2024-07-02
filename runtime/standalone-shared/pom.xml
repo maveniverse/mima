@@ -47,7 +47,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.maven.resolver</groupId>
-      <artifactId>maven-resolver-supplier-mvn3</artifactId>
+      <artifactId>maven-resolver-supplier-mvn4</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
