@@ -19,7 +19,7 @@
 
   <groupId>eu.maveniverse.maven.mima</groupId>
   <artifactId>mima</artifactId>
-  <version>2.4.16-SNAPSHOT</version>
+  <version>3.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>${project.groupId}:${project.artifactId}</name>
@@ -261,45 +261,6 @@
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
         <version>9.7</version>
-      </dependency>
-
-      <!-- Maven Indexer -->
-      <dependency>
-        <groupId>org.apache.maven.indexer</groupId>
-        <artifactId>search-api</artifactId>
-        <version>${version.mase}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.indexer</groupId>
-        <artifactId>search-backend-remoterepository</artifactId>
-        <version>${version.mase}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.indexer</groupId>
-        <artifactId>search-backend-smo</artifactId>
-        <version>${version.mase}</version>
-      </dependency>
-
-      <!-- CLI -->
-      <dependency>
-        <groupId>info.picocli</groupId>
-        <artifactId>picocli</artifactId>
-        <version>${version.picocli}</version>
-      </dependency>
-      <dependency>
-        <groupId>info.picocli</groupId>
-        <artifactId>picocli-codegen</artifactId>
-        <version>${version.picocli}</version>
-      </dependency>
-      <dependency>
-        <groupId>info.picocli</groupId>
-        <artifactId>picocli-shell-jline3</artifactId>
-        <version>${version.picocli}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.fusesource.jansi</groupId>
-        <artifactId>jansi</artifactId>
-        <version>2.4.1</version>
       </dependency>
 
       <dependency>
