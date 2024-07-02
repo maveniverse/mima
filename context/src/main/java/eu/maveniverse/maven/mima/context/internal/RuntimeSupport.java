@@ -11,24 +11,19 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-import eu.maveniverse.maven.mima.context.Context;
-import eu.maveniverse.maven.mima.context.ContextOverrides;
+import eu.maveniverse.maven.mima.context.*;
 import eu.maveniverse.maven.mima.context.Runtime;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import org.eclipse.aether.DefaultRepositoryCache;
-import org.eclipse.aether.DefaultRepositorySystemSession;
-import org.eclipse.aether.DefaultSessionData;
-import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.*;
+import org.eclipse.aether.RepositorySystemSession.SessionBuilder;
 import org.eclipse.aether.repository.LocalRepository;
-import org.eclipse.aether.repository.LocalRepositoryManager;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.util.ConfigUtils;
-import org.eclipse.aether.util.repository.ChainedLocalRepositoryManager;
 
 /**
  * Support class for {@link Runtime} implementations.
@@ -37,8 +32,6 @@ public abstract class RuntimeSupport implements Runtime {
     public static final String UNKNOWN = "(unknown)";
 
     private static final String MAVEN_REPO_LOCAL_TAIL = "maven.repo.local.tail";
-
-    private static final String MAVEN_REPO_LOCAL_TAIL_IGNORE_AVAILABILITY = "maven.repo.local.tail.ignoreAvailability";
 
     public static final Path DEFAULT_BASEDIR =
             Paths.get(System.getProperty("user.dir")).toAbsolutePath();
@@ -91,11 +84,16 @@ public abstract class RuntimeSupport implements Runtime {
 
     protected Context customizeContext(
             RuntimeSupport runtime, ContextOverrides overrides, Context context, boolean reset) {
-        DefaultRepositorySystemSession session = new DefaultRepositorySystemSession(context.repositorySystemSession());
+        SessionBuilder session = context.repositorySystem()
+                .createSessionBuilder()
+                .withRepositorySystemSession(context.repositorySystemSession());
         if (reset) {
             session.setCache(new DefaultRepositoryCache());
             session.setData(new DefaultSessionData());
         }
+
+        MavenUserHome mavenUserHome = context.mavenUserHome().derive(overrides);
+        MavenSystemHome mavenSystemHome = context.mavenSystemHome().derive(overrides);
 
         if (managedRepositorySystem()) {
             session.setSystemProperties(overrides.getSystemProperties());
@@ -107,7 +105,7 @@ public abstract class RuntimeSupport implements Runtime {
 
         session.setIgnoreArtifactDescriptorRepositories(overrides.isIgnoreArtifactDescriptorRepositories());
 
-        customizeLocalRepositoryManager(context, session);
+        customizeLocalRepositoryManager(context, overrides, mavenUserHome, session);
 
         customizeChecksumPolicy(overrides, session);
 
@@ -124,53 +122,48 @@ public abstract class RuntimeSupport implements Runtime {
         List<RemoteRepository> remoteRepositories =
                 customizeRemoteRepositories(overrides, context.remoteRepositories());
 
-        session.setReadOnly();
-
+        RepositorySystemSession.CloseableSession closeableSession = session.build();
         return new Context(
                 runtime,
                 overrides,
                 overrides.getBasedirOverride() != null ? overrides.getBasedirOverride() : context.basedir(),
-                ((MavenUserHomeImpl) context.mavenUserHome()).derive(overrides),
-                ((MavenSystemHomeImpl) context.mavenSystemHome()).derive(overrides),
+                mavenUserHome,
+                mavenSystemHome,
                 context.repositorySystem(),
-                session,
-                context.repositorySystem().newResolutionRepositories(session, remoteRepositories),
+                closeableSession,
+                context.repositorySystem().newResolutionRepositories(closeableSession, remoteRepositories),
                 context.httpProxy(),
                 context.lookup(),
                 null); // derived context: close should NOT shut down repositorySystem
     }
 
-    protected void customizeLocalRepositoryManager(Context context, DefaultRepositorySystemSession session) {
-        Path localRepoPath = session.getLocalRepository().getBasedir().toPath();
+    protected void customizeLocalRepositoryManager(
+            Context context, ContextOverrides contextOverrides, MavenUserHome mavenUserHome, SessionBuilder session) {
+        Path localRepoPath = mavenUserHome.localRepository();
         if (context.mavenUserHome().localRepository().equals(localRepoPath)) {
             return;
         }
-        newLocalRepositoryManager(context.mavenUserHome().localRepository(), context.repositorySystem(), session);
+        newLocalRepositoryManager(contextOverrides, localRepoPath, session);
     }
 
     protected void newLocalRepositoryManager(
-            Path localRepoPath, RepositorySystem repositorySystem, DefaultRepositorySystemSession session) {
-        LocalRepository localRepo = new LocalRepository(localRepoPath.toFile());
-        LocalRepositoryManager lrm = repositorySystem.newLocalRepositoryManager(session, localRepo);
-
-        String localRepoTail = ConfigUtils.getString(session, null, MAVEN_REPO_LOCAL_TAIL);
+            ContextOverrides contextOverrides, Path localRepoPath, SessionBuilder session) {
+        ArrayList<LocalRepository> localRepositories = new ArrayList<>();
+        localRepositories.add(new LocalRepository(localRepoPath.toFile()));
+        String localRepoTail =
+                ConfigUtils.getString(contextOverrides.getConfigProperties(), null, MAVEN_REPO_LOCAL_TAIL);
         if (localRepoTail != null) {
-            boolean ignoreTailAvailability =
-                    ConfigUtils.getBoolean(session, true, MAVEN_REPO_LOCAL_TAIL_IGNORE_AVAILABILITY);
-            ArrayList<LocalRepositoryManager> tail = new ArrayList<>();
             List<String> paths = Arrays.stream(localRepoTail.split(","))
                     .filter(p -> p != null && !p.trim().isEmpty())
                     .collect(toList());
             for (String path : paths) {
-                tail.add(repositorySystem.newLocalRepositoryManager(session, new LocalRepository(path)));
+                localRepositories.add(new LocalRepository(path));
             }
-            session.setLocalRepositoryManager(new ChainedLocalRepositoryManager(lrm, tail, ignoreTailAvailability));
-        } else {
-            session.setLocalRepositoryManager(lrm);
         }
+        session.withLocalRepositories(localRepositories);
     }
 
-    protected void customizeChecksumPolicy(ContextOverrides overrides, DefaultRepositorySystemSession session) {
+    protected void customizeChecksumPolicy(ContextOverrides overrides, SessionBuilder session) {
         if (overrides.getChecksumPolicy() != null) {
             switch (overrides.getChecksumPolicy()) {
                 case FAIL:
@@ -186,7 +179,7 @@ public abstract class RuntimeSupport implements Runtime {
         }
     }
 
-    protected void customizeSnapshotUpdatePolicy(ContextOverrides overrides, DefaultRepositorySystemSession session) {
+    protected void customizeSnapshotUpdatePolicy(ContextOverrides overrides, SessionBuilder session) {
         if (overrides.getSnapshotUpdatePolicy() != null) {
             switch (overrides.getSnapshotUpdatePolicy()) {
                 case ALWAYS:

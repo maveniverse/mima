@@ -22,11 +22,11 @@
   <name>${project.groupId}:${project.artifactId}</name>
 
   <prerequisites>
-    <maven>3.6.3</maven>
+    <maven>4.0.0-beta-3</maven>
   </prerequisites>
 
   <properties>
-    <version.maven>3.9.8</version.maven>
+    <version.maven>4.0.0-beta-3</version.maven>
   </properties>
 
   <dependencies>
