@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2023-2024 Maveniverse Org.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ */
 package eu.maveniverse.maven.mima.cli;
 
 import static org.apache.maven.search.api.request.Query.query;
@@ -11,7 +18,7 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import picocli.CommandLine;
 
 /**
- * Search.
+ * Searches artifacts using SMO service.
  */
 @CommandLine.Command(name = "search", description = "Searches Maven Artifacts")
 public final class Search extends SearchCommandSupport {
@@ -31,11 +38,11 @@ public final class Search extends SearchCommandSupport {
             SearchRequest searchRequest = new SearchRequest(query);
             SearchResponse searchResponse = backend.search(searchRequest);
 
-            renderPage(searchResponse.getPage()).forEach(this::info);
+            renderPage(searchResponse.getPage(), null).forEach(this::info);
             while (searchResponse.getCurrentHits() > 0) {
                 searchResponse =
                         backend.search(searchResponse.getSearchRequest().nextPage());
-                renderPage(searchResponse.getPage()).forEach(this::info);
+                renderPage(searchResponse.getPage(), null).forEach(this::info);
             }
         }
         return 0;

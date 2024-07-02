@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2023-2024 Maveniverse Org.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ */
 package eu.maveniverse.maven.mima.cli;
 
 import eu.maveniverse.maven.mima.context.Context;
@@ -11,7 +18,7 @@ import org.eclipse.aether.util.artifact.SubArtifact;
 import picocli.CommandLine;
 
 /**
- * Deploy.
+ * Deploys an artifact into remote repository.
  */
 @CommandLine.Command(name = "deploy", description = "Deploys Maven Artifacts")
 public final class Deploy extends ResolverCommandSupport {
@@ -44,6 +51,7 @@ public final class Deploy extends ResolverCommandSupport {
         DeployRequest deployRequest = new DeployRequest();
         deployRequest.addArtifact(jarArtifact).addArtifact(pomArtifact).setRepository(remoteRepository);
 
+        verbose("Deploying {}", deployRequest);
         context.repositorySystem().deploy(getRepositorySystemSession(), deployRequest);
 
         info("Deployed {}", gav);

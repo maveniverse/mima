@@ -1,15 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2023-2024 Maveniverse Org.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v2.0
+    which accompanies this distribution, and is available at
+    https://www.eclipse.org/legal/epl-v20.html
+
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>eu.maveniverse.maven.mima.runtime</groupId>
     <artifactId>runtime</artifactId>
-    <version>2.4.6-SNAPSHOT</version>
+    <version>2.4.16-SNAPSHOT</version>
   </parent>
 
   <artifactId>standalone-shared</artifactId>
   <name>${project.groupId}:${project.artifactId}</name>
+
+  <properties>
+    <Automatic-Module-Name>eu.maveniverse.maven.mima.runtime.shared</Automatic-Module-Name>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -34,7 +47,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.maven.resolver</groupId>
-      <artifactId>maven-resolver-supplier</artifactId>
+      <artifactId>maven-resolver-supplier-mvn3</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>

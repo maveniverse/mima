@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2023-2024 Maveniverse Org.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ */
 package eu.maveniverse.maven.mima.context;
 
 import static java.util.Objects.requireNonNull;
@@ -49,6 +56,8 @@ public final class Context implements Closeable {
 
     private final HTTPProxy httpProxy;
 
+    private final Lookup lookup;
+
     private final Runnable managedCloser;
 
     public Context(
@@ -61,6 +70,7 @@ public final class Context implements Closeable {
             RepositorySystemSession repositorySystemSession,
             List<RemoteRepository> remoteRepositories,
             HTTPProxy httpProxy,
+            Lookup lookup,
             Runnable managedCloser) {
         this.closed = new AtomicBoolean(false);
         this.runtime = requireNonNull(runtime);
@@ -72,6 +82,7 @@ public final class Context implements Closeable {
         this.repositorySystem = requireNonNull(repositorySystem);
         this.remoteRepositories = requireNonNull(remoteRepositories);
         this.httpProxy = httpProxy;
+        this.lookup = requireNonNull(lookup);
         this.managedCloser = managedCloser;
     }
 
@@ -141,6 +152,15 @@ public final class Context implements Closeable {
      */
     public HTTPProxy httpProxy() {
         return httpProxy;
+    }
+
+    /**
+     * Returns {@link Lookup} instance usable to look up resolver components, never {@code null}.
+     *
+     * @since 2.4.10
+     */
+    public Lookup lookup() {
+        return lookup;
     }
 
     /**

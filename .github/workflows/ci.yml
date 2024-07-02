@@ -1,51 +1,17 @@
 name: CI
 
-# Two distinct steps:
-# 1st: build and install it with reuired Java LTS and Maven
-# 2nd: matrix(java, maven) run tests w/ artifacts built in 1st step
-#
-# To achieve this, we use short lived cache that shares 1st build output with 2nd
-
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
-  workflow_dispatch:
 
 jobs:
   build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-      - uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ github.sha }}
-      - run: ./mvnw install -e -B -V
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    needs: build
-    strategy:
-      matrix:
-        java: ['8', '11', '17', '21']
-        maven: ['4.0.0-alpha-12']
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          java-version: ${{ matrix.java }}
-          distribution: 'temurin'
-      - uses: actions/cache@v3
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ github.sha }}
-      - run: ./mvnw -Dmaven=${{ matrix.maven }} wrapper:wrapper
-      - run: ./mvnw -f demo install -e -B -V
-    
+    name: Verify
+    uses: maveniverse/parent/.github/workflows/ci.yml@release-15
+    with:
+      maven-matrix: '[ "4.0.0-beta-3" ]'
+      jdk-matrix: '[ "17", "21" ]'
+      jdk-distribution-matrix: '[ "zulu" ]'
+      maven-test: './mvnw -f demo install -e -B -V'

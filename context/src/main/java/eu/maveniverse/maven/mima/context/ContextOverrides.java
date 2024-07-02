@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2023-2024 Maveniverse Org.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ */
 package eu.maveniverse.maven.mima.context;
 
 import static java.util.Objects.requireNonNull;
@@ -11,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.eclipse.aether.RepositoryListener;
+import org.eclipse.aether.artifact.ArtifactType;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.transfer.TransferListener;
@@ -46,9 +54,7 @@ public final class ContextOverrides {
 
     public enum AddRepositoriesOp {
         PREPEND,
-
         APPEND,
-
         REPLACE
     }
 
@@ -64,7 +70,11 @@ public final class ContextOverrides {
 
     private final AddRepositoriesOp addRepositoriesOp;
 
+    private final List<ArtifactType> extraArtifactTypes;
+
     private final boolean offline;
+
+    private final boolean ignoreArtifactDescriptorRepositories;
 
     private final SnapshotUpdatePolicy snapshotUpdatePolicy;
 
@@ -107,7 +117,9 @@ public final class ContextOverrides {
             final Map<String, Object> configProperties,
             final List<RemoteRepository> repositories,
             final AddRepositoriesOp addRepositoriesOp,
+            final List<ArtifactType> extraArtifactTypes,
             final boolean offline,
+            final boolean ignoreArtifactDescriptorRepositories,
             final SnapshotUpdatePolicy snapshotUpdatePolicy,
             final ChecksumPolicy checksumPolicy,
             final boolean withUserSettings,
@@ -132,7 +144,9 @@ public final class ContextOverrides {
         this.configProperties = Collections.unmodifiableMap(configProperties);
         this.repositories = Collections.unmodifiableList(repositories);
         this.addRepositoriesOp = requireNonNull(addRepositoriesOp);
+        this.extraArtifactTypes = requireNonNull(extraArtifactTypes);
         this.offline = offline;
+        this.ignoreArtifactDescriptorRepositories = ignoreArtifactDescriptorRepositories;
         this.snapshotUpdatePolicy = snapshotUpdatePolicy;
         this.checksumPolicy = checksumPolicy;
         this.withUserSettings = withUserSettings;
@@ -197,10 +211,28 @@ public final class ContextOverrides {
     }
 
     /**
+     * User added list of artifact types, never {@code null}.
+     *
+     * @since 2.4.11
+     */
+    public List<ArtifactType> extraArtifactTypes() {
+        return extraArtifactTypes;
+    }
+
+    /**
      * Is session offline?
      */
     public boolean isOffline() {
         return offline;
+    }
+
+    /**
+     * Is ignore Artifact Descriptor Repositories (transitive dependency introduced repositories)?
+     *
+     * @since 2.4.13
+     */
+    public boolean isIgnoreArtifactDescriptorRepositories() {
+        return ignoreArtifactDescriptorRepositories;
     }
 
     /**
@@ -359,6 +391,7 @@ public final class ContextOverrides {
                 .configProperties(configProperties)
                 .repositories(repositories)
                 .addRepositoriesOp(addRepositoriesOp)
+                .extraArtifactTypes(extraArtifactTypes)
                 .offline(offline)
                 .snapshotUpdatePolicy(snapshotUpdatePolicy)
                 .checksumPolicy(checksumPolicy)
@@ -396,6 +429,7 @@ public final class ContextOverrides {
                 && Objects.equals(configProperties, that.configProperties)
                 && Objects.equals(repositories, that.repositories)
                 && addRepositoriesOp == that.addRepositoriesOp
+                && Objects.equals(extraArtifactTypes, that.extraArtifactTypes)
                 && snapshotUpdatePolicy == that.snapshotUpdatePolicy
                 && checksumPolicy == that.checksumPolicy
                 && Objects.equals(activeProfileIds, that.activeProfileIds)
@@ -423,6 +457,7 @@ public final class ContextOverrides {
                 configProperties,
                 repositories,
                 addRepositoriesOp,
+                extraArtifactTypes,
                 offline,
                 snapshotUpdatePolicy,
                 checksumPolicy,
@@ -466,7 +501,11 @@ public final class ContextOverrides {
 
         private AddRepositoriesOp addRepositoriesOp = AddRepositoriesOp.PREPEND;
 
+        private List<ArtifactType> extraArtifactTypes = Collections.emptyList();
+
         private boolean offline = false;
+
+        private boolean ignoreArtifactDescriptorRepositories;
 
         private SnapshotUpdatePolicy snapshotUpdatePolicy = null;
 
@@ -591,10 +630,37 @@ public final class ContextOverrides {
         }
 
         /**
+         * Sets the list of {@link ArtifactType} instances you want to extend resolver with. The list will append the
+         * existing list of types coming from Maven.
+         * <p>
+         * In case when MIMA runs within Maven, this is ignored.
+         *
+         * @since 2.4.11
+         */
+        public Builder extraArtifactTypes(List<ArtifactType> extraArtifactTypes) {
+            if (extraArtifactTypes != null) {
+                this.extraArtifactTypes = new ArrayList<>(extraArtifactTypes);
+            } else {
+                this.extraArtifactTypes = Collections.emptyList();
+            }
+            return this;
+        }
+
+        /**
          * Sets session offline.
          */
         public Builder offline(boolean offline) {
             this.offline = offline;
+            return this;
+        }
+
+        /**
+         * Sets ignore artifact descriptor repositories.
+         *
+         * @since 2.4.13
+         */
+        public Builder ignoreArtifactDescriptorRepositories(boolean ignoreArtifactDescriptorRepositories) {
+            this.ignoreArtifactDescriptorRepositories = ignoreArtifactDescriptorRepositories;
             return this;
         }
 
@@ -750,7 +816,7 @@ public final class ContextOverrides {
         /**
          * Sets Maven Effective Settings. If set, this fully replaces any discovered settings.
          * <p>
-         * Important: it must be "effective" (all paths interpolated, resolved, etc), as this object is accepted
+         * Important: it must be "effective" (all paths interpolated, resolved, etc.), as this object is accepted
          * as is, there is no any processing applied to it!
          *
          * @since 2.3.0
@@ -763,7 +829,7 @@ public final class ContextOverrides {
         /**
          * Sets Maven Effective Settings mixin. If set, this is merged into effective settings.
          * <p>
-         * Important: it must be "effective" (all paths interpolated, resolved, etc), as this object is accepted
+         * Important: it must be "effective" (all paths interpolated, resolved, etc.), as this object is accepted
          * as is, there is no any processing applied to it!
          *
          * @since 2.4.0
@@ -784,7 +850,9 @@ public final class ContextOverrides {
                     configProperties,
                     repositories,
                     addRepositoriesOp,
+                    extraArtifactTypes,
                     offline,
+                    ignoreArtifactDescriptorRepositories,
                     snapshotUpdatePolicy,
                     checksumPolicy,
                     withUserSettings,

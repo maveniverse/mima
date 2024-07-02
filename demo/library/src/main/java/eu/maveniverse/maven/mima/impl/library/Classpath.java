@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2023-2024 Maveniverse Org.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ */
 package eu.maveniverse.maven.mima.impl.library;
 
 import static java.util.Objects.requireNonNull;
@@ -11,12 +18,22 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.DependencyNode;
+import org.eclipse.aether.impl.RemoteRepositoryManager;
+import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This is an imaginary library class that wants to:
+ * <ul>
+ *     <li>use Resolver API and components</li>
+ *     <li>needs to work standalone, but also embedded in Maven (ie as a plugin dependency)</li>
+ * </ul>
+ */
 public class Classpath {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -35,8 +52,27 @@ public class Classpath {
         }
     }
 
+    /**
+     * Implements the "logic" of this theoretical library:
+     * <ul>
+     *     <li>Logs at INFO the effective policy of all involved remote repositories (uses Resolver component)</li>
+     *     <li>Resolves the artifact (uses Resolver API)</li>
+     *     <li>Logs at INFO the SHA-1 hashes of all resolved artifacts (uses Resolver component)</li>
+     *     <li>Returns the classpath string of resolved artifact</li>
+     * </ul>
+     */
     private String doClasspath(Context context, Artifact artifact) throws DependencyResolutionException {
         logger.info("doClasspath: {}", context.remoteRepositories());
+
+        RemoteRepositoryManager remoteRepositoryManager = context.lookup()
+                .lookup(RemoteRepositoryManager.class)
+                .orElseThrow(() -> new IllegalStateException("component not found"));
+        for (RemoteRepository repository : context.remoteRepositories()) {
+            RepositoryPolicy policy = remoteRepositoryManager.getPolicy(
+                    context.repositorySystemSession(), repository, !artifact.isSnapshot(), artifact.isSnapshot());
+            logger.info("Repository {} effective policy: {}", repository.getId(), policy);
+        }
+
         Dependency dependency = new Dependency(artifact, "runtime");
         CollectRequest collectRequest = new CollectRequest();
         collectRequest.setRoot(dependency);

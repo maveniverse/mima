@@ -1,3 +1,10 @@
+/*
+ * Copyright (c) 2023-2024 Maveniverse Org.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ */
 package eu.maveniverse.maven.mima.runtime.shared;
 
 import static java.util.stream.Collectors.toMap;
@@ -5,6 +12,7 @@ import static java.util.stream.Collectors.toMap;
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.HTTPProxy;
+import eu.maveniverse.maven.mima.context.Lookup;
 import eu.maveniverse.maven.mima.context.MavenSystemHome;
 import eu.maveniverse.maven.mima.context.MavenUserHome;
 import eu.maveniverse.maven.mima.context.internal.MavenSystemHomeImpl;
@@ -20,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.maven.model.ActivationFile;
@@ -27,7 +36,6 @@ import org.apache.maven.model.building.ModelProblemCollector;
 import org.apache.maven.model.building.ModelProblemCollectorRequest;
 import org.apache.maven.model.profile.DefaultProfileActivationContext;
 import org.apache.maven.model.profile.ProfileSelector;
-import org.apache.maven.repository.internal.MavenSessionBuilderSupplier;
 import org.apache.maven.settings.Activation;
 import org.apache.maven.settings.ActivationOS;
 import org.apache.maven.settings.ActivationProperty;
@@ -52,8 +60,11 @@ import org.eclipse.aether.DefaultRepositoryCache;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession.CloseableSession;
 import org.eclipse.aether.RepositorySystemSession.SessionBuilder;
+import org.eclipse.aether.artifact.ArtifactTypeRegistry;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
+import org.eclipse.aether.supplier.SessionBuilderSupplier;
+import org.eclipse.aether.util.artifact.DefaultArtifactTypeRegistry;
 import org.eclipse.aether.util.repository.AuthenticationBuilder;
 import org.eclipse.aether.util.repository.DefaultAuthenticationSelector;
 import org.eclipse.aether.util.repository.DefaultMirrorSelector;
@@ -129,6 +140,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             SettingsBuilder settingsBuilder,
             SettingsDecrypter settingsDecrypter,
             ProfileSelector profileSelector,
+            Lookup lookup,
             Runnable managedCloser) {
         try {
             ContextOverrides alteredOverrides = preBoot.getOverrides();
@@ -230,6 +242,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                     session,
                     repositorySystem.newResolutionRepositories(session, new ArrayList<>(remoteRepositories.values())),
                     httpProxy,
+                    lookup,
                     managedCloser);
         } catch (Exception e) {
             throw new IllegalStateException("Cannot create context from scratch", e);
@@ -354,7 +367,22 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             RepositorySystem repositorySystem,
             Settings settings,
             SettingsDecrypter settingsDecrypter) {
-        SessionBuilder session = new MavenSessionBuilderSupplier(repositorySystem).get();
+        AtomicReference<ArtifactTypeRegistry> artifactTypeRegistryRef = new AtomicReference<>(null);
+        SessionBuilderSupplier supplier = new SessionBuilderSupplier(repositorySystem) {
+            @Override
+            protected ArtifactTypeRegistry getArtifactTypeRegistry() {
+                ArtifactTypeRegistry registry = super.getArtifactTypeRegistry();
+                artifactTypeRegistryRef.set(registry);
+                return registry;
+            }
+        };
+
+        SessionBuilder session = supplier.get();
+
+        if (!overrides.extraArtifactTypes().isEmpty()) {
+            DefaultArtifactTypeRegistry registry = (DefaultArtifactTypeRegistry) artifactTypeRegistryRef.get();
+            overrides.extraArtifactTypes().forEach(registry::add);
+        }
 
         session.setCache(new DefaultRepositoryCache());
 
@@ -366,6 +394,8 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         configProps.put("maven.startTime", new Date());
 
         session.setOffline(overrides.isOffline());
+
+        session.setIgnoreArtifactDescriptorRepositories(overrides.isIgnoreArtifactDescriptorRepositories());
 
         customizeChecksumPolicy(overrides, session);
 
