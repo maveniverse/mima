@@ -149,7 +149,7 @@ public abstract class RuntimeSupport implements Runtime {
     protected void newLocalRepositoryManager(
             ContextOverrides contextOverrides, Path localRepoPath, SessionBuilder session) {
         ArrayList<LocalRepository> localRepositories = new ArrayList<>();
-        localRepositories.add(new LocalRepository(localRepoPath.toFile()));
+        localRepositories.add(new LocalRepository(localRepoPath));
         String localRepoTail =
                 ConfigUtils.getString(contextOverrides.getConfigProperties(), null, MAVEN_REPO_LOCAL_TAIL);
         if (localRepoTail != null) {
