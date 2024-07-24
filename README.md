@@ -52,7 +52,7 @@ Furthermore, as Resolver uses [SLF4J](https://www.slf4j.org/) for logging, it is
 
 Complete example of using MIMA in some project intended to be used standalone only:
 
-```
+```xml
   <dependencies>
   ...
     <!-- context: compile scope -->
@@ -94,13 +94,13 @@ MIMA offers several runtime options for several use cases.
 To be used when library using MIMA runs within Maven (for example within a Maven Plugin). This runtime has the 
 highest priority.
 
-```
-    <dependency>
-      <groupId>eu.maveniverse.maven.mima.runtime</groupId>
-      <artifactId>embedded-maven</artifactId>
-      <version>${version.mima}</version>
-      <scope>runtime</scope>
-    </dependency>
+```xml
+<dependency>
+  <groupId>eu.maveniverse.maven.mima.runtime</groupId>
+  <artifactId>embedded-maven</artifactId>
+  <version>${version.mima}</version>
+  <scope>runtime</scope>
+</dependency>
 ```
 
 To use MIMA from within Maven, this is the only dependency needed. Logging backend is not needed either, it is 
@@ -112,20 +112,20 @@ as well, this dependency may be always present.
 
 To be used when library using MIMA runs standalone. In this case you need to provide backend for SLF4J facade as well.
 
-```
-    <dependency>
-      <groupId>eu.maveniverse.maven.mima.runtime</groupId>
-      <artifactId>standalone-sisu</artifactId>
-      <version>${version.mima}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <!-- logging: runtime scope -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>${version.slf4j}</version>
-      <scope>runtime</scope>
-    </dependency>
+```xml
+<dependency>
+  <groupId>eu.maveniverse.maven.mima.runtime</groupId>
+  <artifactId>standalone-sisu</artifactId>
+  <version>${version.mima}</version>
+  <scope>runtime</scope>
+</dependency>
+<!-- logging: runtime scope -->
+<dependency>
+  <groupId>org.slf4j</groupId>
+  <artifactId>slf4j-simple</artifactId>
+  <version>${version.slf4j}</version>
+  <scope>runtime</scope>
+</dependency>
 ```
 
 This runtime brings in all dependencies needed for MIMA standalone runtime, and best is to have it in `runtine` scope, 
@@ -142,20 +142,20 @@ You are also required to provide SLF4J backend.
 To be used when library using MIMA runs standalone, and presence of Eclipse Sisu DI (and Google Guice and transitive 
 dependencies like Guava) is unwanted. This runtime has the lowest priority.
 
-```
-    <dependency>
-      <groupId>eu.maveniverse.maven.mima.runtime</groupId>
-      <artifactId>standalone-static</artifactId>
-      <version>${version.mima}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <!-- logging: runtime scope -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>${version.slf4j}</version>
-      <scope>runtime</scope>
-    </dependency>
+```xml
+<dependency>
+  <groupId>eu.maveniverse.maven.mima.runtime</groupId>
+  <artifactId>standalone-static</artifactId>
+  <version>${version.mima}</version>
+  <scope>runtime</scope>
+</dependency>
+<!-- logging: runtime scope -->
+<dependency>
+  <groupId>org.slf4j</groupId>
+  <artifactId>slf4j-simple</artifactId>
+  <version>${version.slf4j}</version>
+  <scope>runtime</scope>
+</dependency>
 ```
 
 This runtime is similar to Resolver's deprecated `ServiceLocator`, as it does not use DI but "manually" wires 
