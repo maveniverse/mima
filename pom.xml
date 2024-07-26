@@ -19,7 +19,7 @@
 
   <groupId>eu.maveniverse.maven.mima</groupId>
   <artifactId>mima</artifactId>
-  <version>2.4.16-SNAPSHOT</version>
+  <version>3.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>${project.groupId}:${project.artifactId}</name>
@@ -36,7 +36,6 @@
   <modules>
     <module>context</module>
     <module>runtime</module>
-    <module>cli</module>
   </modules>
 
   <scm>
@@ -57,7 +56,7 @@
   </ciManagement>
 
   <properties>
-    <project.build.outputTimestamp>2024-06-19T18:43:15Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2024-01-19T17:43:04Z</project.build.outputTimestamp>
 
     <!--
     Build time: latest Maven and LTS Java.
@@ -66,11 +65,11 @@
     <requireBuildtimeJavaVersion.version>[17.0.6,)</requireBuildtimeJavaVersion.version>
 
     <!-- Dependency versions -->
-    <version.resolver>1.9.20</version.resolver>
-    <version.maven>3.9.8</version.maven>
+    <version.resolver>2.0.0</version.resolver>
+    <version.maven>4.0.0-beta-3</version.maven>
     <version.mase>7.1.3</version.mase>
     <version.sisu>0.9.0.M3</version.sisu>
-    <version.slf4j>1.7.36</version.slf4j>
+    <version.slf4j>2.0.13</version.slf4j>
     <version.picocli>4.7.6</version.picocli>
   </properties>
 
@@ -173,12 +172,17 @@
       </dependency>
       <dependency>
         <groupId>org.apache.maven.resolver</groupId>
-        <artifactId>maven-resolver-transport-http</artifactId>
+        <artifactId>maven-resolver-transport-apache</artifactId>
         <version>${version.resolver}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.resolver</groupId>
-        <artifactId>maven-resolver-supplier</artifactId>
+        <artifactId>maven-resolver-transport-jdk</artifactId>
+        <version>${version.resolver}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.resolver</groupId>
+        <artifactId>maven-resolver-supplier-mvn4</artifactId>
         <version>${version.resolver}</version>
       </dependency>
 
@@ -201,11 +205,33 @@
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-model-builder</artifactId>
         <version>${version.maven}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.eclipse.sisu</groupId>
+            <artifactId>org.eclipse.sisu.inject</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-resolver-provider</artifactId>
         <version>${version.maven}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-utils</artifactId>
+        <version>4.0.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-xml</artifactId>
+        <version>4.0.4</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.plexus</groupId>
+        <artifactId>plexus-cipher</artifactId>
+        <version>2.0</version>
       </dependency>
 
       <!-- DI -->
@@ -218,6 +244,7 @@
         <groupId>com.google.inject</groupId>
         <artifactId>guice</artifactId>
         <version>6.0.0</version>
+        <classifier>classes</classifier>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
@@ -228,45 +255,12 @@
         <groupId>org.eclipse.sisu</groupId>
         <artifactId>org.eclipse.sisu.inject</artifactId>
         <version>${version.sisu}</version>
-      </dependency>
-
-      <!-- Maven Indexer -->
-      <dependency>
-        <groupId>org.apache.maven.indexer</groupId>
-        <artifactId>search-api</artifactId>
-        <version>${version.mase}</version>
+        <classifier>no_asm</classifier>
       </dependency>
       <dependency>
-        <groupId>org.apache.maven.indexer</groupId>
-        <artifactId>search-backend-remoterepository</artifactId>
-        <version>${version.mase}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.indexer</groupId>
-        <artifactId>search-backend-smo</artifactId>
-        <version>${version.mase}</version>
-      </dependency>
-
-      <!-- CLI -->
-      <dependency>
-        <groupId>info.picocli</groupId>
-        <artifactId>picocli</artifactId>
-        <version>${version.picocli}</version>
-      </dependency>
-      <dependency>
-        <groupId>info.picocli</groupId>
-        <artifactId>picocli-codegen</artifactId>
-        <version>${version.picocli}</version>
-      </dependency>
-      <dependency>
-        <groupId>info.picocli</groupId>
-        <artifactId>picocli-shell-jline3</artifactId>
-        <version>${version.picocli}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.fusesource.jansi</groupId>
-        <artifactId>jansi</artifactId>
-        <version>2.4.1</version>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>9.7</version>
       </dependency>
 
       <dependency>
@@ -278,6 +272,16 @@
   </dependencyManagement>
 
   <repositories>
+    <repository>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>maven-2157</id>
+      <url>https://repository.apache.org/content/repositories/maven-2157/</url>
+    </repository>
     <repository>
       <releases>
         <enabled>false</enabled>

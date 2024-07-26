@@ -33,7 +33,7 @@
 
   <properties>
     <modernizer.version>2.9.0</modernizer.version>
-    <version.mima>2.4.16-SNAPSHOT</version.mima>
+    <version.mima>3.0.0-SNAPSHOT</version.mima>
     <version.slf4j>1.7.36</version.slf4j>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -121,6 +121,30 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+
+  <repositories>
+    <repository>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>maven-2157</id>
+      <url>https://repository.apache.org/content/repositories/maven-2157/</url>
+    </repository>
+    <repository>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+      <id>apache.snapshots.https</id>
+      <name>ASF Snapshots</name>
+      <url>https://repository.apache.org/content/repositories/snapshots/</url>
+    </repository>
+  </repositories>
 
   <build>
     <plugins>
