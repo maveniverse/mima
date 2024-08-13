@@ -14,7 +14,7 @@
   <parent>
     <groupId>eu.maveniverse.maven.parent</groupId>
     <artifactId>parent</artifactId>
-    <version>15</version>
+    <version>16</version>
   </parent>
 
   <groupId>eu.maveniverse.maven.mima</groupId>
@@ -66,9 +66,9 @@
     <requireBuildtimeJavaVersion.version>[17.0.6,)</requireBuildtimeJavaVersion.version>
 
     <!-- Dependency versions -->
-    <version.resolver>1.9.20</version.resolver>
-    <version.maven>3.9.8</version.maven>
-    <version.mase>7.1.3</version.mase>
+    <version.resolver>1.9.22</version.resolver>
+    <version.maven>3.9.9-SNAPSHOT</version.maven>
+    <version.mase>7.1.4</version.mase>
     <version.sisu>0.9.0.M3</version.sisu>
     <version.slf4j>1.7.36</version.slf4j>
     <version.picocli>4.7.6</version.picocli>
