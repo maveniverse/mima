@@ -210,8 +210,8 @@ they REPLACE current repositories, if any.
 
 ## Requirements
 
-Build time:
-* Java LTS (currently 17.0.6+)
+Buildtime:
+* Java LTS (currently 21+)
 * Maven 3.9.x
 
 Runtime:
