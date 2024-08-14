@@ -63,7 +63,7 @@
     Build time: latest Maven and LTS Java.
     -->
     <requireBuildtimeMavenVersion.version>[3.9.6,)</requireBuildtimeMavenVersion.version>
-    <requireBuildtimeJavaVersion.version>[17.0.6,)</requireBuildtimeJavaVersion.version>
+    <requireBuildtimeJavaVersion.version>[21.0.2,)</requireBuildtimeJavaVersion.version>
 
     <!-- Dependency versions -->
     <version.resolver>1.9.22</version.resolver>
@@ -272,7 +272,7 @@
       <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-api</artifactId>
-        <version>5.10.3</version>
+        <version>5.11.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
