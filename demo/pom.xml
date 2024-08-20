@@ -33,7 +33,7 @@
 
   <properties>
     <modernizer.version>2.9.0</modernizer.version>
-    <version.mima>2.4.16-SNAPSHOT</version.mima>
+    <version.mima>2.4.17-SNAPSHOT</version.mima>
     <version.slf4j>1.7.36</version.slf4j>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
