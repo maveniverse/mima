@@ -25,10 +25,6 @@
     <maven>3.6.3</maven>
   </prerequisites>
 
-  <properties>
-    <version.maven>3.9.9</version.maven>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>eu.maveniverse.maven.mima.demo</groupId>

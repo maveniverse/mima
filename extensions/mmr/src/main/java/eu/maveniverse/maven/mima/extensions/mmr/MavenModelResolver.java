@@ -11,6 +11,7 @@ import static java.util.Objects.requireNonNull;
 
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.extensions.mmr.internal.ArtifactDescriptorReaderImpl;
+import org.apache.maven.model.Model;
 import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.repository.internal.DefaultModelCacheFactory;
 import org.eclipse.aether.RepositorySystemSession;
@@ -44,12 +45,21 @@ public class MavenModelResolver {
         this.session = requireNonNull(context.repositorySystemSession(), "session");
     }
 
-    public ArtifactDescriptorResult readEffectiveModel(ArtifactDescriptorRequest request)
+    public ArtifactDescriptorResult readEffectiveArtifactDescriptor(ArtifactDescriptorRequest request)
             throws ArtifactDescriptorException {
         return artifactDescriptorReader.readEffectiveArtifactDescriptor(session, request);
     }
 
-    public ArtifactDescriptorResult readRawModel(ArtifactDescriptorRequest request) throws ArtifactDescriptorException {
+    public ArtifactDescriptorResult readRawArtifactDescriptor(ArtifactDescriptorRequest request)
+            throws ArtifactDescriptorException {
         return artifactDescriptorReader.readRawArtifactDescriptor(session, request);
+    }
+
+    public Model readEffectiveModel(ArtifactDescriptorRequest request) throws ArtifactDescriptorException {
+        return (Model) readEffectiveArtifactDescriptor(request).getProperties().get("model");
+    }
+
+    public Model readRawModel(ArtifactDescriptorRequest request) throws ArtifactDescriptorException {
+        return (Model) readRawArtifactDescriptor(request).getProperties().get("model");
     }
 }

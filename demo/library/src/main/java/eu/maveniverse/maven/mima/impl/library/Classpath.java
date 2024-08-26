@@ -13,6 +13,10 @@ import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.Runtime;
 import eu.maveniverse.maven.mima.context.Runtimes;
+import eu.maveniverse.maven.mima.extensions.mmr.MavenModelResolver;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
+import org.codehaus.plexus.util.WriterFactory;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
@@ -21,11 +25,19 @@ import org.eclipse.aether.graph.DependencyNode;
 import org.eclipse.aether.impl.RemoteRepositoryManager;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
+import org.eclipse.aether.resolution.ArtifactDescriptorException;
+import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 
 /**
  * This is an imaginary library class that wants to:
@@ -38,6 +50,29 @@ public class Classpath {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    public String model(ContextOverrides overrides, String artifactStr) throws ArtifactDescriptorException, IOException {
+        requireNonNull(artifactStr);
+        Runtime runtime = Runtimes.INSTANCE.getRuntime();
+        logger.debug("Runtimes.getRuntime: {}", runtime);
+
+        try (Context context = runtime.create(overrides)) {
+            MavenModelResolver mmr = new MavenModelResolver(context);
+            ArtifactDescriptorRequest request = new ArtifactDescriptorRequest(new DefaultArtifact(artifactStr), context.remoteRepositories(), "classpath-demo");
+            Model model = mmr.readEffectiveModel(request);
+            try (ByteArrayOutputStream outputStream= new ByteArrayOutputStream()) {
+                String encoding = model.getModelEncoding();
+                if (encoding == null || encoding.length() <= 0) {
+                    encoding = "UTF-8";
+                }
+
+                try (Writer out = new OutputStreamWriter(outputStream, encoding)) {
+                    new MavenXpp3Writer().write(out, model);
+                }
+                return outputStream.toString(encoding);
+            }
+        }
+    }
+
     public String classpath(ContextOverrides overrides, String artifactStr) throws DependencyResolutionException {
         requireNonNull(artifactStr);
         Runtime runtime = Runtimes.INSTANCE.getRuntime();
@@ -48,46 +83,33 @@ public class Classpath {
         // depends what you need: one shot or reuse of MIMA instance
         try (Context context = runtime.create(overrides)) {
             DefaultArtifact artifact = new DefaultArtifact(artifactStr);
-            return doClasspath(context, artifact);
+            logger.info("doClasspath: {}", context.remoteRepositories());
+
+            RemoteRepositoryManager remoteRepositoryManager = context.lookup()
+                    .lookup(RemoteRepositoryManager.class)
+                    .orElseThrow(() -> new IllegalStateException("component not found"));
+            for (RemoteRepository repository : context.remoteRepositories()) {
+                RepositoryPolicy policy = remoteRepositoryManager.getPolicy(
+                        context.repositorySystemSession(), repository, !artifact.isSnapshot(), artifact.isSnapshot());
+                logger.info("Repository {} effective policy: {}", repository.getId(), policy);
+            }
+
+            Dependency dependency = new Dependency(artifact, "runtime");
+            CollectRequest collectRequest = new CollectRequest();
+            collectRequest.setRoot(dependency);
+            collectRequest.setRepositories(context.remoteRepositories());
+
+            DependencyRequest dependencyRequest = new DependencyRequest();
+            dependencyRequest.setCollectRequest(collectRequest);
+
+            DependencyNode rootNode = context.repositorySystem()
+                    .resolveDependencies(context.repositorySystemSession(), dependencyRequest)
+                    .getRoot();
+
+            PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
+            rootNode.accept(nlg);
+            return nlg.getClassPath();
         }
-    }
-
-    /**
-     * Implements the "logic" of this theoretical library:
-     * <ul>
-     *     <li>Logs at INFO the effective policy of all involved remote repositories (uses Resolver component)</li>
-     *     <li>Resolves the artifact (uses Resolver API)</li>
-     *     <li>Logs at INFO the SHA-1 hashes of all resolved artifacts (uses Resolver component)</li>
-     *     <li>Returns the classpath string of resolved artifact</li>
-     * </ul>
-     */
-    private String doClasspath(Context context, Artifact artifact) throws DependencyResolutionException {
-        logger.info("doClasspath: {}", context.remoteRepositories());
-
-        RemoteRepositoryManager remoteRepositoryManager = context.lookup()
-                .lookup(RemoteRepositoryManager.class)
-                .orElseThrow(() -> new IllegalStateException("component not found"));
-        for (RemoteRepository repository : context.remoteRepositories()) {
-            RepositoryPolicy policy = remoteRepositoryManager.getPolicy(
-                    context.repositorySystemSession(), repository, !artifact.isSnapshot(), artifact.isSnapshot());
-            logger.info("Repository {} effective policy: {}", repository.getId(), policy);
-        }
-
-        Dependency dependency = new Dependency(artifact, "runtime");
-        CollectRequest collectRequest = new CollectRequest();
-        collectRequest.setRoot(dependency);
-        collectRequest.setRepositories(context.remoteRepositories());
-
-        DependencyRequest dependencyRequest = new DependencyRequest();
-        dependencyRequest.setCollectRequest(collectRequest);
-
-        DependencyNode rootNode = context.repositorySystem()
-                .resolveDependencies(context.repositorySystemSession(), dependencyRequest)
-                .getRoot();
-
-        PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
-        rootNode.accept(nlg);
-        return nlg.getClassPath();
     }
 
     public static void main(String... args) {

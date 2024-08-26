@@ -16,9 +16,19 @@ import org.junit.jupiter.api.Test;
 
 public class ClasspathTest {
     @Test
-    public void simple() throws Exception {
+    public void simpleModel() throws Exception {
         ContextOverrides overrides = ContextOverrides.create()
-                .withLocalRepositoryOverride(Paths.get("target/simple"))
+                .withLocalRepositoryOverride(Paths.get("target/simple-model"))
+                .build();
+
+        String cp = new Classpath().model(overrides, "junit:junit:4.13.2");
+        assertNotNull(cp);
+    }
+
+    @Test
+    public void simpleClasspath() throws Exception {
+        ContextOverrides overrides = ContextOverrides.create()
+                .withLocalRepositoryOverride(Paths.get("target/simple-classpath"))
                 .build();
 
         String cp = new Classpath().classpath(overrides, "junit:junit:4.13.2");
@@ -26,9 +36,9 @@ public class ClasspathTest {
     }
 
     @Test
-    public void simpleOffline() {
+    public void simpleOfflineClasspath() {
         ContextOverrides overrides = ContextOverrides.create()
-                .withLocalRepositoryOverride(Paths.get("target/simpleOffline"))
+                .withLocalRepositoryOverride(Paths.get("target/simple-classpath-offline"))
                 .offline(true)
                 .build();
 
