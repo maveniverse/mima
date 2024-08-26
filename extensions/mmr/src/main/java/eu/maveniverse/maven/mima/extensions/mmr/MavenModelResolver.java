@@ -45,21 +45,13 @@ public class MavenModelResolver {
         this.session = context.repositorySystemSession();
     }
 
-    public ArtifactDescriptorResult readEffectiveArtifactDescriptor(ArtifactDescriptorRequest request)
+    public ArtifactDescriptorResult readArtifactDescriptor(
+            ArtifactDescriptorRequest request, MavenModelResolverMode mode) throws ArtifactDescriptorException {
+        return artifactDescriptorReader.readArtifactDescriptor(session, request, mode);
+    }
+
+    public Model readModel(ArtifactDescriptorRequest request, MavenModelResolverMode mode)
             throws ArtifactDescriptorException {
-        return artifactDescriptorReader.readEffectiveArtifactDescriptor(session, request);
-    }
-
-    public ArtifactDescriptorResult readRawArtifactDescriptor(ArtifactDescriptorRequest request)
-            throws ArtifactDescriptorException {
-        return artifactDescriptorReader.readRawArtifactDescriptor(session, request);
-    }
-
-    public Model readEffectiveModel(ArtifactDescriptorRequest request) throws ArtifactDescriptorException {
-        return (Model) readEffectiveArtifactDescriptor(request).getProperties().get("model");
-    }
-
-    public Model readRawModel(ArtifactDescriptorRequest request) throws ArtifactDescriptorException {
-        return (Model) readRawArtifactDescriptor(request).getProperties().get("model");
+        return (Model) readArtifactDescriptor(request, mode).getProperties().get("model");
     }
 }

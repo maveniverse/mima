@@ -20,6 +20,7 @@ package eu.maveniverse.maven.mima.extensions.mmr.internal;
 
 import static java.util.Objects.requireNonNull;
 
+import eu.maveniverse.maven.mima.extensions.mmr.MavenModelResolverMode;
 import java.io.File;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -102,22 +103,12 @@ public class ArtifactDescriptorReaderImpl {
         this.modelCacheFunction = requireNonNull(modelCacheFunction);
     }
 
-    public ArtifactDescriptorResult readEffectiveArtifactDescriptor(
-            RepositorySystemSession session, ArtifactDescriptorRequest request) throws ArtifactDescriptorException {
-        return readArtifactDescriptor(session, request, true);
-    }
-
-    public ArtifactDescriptorResult readRawArtifactDescriptor(
-            RepositorySystemSession session, ArtifactDescriptorRequest request) throws ArtifactDescriptorException {
-        return readArtifactDescriptor(session, request, false);
-    }
-
-    private ArtifactDescriptorResult readArtifactDescriptor(
-            RepositorySystemSession session, ArtifactDescriptorRequest request, boolean effective)
+    public ArtifactDescriptorResult readArtifactDescriptor(
+            RepositorySystemSession session, ArtifactDescriptorRequest request, MavenModelResolverMode mode)
             throws ArtifactDescriptorException {
         ArtifactDescriptorResult result = new ArtifactDescriptorResult(request);
 
-        Model model = loadPom(session, request, result, effective);
+        Model model = loadPom(session, request, result, mode);
         if (model != null) {
             Map<String, Object> config = session.getConfigProperties();
             ArtifactDescriptorReaderDelegate delegate =
@@ -137,7 +128,7 @@ public class ArtifactDescriptorReaderImpl {
             RepositorySystemSession session,
             ArtifactDescriptorRequest request,
             ArtifactDescriptorResult result,
-            boolean effective)
+            MavenModelResolverMode mode)
             throws ArtifactDescriptorException {
         RequestTrace trace = RequestTrace.newChild(request.getTrace(), request);
 
@@ -258,9 +249,11 @@ public class ArtifactDescriptorReaderImpl {
                                 RequestTraceHelper.interpretTrace(false, request.getTrace()));
                     }
                 }
-                if (effective) {
+                if (mode == MavenModelResolverMode.EFFECTIVE) {
                     model = modelResult.getEffectiveModel();
-                } else {
+                } else if (mode == MavenModelResolverMode.RAW) {
+                    return modelResult.getRawModel();
+                } else if (mode == MavenModelResolverMode.RAW_INTERPOLATED) {
                     Model rawModel = modelResult.getRawModel();
                     rawModel.setGroupId(modelResult.getEffectiveModel().getGroupId());
                     rawModel.setArtifactId(modelResult.getEffectiveModel().getArtifactId());
@@ -290,6 +283,8 @@ public class ArtifactDescriptorReaderImpl {
                             .setUrlNormalizer(new DefaultUrlNormalizer())
                             .setVersionPropertiesProcessor(new DefaultModelVersionProcessor())
                             .interpolateModel(modelResult.getRawModel(), new File(""), modelRequest, req -> {});
+                } else {
+                    throw new ArtifactDescriptorException(result, "Unsupported mode " + mode.name());
                 }
             } catch (ModelBuildingException e) {
                 for (ModelProblem problem : e.getProblems()) {

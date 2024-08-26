@@ -14,6 +14,7 @@ import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.Runtime;
 import eu.maveniverse.maven.mima.context.Runtimes;
 import eu.maveniverse.maven.mima.extensions.mmr.MavenModelResolver;
+import eu.maveniverse.maven.mima.extensions.mmr.MavenModelResolverMode;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.codehaus.plexus.util.WriterFactory;
@@ -58,7 +59,7 @@ public class Classpath {
         try (Context context = runtime.create(overrides)) {
             MavenModelResolver mmr = new MavenModelResolver(context);
             ArtifactDescriptorRequest request = new ArtifactDescriptorRequest(new DefaultArtifact(artifactStr), context.remoteRepositories(), "classpath-demo");
-            Model model = mmr.readEffectiveModel(request);
+            Model model = mmr.readModel(request, MavenModelResolverMode.EFFECTIVE);
             try (ByteArrayOutputStream outputStream= new ByteArrayOutputStream()) {
                 String encoding = model.getModelEncoding();
                 if (encoding == null || encoding.length() <= 0) {
