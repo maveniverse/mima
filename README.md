@@ -216,5 +216,6 @@ Buildtime:
 
 Runtime:
 * Java 8+
+* Maven 3.8.x+ (if used inside Maven, Maven 3.6.3 is still support but NOT for extensions!)
 * Standalone: SLF4J backend (1.7.36 baseline) should be provided.
 * Standalone Uber: SLF4J API and backend (1.7.36 baseline) should be provided, and for Apache HttpClient 4.x logging, ideally `jcl-over-slf4j` as well.
