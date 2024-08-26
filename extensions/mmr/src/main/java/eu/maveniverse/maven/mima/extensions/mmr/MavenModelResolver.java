@@ -47,11 +47,15 @@ public class MavenModelResolver {
 
     public ArtifactDescriptorResult readArtifactDescriptor(
             ArtifactDescriptorRequest request, MavenModelResolverMode mode) throws ArtifactDescriptorException {
+        requireNonNull(request, "request");
+        requireNonNull(mode, "mode");
         return artifactDescriptorReader.readArtifactDescriptor(session, request, mode);
     }
 
     public Model readModel(ArtifactDescriptorRequest request, MavenModelResolverMode mode)
             throws ArtifactDescriptorException {
+        requireNonNull(request, "request");
+        requireNonNull(mode, "mode");
         return (Model) readArtifactDescriptor(request, mode).getProperties().get("model");
     }
 }
