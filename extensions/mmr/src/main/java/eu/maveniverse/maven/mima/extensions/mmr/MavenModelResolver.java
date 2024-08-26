@@ -11,9 +11,9 @@ import static java.util.Objects.requireNonNull;
 
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.extensions.mmr.internal.ArtifactDescriptorReaderImpl;
+import eu.maveniverse.maven.mima.extensions.mmr.internal.DefaultModelCache;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.ModelBuilder;
-import org.apache.maven.repository.internal.DefaultModelCacheFactory;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.impl.RemoteRepositoryManager;
 import org.eclipse.aether.impl.RepositoryEventDispatcher;
@@ -41,7 +41,7 @@ public class MavenModelResolver {
                 context.lookup()
                         .lookup(RepositoryEventDispatcher.class)
                         .orElseThrow(() -> new IllegalStateException("EventDispatcher not available")),
-                new DefaultModelCacheFactory());
+                DefaultModelCache::newInstance);
         this.session = requireNonNull(context.repositorySystemSession(), "session");
     }
 

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.DistributionManagement;
 import org.apache.maven.model.Model;
@@ -36,6 +37,7 @@ import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
+import org.apache.maven.model.building.ModelCache;
 import org.apache.maven.model.building.ModelProblem;
 import org.apache.maven.model.building.ModelProblemUtils;
 import org.apache.maven.model.interpolation.DefaultModelVersionProcessor;
@@ -45,7 +47,6 @@ import org.apache.maven.model.path.DefaultUrlNormalizer;
 import org.apache.maven.model.resolution.UnresolvableModelException;
 import org.apache.maven.repository.internal.ArtifactDescriptorUtils;
 import org.apache.maven.repository.internal.MavenWorkspaceReader;
-import org.apache.maven.repository.internal.ModelCacheFactory;
 import org.apache.maven.repository.internal.RequestTraceHelper;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.RepositoryEvent;
@@ -82,7 +83,7 @@ public class ArtifactDescriptorReaderImpl {
     private final RemoteRepositoryManager remoteRepositoryManager;
     private final RepositoryEventDispatcher repositoryEventDispatcher;
     private final ModelBuilder modelBuilder;
-    private final ModelCacheFactory modelCacheFactory;
+    private final Function<RepositorySystemSession, ModelCache> modelCacheFunction;
     private final ArtifactDescriptorReaderDelegate artifactDescriptorReaderDelegate =
             new ArtifactDescriptorReaderDelegate();
 
@@ -93,12 +94,12 @@ public class ArtifactDescriptorReaderImpl {
             RemoteRepositoryManager remoteRepositoryManager,
             ModelBuilder modelBuilder,
             RepositoryEventDispatcher repositoryEventDispatcher,
-            ModelCacheFactory modelCacheFactory) {
+            Function<RepositorySystemSession, ModelCache> modelCacheFunction) {
         this.repositorySystem = requireNonNull(repositorySystem);
         this.remoteRepositoryManager = requireNonNull(remoteRepositoryManager);
         this.modelBuilder = requireNonNull(modelBuilder);
         this.repositoryEventDispatcher = requireNonNull(repositoryEventDispatcher);
-        this.modelCacheFactory = requireNonNull(modelCacheFactory);
+        this.modelCacheFunction = requireNonNull(modelCacheFunction);
     }
 
     public ArtifactDescriptorResult readEffectiveArtifactDescriptor(
@@ -213,7 +214,7 @@ public class ArtifactDescriptorReaderImpl {
                 modelRequest.setSystemProperties(
                         toProperties(session.getUserProperties(), session.getSystemProperties()));
                 modelRequest.setUserProperties(new Properties());
-                modelRequest.setModelCache(modelCacheFactory.createCache(session));
+                modelRequest.setModelCache(modelCacheFunction.apply(session));
                 modelRequest.setModelResolver(new ModelResolverImpl(
                         repositorySystem,
                         session,
