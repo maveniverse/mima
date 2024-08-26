@@ -208,6 +208,10 @@ when runs in standalone mode or embedded in Maven 3.9.x (that provides resolver 
 Note: overrides are "all or nothing", so for example IF there is a list of remote repositories, 
 they REPLACE current repositories, if any.
 
+## Extensions
+
+* mmr -- adds ability to get Maven models (effective and raw). Use of this extension raises Maven requirement to 3.8.5+!
+
 ## Requirements
 
 Buildtime:
