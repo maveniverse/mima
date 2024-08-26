@@ -37,12 +37,12 @@ public class MavenModelResolver {
                         .orElseThrow(() -> new IllegalStateException("RemoteRepositoryManager not available")),
                 context.lookup()
                         .lookup(ModelBuilder.class)
-                        .orElseThrow(() -> new IllegalStateException("Model builder not available")),
+                        .orElseThrow(() -> new IllegalStateException("ModelBuilder not available")),
                 context.lookup()
                         .lookup(RepositoryEventDispatcher.class)
-                        .orElseThrow(() -> new IllegalStateException("EventDispatcher not available")),
+                        .orElseThrow(() -> new IllegalStateException("RepositoryEventDispatcher not available")),
                 DefaultModelCache::newInstance);
-        this.session = requireNonNull(context.repositorySystemSession(), "session");
+        this.session = context.repositorySystemSession();
     }
 
     public ArtifactDescriptorResult readEffectiveArtifactDescriptor(ArtifactDescriptorRequest request)
