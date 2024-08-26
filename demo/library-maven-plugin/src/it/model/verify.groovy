@@ -7,5 +7,8 @@
  */
 File buildLog = new File( basedir, 'build.log' )
 assert buildLog.exists()
+if (buildLog.text.contains("Unsupported Maven version")) {
+    return // ignore the rest
+}
 assert buildLog.text.contains( "[DEBUG] Runtimes.getRuntime: MavenRuntime" )
 assert buildLog.text.contains( "[INFO] Model of junit:junit:4.13.1 artifact is:" )

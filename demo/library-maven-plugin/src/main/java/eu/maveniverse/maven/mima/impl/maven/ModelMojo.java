@@ -11,8 +11,10 @@ import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.impl.library.Classpath;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.rtinfo.RuntimeInformation;
 
 @Mojo(name = "model")
 public class ModelMojo extends AbstractMojo {
@@ -22,8 +24,15 @@ public class ModelMojo extends AbstractMojo {
     @Parameter
     private boolean offline;
 
+    @Component
+    private RuntimeInformation runtimeInformation;
+
     @Override
     public void execute() throws MojoExecutionException {
+        if (runtimeInformation.getMavenVersion().startsWith("3.6")) {
+            getLog().info("Unsupported Maven version: " + runtimeInformation.getMavenVersion());
+            return;
+        }
         try {
             Classpath classpath = new Classpath();
             ContextOverrides overrides =
