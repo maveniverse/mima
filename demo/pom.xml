@@ -37,6 +37,7 @@
     <!-- tied to MIMA/Maven -->
     <version.resolver>1.9.22</version.resolver>
     <version.slf4j>1.7.36</version.slf4j>
+    <version.maven>3.9.9</version.maven>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -97,6 +98,11 @@
       <dependency>
         <groupId>eu.maveniverse.maven.mima.runtime</groupId>
         <artifactId>standalone-static-uber</artifactId>
+        <version>${version.mima}</version>
+      </dependency>
+      <dependency>
+        <groupId>eu.maveniverse.maven.mima.extensions</groupId>
+        <artifactId>mmr</artifactId>
         <version>${version.mima}</version>
       </dependency>
       <!-- logging -->
