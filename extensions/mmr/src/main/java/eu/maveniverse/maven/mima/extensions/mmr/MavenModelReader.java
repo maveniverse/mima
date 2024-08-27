@@ -23,12 +23,15 @@ import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MavenModelResolver {
+/**
+ * Maven Model Reader, an extension that is able to read POM Models at various levels.
+ */
+public class MavenModelReader {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final ArtifactDescriptorReaderImpl artifactDescriptorReader;
     private final RepositorySystemSession session;
 
-    public MavenModelResolver(Context context) {
+    public MavenModelReader(Context context) {
         requireNonNull(context, "context");
         this.artifactDescriptorReader = new ArtifactDescriptorReaderImpl(
                 context.repositorySystem(),
@@ -45,14 +48,20 @@ public class MavenModelResolver {
         this.session = context.repositorySystemSession();
     }
 
-    public ArtifactDescriptorResult readArtifactDescriptor(
-            ArtifactDescriptorRequest request, MavenModelResolverMode mode) throws ArtifactDescriptorException {
+    /**
+     * Reads POM as {@link ArtifactDescriptorResult}.
+     */
+    public ArtifactDescriptorResult readArtifactDescriptor(ArtifactDescriptorRequest request, MavenModelReaderMode mode)
+            throws ArtifactDescriptorException {
         requireNonNull(request, "request");
         requireNonNull(mode, "mode");
         return artifactDescriptorReader.readArtifactDescriptor(session, request, mode);
     }
 
-    public Model readModel(ArtifactDescriptorRequest request, MavenModelResolverMode mode)
+    /**
+     * Reads POM as {@link Model}.
+     */
+    public Model readModel(ArtifactDescriptorRequest request, MavenModelReaderMode mode)
             throws ArtifactDescriptorException {
         requireNonNull(request, "request");
         requireNonNull(mode, "mode");

@@ -7,7 +7,7 @@
  */
 package eu.maveniverse.maven.mima.extensions.mmr;
 
-public enum MavenModelResolverMode {
+public enum MavenModelReaderMode {
     /**
      * The "raw model" mode, no inheritance nor proper interpolation applied, POM as is.
      */

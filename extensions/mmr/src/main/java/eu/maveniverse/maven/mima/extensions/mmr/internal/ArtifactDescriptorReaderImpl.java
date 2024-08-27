@@ -20,7 +20,7 @@ package eu.maveniverse.maven.mima.extensions.mmr.internal;
 
 import static java.util.Objects.requireNonNull;
 
-import eu.maveniverse.maven.mima.extensions.mmr.MavenModelResolverMode;
+import eu.maveniverse.maven.mima.extensions.mmr.MavenModelReaderMode;
 import java.io.File;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -104,7 +104,7 @@ public class ArtifactDescriptorReaderImpl {
     }
 
     public ArtifactDescriptorResult readArtifactDescriptor(
-            RepositorySystemSession session, ArtifactDescriptorRequest request, MavenModelResolverMode mode)
+            RepositorySystemSession session, ArtifactDescriptorRequest request, MavenModelReaderMode mode)
             throws ArtifactDescriptorException {
         ArtifactDescriptorResult result = new ArtifactDescriptorResult(request);
 
@@ -128,7 +128,7 @@ public class ArtifactDescriptorReaderImpl {
             RepositorySystemSession session,
             ArtifactDescriptorRequest request,
             ArtifactDescriptorResult result,
-            MavenModelResolverMode mode)
+            MavenModelReaderMode mode)
             throws ArtifactDescriptorException {
         RequestTrace trace = RequestTrace.newChild(request.getTrace(), request);
 
@@ -249,11 +249,11 @@ public class ArtifactDescriptorReaderImpl {
                                 RequestTraceHelper.interpretTrace(false, request.getTrace()));
                     }
                 }
-                if (mode == MavenModelResolverMode.EFFECTIVE) {
+                if (mode == MavenModelReaderMode.EFFECTIVE) {
                     model = modelResult.getEffectiveModel();
-                } else if (mode == MavenModelResolverMode.RAW) {
+                } else if (mode == MavenModelReaderMode.RAW) {
                     return modelResult.getRawModel();
-                } else if (mode == MavenModelResolverMode.RAW_INTERPOLATED) {
+                } else if (mode == MavenModelReaderMode.RAW_INTERPOLATED) {
                     Model rawModel = modelResult.getRawModel();
                     rawModel.setGroupId(modelResult.getEffectiveModel().getGroupId());
                     rawModel.setArtifactId(modelResult.getEffectiveModel().getArtifactId());

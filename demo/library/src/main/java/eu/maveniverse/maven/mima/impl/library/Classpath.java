@@ -13,12 +13,14 @@ import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.Runtime;
 import eu.maveniverse.maven.mima.context.Runtimes;
-import eu.maveniverse.maven.mima.extensions.mmr.MavenModelResolver;
-import eu.maveniverse.maven.mima.extensions.mmr.MavenModelResolverMode;
+import eu.maveniverse.maven.mima.extensions.mmr.MavenModelReader;
+import eu.maveniverse.maven.mima.extensions.mmr.MavenModelReaderMode;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
-import org.codehaus.plexus.util.WriterFactory;
-import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.collection.CollectRequest;
 import org.eclipse.aether.graph.Dependency;
@@ -34,12 +36,6 @@ import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-
 /**
  * This is an imaginary library class that wants to:
  * <ul>
@@ -51,16 +47,18 @@ public class Classpath {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public String model(ContextOverrides overrides, String artifactStr) throws ArtifactDescriptorException, IOException {
+    public String model(ContextOverrides overrides, String artifactStr)
+            throws ArtifactDescriptorException, IOException {
         requireNonNull(artifactStr);
         Runtime runtime = Runtimes.INSTANCE.getRuntime();
         logger.debug("Runtimes.getRuntime: {}", runtime);
 
         try (Context context = runtime.create(overrides)) {
-            MavenModelResolver mmr = new MavenModelResolver(context);
-            ArtifactDescriptorRequest request = new ArtifactDescriptorRequest(new DefaultArtifact(artifactStr), context.remoteRepositories(), "classpath-demo");
-            Model model = mmr.readModel(request, MavenModelResolverMode.EFFECTIVE);
-            try (ByteArrayOutputStream outputStream= new ByteArrayOutputStream()) {
+            MavenModelReader mmr = new MavenModelReader(context);
+            ArtifactDescriptorRequest request = new ArtifactDescriptorRequest(
+                    new DefaultArtifact(artifactStr), context.remoteRepositories(), "classpath-demo");
+            Model model = mmr.readModel(request, MavenModelReaderMode.EFFECTIVE);
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 String encoding = model.getModelEncoding();
                 if (encoding == null || encoding.length() <= 0) {
                     encoding = "UTF-8";
