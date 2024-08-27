@@ -13,11 +13,11 @@ public enum MavenModelResolverMode {
      */
     RAW,
     /**
-     * The "raw model" mode but with parent GAV applied, and interpolation but no inheritance.
+     * The "raw model" mode, but with parent GAV coordinates and interpolation applied, but without inheritance.
      */
     RAW_INTERPOLATED,
     /**
-     * The "effective" model with fully built Maven model.
+     * The "effective" model with fully built Maven model, without lifecycle plugins.
      */
     EFFECTIVE
 }
