@@ -41,6 +41,11 @@ import org.slf4j.LoggerFactory;
  *     model will be read from that file directly. Naturally, to be able to build the model, the possible
  *     parent and other POMs must be resolvable.</li>
  * </ul>
+ * The purpose of this extension is to provide insight into Maven models without the need to fiddle
+ * with any of those things like Model builder and so on. Usages like some "analysis" or "introspection"
+ * or "validation" come to mind for start.
+ * <p>
+ * Note: this extension and all classes in it are EXPERIMENTAL, use on your own risk!
  */
 public class MavenModelReader {
     private final Logger logger = LoggerFactory.getLogger(getClass());
