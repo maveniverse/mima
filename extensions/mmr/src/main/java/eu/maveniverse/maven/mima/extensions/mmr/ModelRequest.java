@@ -20,22 +20,15 @@ import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
  */
 public class ModelRequest {
     private final ModelReaderMode mode;
-    private final boolean followRelocation;
     private final ArtifactDescriptorRequest artifactDescriptorRequest;
 
-    private ModelRequest(
-            ModelReaderMode mode, boolean followRelocation, ArtifactDescriptorRequest artifactDescriptorRequest) {
+    private ModelRequest(ModelReaderMode mode, ArtifactDescriptorRequest artifactDescriptorRequest) {
         this.mode = requireNonNull(mode);
-        this.followRelocation = followRelocation;
         this.artifactDescriptorRequest = requireNonNull(artifactDescriptorRequest);
     }
 
     public ModelReaderMode getMode() {
         return mode;
-    }
-
-    public boolean isFollowRelocation() {
-        return followRelocation;
     }
 
     public Path getPomPath() {
@@ -56,16 +49,10 @@ public class ModelRequest {
     public static class Builder {
         private ModelReaderMode mode = ModelReaderMode.EFFECTIVE;
         private Path pomPath;
-        private boolean followRelocation = true;
         private ArtifactDescriptorRequest artifactDescriptorRequest = new ArtifactDescriptorRequest();
 
         public Builder setMode(ModelReaderMode mode) {
             this.mode = mode;
-            return this;
-        }
-
-        public Builder setFollowRelocation(boolean followRelocation) {
-            this.followRelocation = followRelocation;
             return this;
         }
 
@@ -91,7 +78,7 @@ public class ModelRequest {
                 artifact = artifact.setFile(pomPath.toFile());
                 artifactDescriptorRequest.setArtifact(artifact);
             }
-            return new ModelRequest(mode, followRelocation, artifactDescriptorRequest);
+            return new ModelRequest(mode, artifactDescriptorRequest);
         }
     }
 }

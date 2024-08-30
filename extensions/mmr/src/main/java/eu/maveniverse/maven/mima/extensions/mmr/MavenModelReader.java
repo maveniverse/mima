@@ -53,18 +53,9 @@ public class MavenModelReader {
      */
     public ArtifactDescriptorResult readArtifactDescriptor(ArtifactDescriptorRequest request, ModelReaderMode mode)
             throws ArtifactDescriptorException {
-        return readArtifactDescriptor(request, mode, true);
-    }
-
-    /**
-     * Reads POM as {@link ArtifactDescriptorResult}.
-     */
-    public ArtifactDescriptorResult readArtifactDescriptor(
-            ArtifactDescriptorRequest request, ModelReaderMode mode, boolean followRelocation)
-            throws ArtifactDescriptorException {
         requireNonNull(request, "request");
         requireNonNull(mode, "mode");
-        return artifactDescriptorReader.readArtifactDescriptor(session, request, mode, followRelocation);
+        return artifactDescriptorReader.readArtifactDescriptor(session, request, mode);
     }
 
     /**
