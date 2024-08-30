@@ -7,11 +7,14 @@
  */
 package eu.maveniverse.maven.mima.extensions.mmr;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.Runtimes;
+import org.apache.maven.model.Model;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
 import org.junit.jupiter.api.Test;
@@ -26,7 +29,23 @@ public class MavenModelReaderTest {
             ModelResponse response = reader.readModel(new ArtifactDescriptorRequest(
                     new DefaultArtifact("org.apache.maven:maven-core:3.9.9"), context.remoteRepositories(), "test"));
             assertNotNull(response);
-            assertNotNull(response.toModel(ModelLevel.EFFECTIVE));
+            Model model;
+
+            // RAW
+            model = response.toModel(ModelLevel.RAW);
+            assertNotNull(model);
+            assertEquals("org.apache.maven", model.getGroupId());
+            assertEquals("maven-core", model.getArtifactId());
+            assertEquals("3.9.9", model.getVersion());
+            assertNull(model.getUrl());
+
+            // Effective
+            model = response.toModel(ModelLevel.EFFECTIVE);
+            assertNotNull(model);
+            assertEquals("org.apache.maven", model.getGroupId());
+            assertEquals("maven-core", model.getArtifactId());
+            assertEquals("3.9.9", model.getVersion());
+            assertNotNull(model.getUrl());
         }
     }
 }
