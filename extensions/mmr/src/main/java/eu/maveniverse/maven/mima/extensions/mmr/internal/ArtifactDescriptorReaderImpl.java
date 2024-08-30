@@ -9,18 +9,24 @@ package eu.maveniverse.maven.mima.extensions.mmr.internal;
 
 import static java.util.Objects.requireNonNull;
 
-import eu.maveniverse.maven.mima.extensions.mmr.ModelReaderMode;
+import eu.maveniverse.maven.mima.extensions.mmr.ModelLevel;
 import eu.maveniverse.maven.mima.extensions.mmr.ModelRequest;
 import eu.maveniverse.maven.mima.extensions.mmr.ModelResponse;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
 import org.apache.maven.model.DependencyManagement;
+import org.apache.maven.model.DistributionManagement;
+import org.apache.maven.model.License;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.Prerequisites;
+import org.apache.maven.model.Repository;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
 import org.apache.maven.model.building.FileModelSource;
 import org.apache.maven.model.building.ModelBuilder;
@@ -44,12 +50,17 @@ import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.RequestTrace;
 import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.artifact.ArtifactProperties;
+import org.eclipse.aether.artifact.ArtifactType;
+import org.eclipse.aether.artifact.ArtifactTypeRegistry;
+import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.artifact.DefaultArtifactType;
+import org.eclipse.aether.graph.Dependency;
+import org.eclipse.aether.graph.Exclusion;
 import org.eclipse.aether.impl.RemoteRepositoryManager;
 import org.eclipse.aether.impl.RepositoryEventDispatcher;
 import org.eclipse.aether.repository.WorkspaceRepository;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
-import org.eclipse.aether.resolution.ArtifactDescriptorPolicy;
-import org.eclipse.aether.resolution.ArtifactDescriptorPolicyRequest;
 import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
 import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 import org.eclipse.aether.resolution.ArtifactRequest;
@@ -71,8 +82,6 @@ public class ArtifactDescriptorReaderImpl {
     private final RepositoryEventDispatcher repositoryEventDispatcher;
     private final ModelBuilder modelBuilder;
     private final Function<RepositorySystemSession, ModelCache> modelCacheFunction;
-    private final ArtifactDescriptorReaderDelegate artifactDescriptorReaderDelegate =
-            new ArtifactDescriptorReaderDelegate();
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -89,38 +98,19 @@ public class ArtifactDescriptorReaderImpl {
         this.modelCacheFunction = requireNonNull(modelCacheFunction);
     }
 
-    public ArtifactDescriptorResult readArtifactDescriptor(
-            RepositorySystemSession session, ArtifactDescriptorRequest request, ModelReaderMode mode)
-            throws ArtifactDescriptorException {
-        ArtifactDescriptorResult result = new ArtifactDescriptorResult(request);
-
-        Model model = loadPom(session, request, result).get(mode);
-        if (model != null) {
-            Map<String, Object> config = session.getConfigProperties();
-            ArtifactDescriptorReaderDelegate delegate =
-                    (ArtifactDescriptorReaderDelegate) config.get(ArtifactDescriptorReaderDelegate.class.getName());
-
-            if (delegate == null) {
-                delegate = artifactDescriptorReaderDelegate;
-            }
-
-            delegate.populateResult(session, result, model);
-        }
-
-        return result;
-    }
-
     public ModelResponse readArtifactDescriptor(RepositorySystemSession session, ModelRequest request)
-            throws ArtifactDescriptorException {
+            throws VersionResolutionException, ArtifactResolutionException, ArtifactDescriptorException {
         ArtifactDescriptorRequest artifactDescriptorRequest = request.getArtifactDescriptorRequest();
         ArtifactDescriptorResult artifactDescriptorResult = new ArtifactDescriptorResult(artifactDescriptorRequest);
-        return new ModelResponse(request, loadPom(session, artifactDescriptorRequest, artifactDescriptorResult));
+        return new ModelResponse(
+                loadPom(session, artifactDescriptorRequest, artifactDescriptorResult),
+                m -> populateResult(session, artifactDescriptorResult, m));
     }
 
-    private Map<ModelReaderMode, Model> loadPom(
+    private Map<ModelLevel, Model> loadPom(
             RepositorySystemSession session, ArtifactDescriptorRequest request, ArtifactDescriptorResult result)
-            throws ArtifactDescriptorException {
-        HashMap<ModelReaderMode, Model> resultMap = new HashMap<>();
+            throws VersionResolutionException, ArtifactResolutionException, ArtifactDescriptorException {
+        HashMap<ModelLevel, Model> resultMap = new HashMap<>();
         RequestTrace trace = RequestTrace.newChild(request.getTrace(), request);
         Artifact a = request.getArtifact();
 
@@ -147,7 +137,7 @@ public class ArtifactDescriptorReaderImpl {
                 pomArtifact = pomArtifact.setVersion(versionResult.getVersion());
             } catch (VersionResolutionException e) {
                 result.addException(e);
-                throw new ArtifactDescriptorException(result);
+                throw e;
             }
 
             try {
@@ -160,12 +150,9 @@ public class ArtifactDescriptorReaderImpl {
             } catch (ArtifactResolutionException e) {
                 if (e.getCause() instanceof ArtifactNotFoundException) {
                     missingDescriptor(session, trace, a, (Exception) e.getCause());
-                    if ((getPolicy(session, a, request) & ArtifactDescriptorPolicy.IGNORE_MISSING) != 0) {
-                        return Collections.emptyMap();
-                    }
                 }
                 result.addException(e);
-                throw new ArtifactDescriptorException(result);
+                throw e;
             }
         }
 
@@ -224,7 +211,7 @@ public class ArtifactDescriptorReaderImpl {
             }
 
             // raw
-            resultMap.put(ModelReaderMode.RAW, modelResult.getRawModel());
+            resultMap.put(ModelLevel.RAW, modelResult.getRawModel());
 
             // raw+interpolated
             Model rawModel = modelResult.getRawModel();
@@ -248,7 +235,7 @@ public class ArtifactDescriptorReaderImpl {
                 current = parent;
             }
             resultMap.put(
-                    ModelReaderMode.RAW_INTERPOLATED,
+                    ModelLevel.RAW_INTERPOLATED,
                     new StringVisitorModelInterpolator()
                             .setPathTranslator(new DefaultPathTranslator())
                             .setUrlNormalizer(new DefaultUrlNormalizer())
@@ -256,7 +243,7 @@ public class ArtifactDescriptorReaderImpl {
                             .interpolateModel(modelResult.getRawModel(), new File(""), modelRequest, req -> {}));
 
             // effective
-            resultMap.put(ModelReaderMode.EFFECTIVE, modelResult.getEffectiveModel());
+            resultMap.put(ModelLevel.EFFECTIVE, modelResult.getEffectiveModel());
 
             return resultMap;
         } catch (ModelBuildingException e) {
@@ -267,9 +254,6 @@ public class ArtifactDescriptorReaderImpl {
                 }
             }
             invalidDescriptor(session, trace, a, e);
-            if ((getPolicy(session, a, request) & ArtifactDescriptorPolicy.IGNORE_INVALID) != 0) {
-                return Collections.emptyMap();
-            }
             result.addException(e);
             throw new ArtifactDescriptorException(result);
         }
@@ -306,11 +290,98 @@ public class ArtifactDescriptorReaderImpl {
         repositoryEventDispatcher.dispatch(event.build());
     }
 
-    private int getPolicy(RepositorySystemSession session, Artifact a, ArtifactDescriptorRequest request) {
-        ArtifactDescriptorPolicy policy = session.getArtifactDescriptorPolicy();
-        if (policy == null) {
-            return ArtifactDescriptorPolicy.STRICT;
+    // ArtifactDescriptorResult
+
+    private static ArtifactDescriptorResult populateResult(
+            RepositorySystemSession session, ArtifactDescriptorResult result, Model model) {
+        ArtifactTypeRegistry stereotypes = session.getArtifactTypeRegistry();
+
+        for (Repository r : model.getRepositories()) {
+            result.addRepository(ArtifactDescriptorUtils.toRemoteRepository(r));
         }
-        return policy.getPolicy(session, new ArtifactDescriptorPolicyRequest(a, request.getRequestContext()));
+
+        for (org.apache.maven.model.Dependency dependency : model.getDependencies()) {
+            result.addDependency(convert(dependency, stereotypes));
+        }
+
+        DependencyManagement mgmt = model.getDependencyManagement();
+        if (mgmt != null) {
+            for (org.apache.maven.model.Dependency dependency : mgmt.getDependencies()) {
+                result.addManagedDependency(convert(dependency, stereotypes));
+            }
+        }
+
+        Map<String, Object> properties = new LinkedHashMap<>();
+        properties.put("model", model);
+        Prerequisites prerequisites = model.getPrerequisites();
+        if (prerequisites != null) {
+            properties.put("prerequisites.maven", prerequisites.getMaven());
+        }
+
+        List<License> licenses = model.getLicenses();
+        properties.put("license.count", licenses.size());
+        for (int i = 0; i < licenses.size(); i++) {
+            License license = licenses.get(i);
+            properties.put("license." + i + ".name", license.getName());
+            properties.put("license." + i + ".url", license.getUrl());
+            properties.put("license." + i + ".comments", license.getComments());
+            properties.put("license." + i + ".distribution", license.getDistribution());
+        }
+        result.setProperties(properties);
+        setArtifactProperties(result, model);
+        return result;
+    }
+
+    private static Dependency convert(org.apache.maven.model.Dependency dependency, ArtifactTypeRegistry stereotypes) {
+        ArtifactType stereotype = stereotypes.get(dependency.getType());
+        if (stereotype == null) {
+            stereotype = new DefaultArtifactType(dependency.getType());
+        }
+
+        boolean system = dependency.getSystemPath() != null
+                && !dependency.getSystemPath().isEmpty();
+
+        Map<String, String> props = null;
+        if (system) {
+            props = Collections.singletonMap(ArtifactProperties.LOCAL_PATH, dependency.getSystemPath());
+        }
+
+        Artifact artifact = new DefaultArtifact(
+                dependency.getGroupId(),
+                dependency.getArtifactId(),
+                dependency.getClassifier(),
+                null,
+                dependency.getVersion(),
+                props,
+                stereotype);
+
+        List<Exclusion> exclusions = new ArrayList<>(dependency.getExclusions().size());
+        for (org.apache.maven.model.Exclusion exclusion : dependency.getExclusions()) {
+            exclusions.add(convert(exclusion));
+        }
+
+        return new Dependency(
+                artifact,
+                dependency.getScope(),
+                dependency.getOptional() != null ? dependency.isOptional() : null,
+                exclusions);
+    }
+
+    private static Exclusion convert(org.apache.maven.model.Exclusion exclusion) {
+        return new Exclusion(exclusion.getGroupId(), exclusion.getArtifactId(), "*", "*");
+    }
+
+    private static void setArtifactProperties(ArtifactDescriptorResult result, Model model) {
+        String downloadUrl = null;
+        DistributionManagement distMgmt = model.getDistributionManagement();
+        if (distMgmt != null) {
+            downloadUrl = distMgmt.getDownloadUrl();
+        }
+        if (downloadUrl != null && !downloadUrl.isEmpty()) {
+            Artifact artifact = result.getArtifact();
+            Map<String, String> props = new HashMap<>(artifact.getProperties());
+            props.put(ArtifactProperties.DOWNLOAD_URL, downloadUrl);
+            result.setArtifact(artifact.setProperties(props));
+        }
     }
 }

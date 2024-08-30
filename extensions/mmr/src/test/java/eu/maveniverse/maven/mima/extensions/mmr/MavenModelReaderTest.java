@@ -31,7 +31,7 @@ public class MavenModelReaderTest {
                     .build();
             ModelResponse response = reader.readModel(request);
             assertNotNull(response);
-            assertNotNull(response.getModel());
+            assertNotNull(response.toModel(ModelLevel.EFFECTIVE));
         }
     }
 }

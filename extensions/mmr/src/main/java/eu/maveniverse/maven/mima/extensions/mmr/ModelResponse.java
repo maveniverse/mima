@@ -10,32 +10,31 @@ package eu.maveniverse.maven.mima.extensions.mmr;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Map;
+import java.util.function.Function;
 import org.apache.maven.model.Model;
+import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 
 /**
  * Model Request.
  */
 public final class ModelResponse {
-    private final ModelRequest modelRequest;
-    private final Map<ModelReaderMode, Model> models;
+    private final Map<ModelLevel, Model> models;
+    private final Function<Model, ArtifactDescriptorResult> converter;
 
-    public ModelResponse(ModelRequest modelRequest, Map<ModelReaderMode, Model> models) {
-        this.modelRequest = requireNonNull(modelRequest);
+    public ModelResponse(Map<ModelLevel, Model> models, Function<Model, ArtifactDescriptorResult> converter) {
         this.models = requireNonNull(models);
+        this.converter = requireNonNull(converter);
     }
 
     /**
      * Returns model in asked mode, may return {@code null}.
      */
-    public Model getModel(ModelReaderMode mode) {
+    public Model toModel(ModelLevel mode) {
         requireNonNull(mode);
         return models.get(mode);
     }
 
-    /**
-     * Returns model in asked mode, may return {@code null}.
-     */
-    public Model getModel() {
-        return getModel(modelRequest.getMode());
+    public ArtifactDescriptorResult toArtifactDescriptorResult(ModelLevel mode) {
+        return converter.apply(toModel(mode));
     }
 }

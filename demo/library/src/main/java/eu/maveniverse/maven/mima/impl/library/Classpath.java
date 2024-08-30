@@ -14,7 +14,7 @@ import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.Runtime;
 import eu.maveniverse.maven.mima.context.Runtimes;
 import eu.maveniverse.maven.mima.extensions.mmr.MavenModelReader;
-import eu.maveniverse.maven.mima.extensions.mmr.ModelReaderMode;
+import eu.maveniverse.maven.mima.extensions.mmr.ModelLevel;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -30,8 +30,10 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
+import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
+import org.eclipse.aether.resolution.VersionResolutionException;
 import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +50,7 @@ public class Classpath {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public String model(ContextOverrides overrides, String artifactStr)
-            throws ArtifactDescriptorException, IOException {
+            throws VersionResolutionException, ArtifactResolutionException, ArtifactDescriptorException, IOException {
         requireNonNull(artifactStr);
         Runtime runtime = Runtimes.INSTANCE.getRuntime();
         logger.debug("Runtimes.getRuntime: {}", runtime);
@@ -57,7 +59,7 @@ public class Classpath {
             MavenModelReader mmr = new MavenModelReader(context);
             ArtifactDescriptorRequest request = new ArtifactDescriptorRequest(
                     new DefaultArtifact(artifactStr), context.remoteRepositories(), "classpath-demo");
-            Model model = mmr.readModel(request, ModelReaderMode.EFFECTIVE);
+            Model model = mmr.readModel(request, ModelLevel.EFFECTIVE);
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 String encoding = model.getModelEncoding();
                 if (encoding == null || encoding.length() <= 0) {

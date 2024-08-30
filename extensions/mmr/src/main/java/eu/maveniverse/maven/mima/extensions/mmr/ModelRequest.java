@@ -9,7 +9,6 @@ package eu.maveniverse.maven.mima.extensions.mmr;
 
 import static java.util.Objects.requireNonNull;
 
-import java.io.File;
 import java.nio.file.Path;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -19,27 +18,10 @@ import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
  * Model Request.
  */
 public class ModelRequest {
-    private final ModelReaderMode mode;
     private final ArtifactDescriptorRequest artifactDescriptorRequest;
 
-    private ModelRequest(ModelReaderMode mode, ArtifactDescriptorRequest artifactDescriptorRequest) {
-        this.mode = requireNonNull(mode);
+    private ModelRequest(ArtifactDescriptorRequest artifactDescriptorRequest) {
         this.artifactDescriptorRequest = requireNonNull(artifactDescriptorRequest);
-    }
-
-    public ModelReaderMode getMode() {
-        return mode;
-    }
-
-    public Path getPomPath() {
-        Artifact artifact = artifactDescriptorRequest.getArtifact();
-        if (artifact != null) {
-            File pomPath = artifact.getFile();
-            if (pomPath != null) {
-                return pomPath.toPath();
-            }
-        }
-        return null;
     }
 
     public ArtifactDescriptorRequest getArtifactDescriptorRequest() {
@@ -47,14 +29,8 @@ public class ModelRequest {
     }
 
     public static class Builder {
-        private ModelReaderMode mode = ModelReaderMode.EFFECTIVE;
         private Path pomPath;
         private ArtifactDescriptorRequest artifactDescriptorRequest = new ArtifactDescriptorRequest();
-
-        public Builder setMode(ModelReaderMode mode) {
-            this.mode = mode;
-            return this;
-        }
 
         public Builder setPomPath(Path pomPath) {
             this.pomPath = pomPath;
@@ -78,7 +54,7 @@ public class ModelRequest {
                 artifact = artifact.setFile(pomPath.toFile());
                 artifactDescriptorRequest.setArtifact(artifact);
             }
-            return new ModelRequest(mode, artifactDescriptorRequest);
+            return new ModelRequest(artifactDescriptorRequest);
         }
     }
 }
