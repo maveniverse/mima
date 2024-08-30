@@ -15,8 +15,10 @@ import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.Runtimes;
 import org.apache.maven.model.Model;
+import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
+import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 import org.junit.jupiter.api.Test;
 
 public class MavenModelReaderTest {
@@ -46,6 +48,36 @@ public class MavenModelReaderTest {
             assertEquals("maven-core", model.getArtifactId());
             assertEquals("3.9.9", model.getVersion());
             assertNotNull(model.getUrl());
+
+            ArtifactDescriptorResult result;
+            Artifact artifact;
+            // ADR out of RAW
+            result = response.toArtifactDescriptorResult(ModelLevel.RAW);
+            // we cannot compare this RESOLVED artifact (has file and properties)
+            artifact = result.getArtifact();
+            assertEquals(
+                    new DefaultArtifact(
+                            artifact.getGroupId(),
+                            artifact.getArtifactId(),
+                            artifact.getExtension(),
+                            artifact.getVersion()),
+                    new DefaultArtifact("org.apache.maven:maven-core:3.9.9"));
+            assertEquals(28, result.getDependencies().size());
+            assertEquals(60, result.getManagedDependencies().size());
+
+            // ADR out of EFFECTIVE
+            result = response.toArtifactDescriptorResult(ModelLevel.EFFECTIVE);
+            // we cannot compare this RESOLVED artifact (has file and properties)
+            artifact = result.getArtifact();
+            assertEquals(
+                    new DefaultArtifact(
+                            artifact.getGroupId(),
+                            artifact.getArtifactId(),
+                            artifact.getExtension(),
+                            artifact.getVersion()),
+                    new DefaultArtifact("org.apache.maven:maven-core:3.9.9"));
+            assertEquals(30, result.getDependencies().size());
+            assertEquals(74, result.getManagedDependencies().size());
         }
     }
 }

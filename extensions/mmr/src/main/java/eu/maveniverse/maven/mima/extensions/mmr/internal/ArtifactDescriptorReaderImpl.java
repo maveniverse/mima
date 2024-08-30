@@ -100,9 +100,11 @@ public class ArtifactDescriptorReaderImpl {
     public ModelResponse readArtifactDescriptor(RepositorySystemSession session, ArtifactDescriptorRequest request)
             throws VersionResolutionException, ArtifactResolutionException, ArtifactDescriptorException {
         ArtifactDescriptorResult artifactDescriptorResult = new ArtifactDescriptorResult(request);
-        return new ModelResponse(
-                loadPom(session, request, artifactDescriptorResult),
-                m -> populateResult(session, artifactDescriptorResult, m));
+        return new ModelResponse(loadPom(session, request, artifactDescriptorResult), m -> {
+            ArtifactDescriptorResult r = new ArtifactDescriptorResult(request);
+            r.setRepository(artifactDescriptorResult.getRepository());
+            return populateResult(session, r, m);
+        });
     }
 
     private Map<ModelLevel, Model> loadPom(
