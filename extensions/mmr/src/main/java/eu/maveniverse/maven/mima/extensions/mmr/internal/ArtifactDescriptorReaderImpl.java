@@ -1,27 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Copyright (c) 2023-2024 Maveniverse Org.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v2.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
  */
 package eu.maveniverse.maven.mima.extensions.mmr.internal;
 
 import static java.util.Objects.requireNonNull;
 
-import eu.maveniverse.maven.mima.extensions.mmr.MavenModelReaderMode;
+import eu.maveniverse.maven.mima.extensions.mmr.ModelReaderMode;
+import eu.maveniverse.maven.mima.extensions.mmr.ModelRequest;
+import eu.maveniverse.maven.mima.extensions.mmr.ModelResponse;
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +40,6 @@ import org.apache.maven.model.path.DefaultPathTranslator;
 import org.apache.maven.model.path.DefaultUrlNormalizer;
 import org.apache.maven.model.resolution.UnresolvableModelException;
 import org.apache.maven.repository.internal.ArtifactDescriptorUtils;
-import org.apache.maven.repository.internal.MavenWorkspaceReader;
 import org.apache.maven.repository.internal.RequestTraceHelper;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.RepositoryEvent;
@@ -59,7 +51,6 @@ import org.eclipse.aether.RequestTrace;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.impl.RemoteRepositoryManager;
 import org.eclipse.aether.impl.RepositoryEventDispatcher;
-import org.eclipse.aether.repository.WorkspaceReader;
 import org.eclipse.aether.repository.WorkspaceRepository;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactDescriptorPolicy;
@@ -104,11 +95,14 @@ public class ArtifactDescriptorReaderImpl {
     }
 
     public ArtifactDescriptorResult readArtifactDescriptor(
-            RepositorySystemSession session, ArtifactDescriptorRequest request, MavenModelReaderMode mode)
+            RepositorySystemSession session,
+            ArtifactDescriptorRequest request,
+            ModelReaderMode mode,
+            boolean followRelocation)
             throws ArtifactDescriptorException {
         ArtifactDescriptorResult result = new ArtifactDescriptorResult(request);
 
-        Model model = loadPom(session, request, result, mode);
+        Model model = loadPom(session, request, result, followRelocation).get(mode);
         if (model != null) {
             Map<String, Object> config = session.getConfigProperties();
             ArtifactDescriptorReaderDelegate delegate =
@@ -124,77 +118,83 @@ public class ArtifactDescriptorReaderImpl {
         return result;
     }
 
-    private Model loadPom(
+    public ModelResponse readArtifactDescriptor(RepositorySystemSession session, ModelRequest request)
+            throws ArtifactDescriptorException {
+        ArtifactDescriptorRequest artifactDescriptorRequest = request.getArtifactDescriptorRequest();
+        ArtifactDescriptorResult artifactDescriptorResult = new ArtifactDescriptorResult(artifactDescriptorRequest);
+        return new ModelResponse(
+                request,
+                loadPom(session, artifactDescriptorRequest, artifactDescriptorResult, request.isFollowRelocation()));
+    }
+
+    private Map<ModelReaderMode, Model> loadPom(
             RepositorySystemSession session,
             ArtifactDescriptorRequest request,
             ArtifactDescriptorResult result,
-            MavenModelReaderMode mode)
+            boolean followRelocation)
             throws ArtifactDescriptorException {
+        HashMap<ModelReaderMode, Model> resultMap = new HashMap<>();
         RequestTrace trace = RequestTrace.newChild(request.getTrace(), request);
 
         Set<String> visited = new LinkedHashSet<>();
         for (Artifact a = request.getArtifact(); ; ) {
             Artifact pomArtifact = ArtifactDescriptorUtils.toPomArtifact(a);
-            try {
-                VersionRequest versionRequest =
-                        new VersionRequest(a, request.getRepositories(), request.getRequestContext());
-                versionRequest.setTrace(trace);
-                VersionResult versionResult = repositorySystem.resolveVersion(session, versionRequest);
-
-                a = a.setVersion(versionResult.getVersion());
-
-                versionRequest =
-                        new VersionRequest(pomArtifact, request.getRepositories(), request.getRequestContext());
-                versionRequest.setTrace(trace);
-                versionResult = repositorySystem.resolveVersion(session, versionRequest);
-
-                pomArtifact = pomArtifact.setVersion(versionResult.getVersion());
-            } catch (VersionResolutionException e) {
-                result.addException(e);
-                throw new ArtifactDescriptorException(result);
+            if (a.getFile() != null) {
+                pomArtifact = pomArtifact.setFile(a.getFile());
             }
 
-            if (!visited.add(a.getGroupId() + ':' + a.getArtifactId() + ':' + a.getBaseVersion())) {
-                RepositoryException exception =
-                        new RepositoryException("Artifact relocations form a cycle: " + visited);
-                invalidDescriptor(session, trace, a, exception);
-                if ((getPolicy(session, a, request) & ArtifactDescriptorPolicy.IGNORE_INVALID) != 0) {
-                    return null;
+            ArtifactResult resolveResult = null;
+            if (pomArtifact.getFile() == null) {
+                try {
+                    VersionRequest versionRequest =
+                            new VersionRequest(a, request.getRepositories(), request.getRequestContext());
+                    versionRequest.setTrace(trace);
+                    VersionResult versionResult = repositorySystem.resolveVersion(session, versionRequest);
+
+                    a = a.setVersion(versionResult.getVersion());
+
+                    versionRequest =
+                            new VersionRequest(pomArtifact, request.getRepositories(), request.getRequestContext());
+                    versionRequest.setTrace(trace);
+                    versionResult = repositorySystem.resolveVersion(session, versionRequest);
+
+                    pomArtifact = pomArtifact.setVersion(versionResult.getVersion());
+                } catch (VersionResolutionException e) {
+                    result.addException(e);
+                    throw new ArtifactDescriptorException(result);
                 }
-                result.addException(exception);
-                throw new ArtifactDescriptorException(result);
-            }
 
-            ArtifactResult resolveResult;
-            try {
-                ArtifactRequest resolveRequest =
-                        new ArtifactRequest(pomArtifact, request.getRepositories(), request.getRequestContext());
-                resolveRequest.setTrace(trace);
-                resolveResult = repositorySystem.resolveArtifact(session, resolveRequest);
-                pomArtifact = resolveResult.getArtifact();
-                result.setRepository(resolveResult.getRepository());
-            } catch (ArtifactResolutionException e) {
-                if (e.getCause() instanceof ArtifactNotFoundException) {
-                    missingDescriptor(session, trace, a, (Exception) e.getCause());
-                    if ((getPolicy(session, a, request) & ArtifactDescriptorPolicy.IGNORE_MISSING) != 0) {
-                        return null;
+                if (!visited.add(a.getGroupId() + ':' + a.getArtifactId() + ':' + a.getBaseVersion())) {
+                    RepositoryException exception =
+                            new RepositoryException("Artifact relocations form a cycle: " + visited);
+                    invalidDescriptor(session, trace, a, exception);
+                    if ((getPolicy(session, a, request) & ArtifactDescriptorPolicy.IGNORE_INVALID) != 0) {
+                        return Collections.emptyMap();
                     }
+                    result.addException(exception);
+                    throw new ArtifactDescriptorException(result);
                 }
-                result.addException(e);
-                throw new ArtifactDescriptorException(result);
+
+                try {
+                    ArtifactRequest resolveRequest =
+                            new ArtifactRequest(pomArtifact, request.getRepositories(), request.getRequestContext());
+                    resolveRequest.setTrace(trace);
+                    resolveResult = repositorySystem.resolveArtifact(session, resolveRequest);
+                    pomArtifact = resolveResult.getArtifact();
+                    result.setRepository(resolveResult.getRepository());
+                } catch (ArtifactResolutionException e) {
+                    if (e.getCause() instanceof ArtifactNotFoundException) {
+                        missingDescriptor(session, trace, a, (Exception) e.getCause());
+                        if ((getPolicy(session, a, request) & ArtifactDescriptorPolicy.IGNORE_MISSING) != 0) {
+                            return Collections.emptyMap();
+                        }
+                    }
+                    result.addException(e);
+                    throw new ArtifactDescriptorException(result);
+                }
             }
 
             Model model;
-
-            // TODO hack: don't rebuild model if it was already loaded during reactor resolution
-            final WorkspaceReader workspace = session.getWorkspaceReader();
-            if (workspace instanceof MavenWorkspaceReader) {
-                model = ((MavenWorkspaceReader) workspace).findModel(pomArtifact);
-                if (model != null) {
-                    return model;
-                }
-            }
-
             try {
                 ModelBuildingRequest modelRequest = new DefaultModelBuildingRequest();
                 modelRequest.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
@@ -213,7 +213,7 @@ public class ArtifactDescriptorReaderImpl {
                         request.getRequestContext(),
                         remoteRepositoryManager,
                         request.getRepositories()));
-                if (resolveResult.getRepository() instanceof WorkspaceRepository) {
+                if (resolveResult != null && resolveResult.getRepository() instanceof WorkspaceRepository) {
                     modelRequest.setPomFile(pomArtifact.getFile());
                 } else {
                     modelRequest.setModelSource(new FileModelSource(pomArtifact.getFile()));
@@ -249,43 +249,48 @@ public class ArtifactDescriptorReaderImpl {
                                 RequestTraceHelper.interpretTrace(false, request.getTrace()));
                     }
                 }
-                if (mode == MavenModelReaderMode.EFFECTIVE) {
-                    model = modelResult.getEffectiveModel();
-                } else if (mode == MavenModelReaderMode.RAW) {
-                    return modelResult.getRawModel();
-                } else if (mode == MavenModelReaderMode.RAW_INTERPOLATED) {
-                    Model rawModel = modelResult.getRawModel();
-                    rawModel.setGroupId(modelResult.getEffectiveModel().getGroupId());
-                    rawModel.setArtifactId(modelResult.getEffectiveModel().getArtifactId());
-                    rawModel.setVersion(modelResult.getEffectiveModel().getVersion());
-                    rawModel.setProperties(modelResult.getEffectiveModel().getProperties());
 
-                    Model current = rawModel;
-                    while (current.getParent() != null) {
-                        String parentId = current.getParent().getGroupId() + ":"
-                                + current.getParent().getArtifactId() + ":"
-                                + current.getParent().getVersion();
-                        Model parent = modelResult.getRawModel(parentId);
-                        if (parent.getDependencyManagement() != null) {
-                            if (rawModel.getDependencyManagement() == null) {
-                                rawModel.setDependencyManagement(new DependencyManagement());
-                            }
-                            parent.getDependencyManagement()
-                                    .getDependencies()
-                                    .forEach(d ->
-                                            rawModel.getDependencyManagement().addDependency(d));
+                // raw
+                resultMap.put(ModelReaderMode.RAW, modelResult.getRawModel());
+
+                // raw+interpolated
+                Model rawModel = modelResult.getRawModel();
+                rawModel.setGroupId(modelResult.getEffectiveModel().getGroupId());
+                rawModel.setArtifactId(modelResult.getEffectiveModel().getArtifactId());
+                rawModel.setVersion(modelResult.getEffectiveModel().getVersion());
+                rawModel.setProperties(modelResult.getEffectiveModel().getProperties());
+                Model current = rawModel;
+                while (current.getParent() != null) {
+                    String parentId = current.getParent().getGroupId() + ":"
+                            + current.getParent().getArtifactId() + ":"
+                            + current.getParent().getVersion();
+                    Model parent = modelResult.getRawModel(parentId);
+                    if (parent.getDependencyManagement() != null) {
+                        if (rawModel.getDependencyManagement() == null) {
+                            rawModel.setDependencyManagement(new DependencyManagement());
                         }
-                        current = parent;
+                        parent.getDependencyManagement()
+                                .getDependencies()
+                                .forEach(d -> rawModel.getDependencyManagement().addDependency(d));
                     }
-
-                    return new StringVisitorModelInterpolator()
-                            .setPathTranslator(new DefaultPathTranslator())
-                            .setUrlNormalizer(new DefaultUrlNormalizer())
-                            .setVersionPropertiesProcessor(new DefaultModelVersionProcessor())
-                            .interpolateModel(modelResult.getRawModel(), new File(""), modelRequest, req -> {});
-                } else {
-                    throw new ArtifactDescriptorException(result, "Unsupported mode " + mode.name());
+                    current = parent;
                 }
+                resultMap.put(
+                        ModelReaderMode.RAW_INTERPOLATED,
+                        new StringVisitorModelInterpolator()
+                                .setPathTranslator(new DefaultPathTranslator())
+                                .setUrlNormalizer(new DefaultUrlNormalizer())
+                                .setVersionPropertiesProcessor(new DefaultModelVersionProcessor())
+                                .interpolateModel(modelResult.getRawModel(), new File(""), modelRequest, req -> {}));
+
+                // effective
+                resultMap.put(ModelReaderMode.EFFECTIVE, modelResult.getEffectiveModel());
+
+                if (!followRelocation) {
+                    return resultMap;
+                }
+
+                model = modelResult.getEffectiveModel();
             } catch (ModelBuildingException e) {
                 for (ModelProblem problem : e.getProblems()) {
                     if (problem.getException() instanceof UnresolvableModelException) {
@@ -295,7 +300,7 @@ public class ArtifactDescriptorReaderImpl {
                 }
                 invalidDescriptor(session, trace, a, e);
                 if ((getPolicy(session, a, request) & ArtifactDescriptorPolicy.IGNORE_INVALID) != 0) {
-                    return null;
+                    return Collections.emptyMap();
                 }
                 result.addException(e);
                 throw new ArtifactDescriptorException(result);
@@ -313,7 +318,7 @@ public class ArtifactDescriptorReaderImpl {
                         relocation.getMessage());
                 result.setArtifact(a);
             } else {
-                return model;
+                return resultMap;
             }
         }
     }

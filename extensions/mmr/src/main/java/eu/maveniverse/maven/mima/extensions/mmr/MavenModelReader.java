@@ -51,20 +51,40 @@ public class MavenModelReader {
     /**
      * Reads POM as {@link ArtifactDescriptorResult}.
      */
-    public ArtifactDescriptorResult readArtifactDescriptor(ArtifactDescriptorRequest request, MavenModelReaderMode mode)
+    public ArtifactDescriptorResult readArtifactDescriptor(ArtifactDescriptorRequest request, ModelReaderMode mode)
+            throws ArtifactDescriptorException {
+        return readArtifactDescriptor(request, mode, true);
+    }
+
+    /**
+     * Reads POM as {@link ArtifactDescriptorResult}.
+     */
+    public ArtifactDescriptorResult readArtifactDescriptor(
+            ArtifactDescriptorRequest request, ModelReaderMode mode, boolean followRelocation)
             throws ArtifactDescriptorException {
         requireNonNull(request, "request");
         requireNonNull(mode, "mode");
-        return artifactDescriptorReader.readArtifactDescriptor(session, request, mode);
+        return artifactDescriptorReader.readArtifactDescriptor(session, request, mode, followRelocation);
     }
 
     /**
      * Reads POM as {@link Model}.
      */
-    public Model readModel(ArtifactDescriptorRequest request, MavenModelReaderMode mode)
-            throws ArtifactDescriptorException {
+    public Model readModel(ArtifactDescriptorRequest request, ModelReaderMode mode) throws ArtifactDescriptorException {
         requireNonNull(request, "request");
         requireNonNull(mode, "mode");
-        return (Model) readArtifactDescriptor(request, mode).getProperties().get("model");
+        return readModel(new ModelRequest.Builder()
+                        .setMode(mode)
+                        .setArtifactDescriptorRequest(request)
+                        .build())
+                .getModel();
+    }
+
+    /**
+     * Reads POM as {@link ModelResponse}.
+     */
+    public ModelResponse readModel(ModelRequest request) throws ArtifactDescriptorException {
+        requireNonNull(request, "request");
+        return artifactDescriptorReader.readArtifactDescriptor(session, request);
     }
 }

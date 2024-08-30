@@ -14,7 +14,7 @@ import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.Runtime;
 import eu.maveniverse.maven.mima.context.Runtimes;
 import eu.maveniverse.maven.mima.extensions.mmr.MavenModelReader;
-import eu.maveniverse.maven.mima.extensions.mmr.MavenModelReaderMode;
+import eu.maveniverse.maven.mima.extensions.mmr.ModelReaderMode;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -57,7 +57,7 @@ public class Classpath {
             MavenModelReader mmr = new MavenModelReader(context);
             ArtifactDescriptorRequest request = new ArtifactDescriptorRequest(
                     new DefaultArtifact(artifactStr), context.remoteRepositories(), "classpath-demo");
-            Model model = mmr.readModel(request, MavenModelReaderMode.EFFECTIVE);
+            Model model = mmr.readModel(request, ModelReaderMode.EFFECTIVE);
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 String encoding = model.getModelEncoding();
                 if (encoding == null || encoding.length() <= 0) {
