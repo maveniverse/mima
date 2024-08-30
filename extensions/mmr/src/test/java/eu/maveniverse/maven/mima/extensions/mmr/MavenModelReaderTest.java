@@ -23,13 +23,8 @@ public class MavenModelReaderTest {
                 Runtimes.INSTANCE.getRuntime().create(ContextOverrides.create().build())) {
             MavenModelReader reader = new MavenModelReader(context);
 
-            ModelRequest request = new ModelRequest.Builder()
-                    .setArtifactDescriptorRequest(new ArtifactDescriptorRequest(
-                            new DefaultArtifact("org.apache.maven:maven-core:3.9.9"),
-                            context.remoteRepositories(),
-                            "test"))
-                    .build();
-            ModelResponse response = reader.readModel(request);
+            ModelResponse response = reader.readModel(new ArtifactDescriptorRequest(
+                    new DefaultArtifact("org.apache.maven:maven-core:3.9.9"), context.remoteRepositories(), "test"));
             assertNotNull(response);
             assertNotNull(response.toModel(ModelLevel.EFFECTIVE));
         }

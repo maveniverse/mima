@@ -10,7 +10,6 @@ package eu.maveniverse.maven.mima.extensions.mmr.internal;
 import static java.util.Objects.requireNonNull;
 
 import eu.maveniverse.maven.mima.extensions.mmr.ModelLevel;
-import eu.maveniverse.maven.mima.extensions.mmr.ModelRequest;
 import eu.maveniverse.maven.mima.extensions.mmr.ModelResponse;
 import java.io.File;
 import java.util.ArrayList;
@@ -98,12 +97,11 @@ public class ArtifactDescriptorReaderImpl {
         this.modelCacheFunction = requireNonNull(modelCacheFunction);
     }
 
-    public ModelResponse readArtifactDescriptor(RepositorySystemSession session, ModelRequest request)
+    public ModelResponse readArtifactDescriptor(RepositorySystemSession session, ArtifactDescriptorRequest request)
             throws VersionResolutionException, ArtifactResolutionException, ArtifactDescriptorException {
-        ArtifactDescriptorRequest artifactDescriptorRequest = request.getArtifactDescriptorRequest();
-        ArtifactDescriptorResult artifactDescriptorResult = new ArtifactDescriptorResult(artifactDescriptorRequest);
+        ArtifactDescriptorResult artifactDescriptorResult = new ArtifactDescriptorResult(request);
         return new ModelResponse(
-                loadPom(session, artifactDescriptorRequest, artifactDescriptorResult),
+                loadPom(session, request, artifactDescriptorResult),
                 m -> populateResult(session, artifactDescriptorResult, m));
     }
 
