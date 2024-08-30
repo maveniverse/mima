@@ -65,7 +65,7 @@ public class MavenModelReader {
     }
 
     /**
-     * Reads POM as {@link ArtifactDescriptorResult}. This is just convenience method, if someone is interested in
+     * Reads POM as {@link ArtifactDescriptorResult}. This is just convenience method.
      */
     public ArtifactDescriptorResult readArtifactDescriptorResult(ArtifactDescriptorRequest request, ModelLevel mode)
             throws VersionResolutionException, ArtifactResolutionException, ArtifactDescriptorException {
@@ -75,7 +75,7 @@ public class MavenModelReader {
     }
 
     /**
-     * Reads POM as {@link Model}.
+     * Reads POM as {@link Model}. This is just convenience method.
      */
     public Model readModel(ArtifactDescriptorRequest request, ModelLevel mode)
             throws VersionResolutionException, ArtifactResolutionException, ArtifactDescriptorException {

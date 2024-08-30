@@ -15,9 +15,9 @@ import org.apache.maven.model.Model;
 import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 
 /**
- * Model Request.
+ * Model response.
  */
-public final class ModelResponse {
+public class ModelResponse {
     private final Map<ModelLevel, Model> models;
     private final Function<Model, ArtifactDescriptorResult> converter;
 
@@ -27,14 +27,17 @@ public final class ModelResponse {
     }
 
     /**
-     * Returns model in asked mode, may return {@code null}.
+     * Returns model in asked level, may return {@code null}.
      */
-    public Model toModel(ModelLevel mode) {
-        requireNonNull(mode);
-        return models.get(mode);
+    public Model toModel(ModelLevel level) {
+        requireNonNull(level);
+        return models.get(level);
     }
 
-    public ArtifactDescriptorResult toArtifactDescriptorResult(ModelLevel mode) {
-        return converter.apply(toModel(mode));
+    /**
+     * Returns artifact descriptor result in asked level, may return {@code null}.
+     */
+    public ArtifactDescriptorResult toArtifactDescriptorResult(ModelLevel level) {
+        return converter.apply(toModel(level));
     }
 }

@@ -7,6 +7,9 @@
  */
 package eu.maveniverse.maven.mima.extensions.mmr;
 
+/**
+ * The "levels" of model.
+ */
 public enum ModelLevel {
     /**
      * The "raw model" level (aka file model), no inheritance nor proper interpolation applied, POM as is.
