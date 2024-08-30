@@ -7,15 +7,14 @@
  */
 package eu.maveniverse.maven.mima.extensions.mmr;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.Runtimes;
 import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class MavenModelReaderTest {
     @Test
@@ -25,8 +24,8 @@ public class MavenModelReaderTest {
             MavenModelReader reader = new MavenModelReader(context);
 
             ModelRequest request = new ModelRequest.Builder()
-                    .setArtifactDescriptorRequest(
-                            new ArtifactDescriptorRequest(new DefaultArtifact("org.apache.maven:maven-core:3.9.9"),
+                    .setArtifactDescriptorRequest(new ArtifactDescriptorRequest(
+                            new DefaultArtifact("org.apache.maven:maven-core:3.9.9"),
                             context.remoteRepositories(),
                             "test"))
                     .build();
