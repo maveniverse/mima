@@ -7,17 +7,21 @@
  */
 package eu.maveniverse.maven.mima.extensions.mmr;
 
-public enum MavenModelReaderMode {
+/**
+ * The processing "levels" of the model.
+ */
+public enum ModelLevel {
     /**
-     * The "raw model" mode, no inheritance nor proper interpolation applied, POM as is.
+     * The "raw model" level, as-is in POM file, no inheritance nor proper interpolation applied, just parsed with
+     * minimal validation.
      */
     RAW,
     /**
-     * The "raw model" mode, but with parent GAV coordinates and interpolation applied, but without inheritance.
+     * RAW + interpolation, based on {@link #RAW}, but with parent GAV coordinates and interpolation applied
      */
     RAW_INTERPOLATED,
     /**
-     * The "effective" model with fully built Maven model, without lifecycle plugins.
+     * The "effective" level with fully built Maven model, without lifecycle plugins.
      */
     EFFECTIVE
 }
