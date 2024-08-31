@@ -7,6 +7,7 @@
  */
 package eu.maveniverse.maven.mima.extensions.mmr.internal;
 
+import java.util.Objects;
 import org.apache.maven.model.building.ModelCache;
 import org.eclipse.aether.RepositoryCache;
 import org.eclipse.aether.RepositorySystemSession;
@@ -16,21 +17,19 @@ import org.eclipse.aether.RepositorySystemSession;
  *
  * @author Benjamin Bentmann
  */
-public class DefaultModelCache implements ModelCache {
-
-    private final RepositorySystemSession session;
-
-    private final RepositoryCache cache;
-
+public class ModelCacheImpl implements ModelCache {
     public static ModelCache newInstance(RepositorySystemSession session) {
         if (session.getCache() == null) {
             return null;
         } else {
-            return new DefaultModelCache(session);
+            return new ModelCacheImpl(session);
         }
     }
 
-    private DefaultModelCache(RepositorySystemSession session) {
+    private final RepositorySystemSession session;
+    private final RepositoryCache cache;
+
+    private ModelCacheImpl(RepositorySystemSession session) {
         this.session = session;
         this.cache = session.getCache();
     }
@@ -45,30 +44,19 @@ public class DefaultModelCache implements ModelCache {
         cache.put(session, new Key(groupId, artifactId, version, tag), data);
     }
 
-    static class Key {
-
+    private static class Key {
         private final String groupId;
-
         private final String artifactId;
-
         private final String version;
-
         private final String tag;
-
         private final int hash;
 
-        Key(String groupId, String artifactId, String version, String tag) {
+        private Key(String groupId, String artifactId, String version, String tag) {
             this.groupId = groupId;
             this.artifactId = artifactId;
             this.version = version;
             this.tag = tag;
-
-            int h = 17;
-            h = h * 31 + this.groupId.hashCode();
-            h = h * 31 + this.artifactId.hashCode();
-            h = h * 31 + this.version.hashCode();
-            h = h * 31 + this.tag.hashCode();
-            hash = h;
+            this.hash = Objects.hash(groupId, artifactId, version, tag);
         }
 
         @Override

@@ -8,15 +8,16 @@
 package eu.maveniverse.maven.mima.extensions.mmr;
 
 /**
- * The "levels" of model.
+ * The processing "levels" of the model.
  */
 public enum ModelLevel {
     /**
-     * The "raw model" level (aka file model), no inheritance nor proper interpolation applied, POM as is.
+     * The "raw model" level, as-is in POM file, no inheritance nor proper interpolation applied, just parsed with
+     * minimal validation.
      */
     RAW,
     /**
-     * The "raw model" level, but with parent GAV coordinates and interpolation applied, but without inheritance.
+     * RAW + interpolation, based on {@link #RAW}, but with parent GAV coordinates and interpolation applied
      */
     RAW_INTERPOLATED,
     /**

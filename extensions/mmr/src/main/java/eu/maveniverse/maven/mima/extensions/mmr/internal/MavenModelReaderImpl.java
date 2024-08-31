@@ -7,8 +7,7 @@
  */
 package eu.maveniverse.maven.mima.extensions.mmr.internal;
 
-import static java.util.Objects.requireNonNull;
-
+import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.extensions.mmr.ModelLevel;
 import eu.maveniverse.maven.mima.extensions.mmr.ModelResponse;
 import java.io.File;
@@ -75,8 +74,9 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Benjamin Bentmann
  */
-public class ArtifactDescriptorReaderImpl {
+public class MavenModelReaderImpl {
     private final RepositorySystem repositorySystem;
+    private final RepositorySystemSession session;
     private final RemoteRepositoryManager remoteRepositoryManager;
     private final RepositoryEventDispatcher repositoryEventDispatcher;
     private final ModelBuilder modelBuilder;
@@ -84,20 +84,22 @@ public class ArtifactDescriptorReaderImpl {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public ArtifactDescriptorReaderImpl(
-            RepositorySystem repositorySystem,
-            RemoteRepositoryManager remoteRepositoryManager,
-            ModelBuilder modelBuilder,
-            RepositoryEventDispatcher repositoryEventDispatcher,
-            Function<RepositorySystemSession, ModelCache> modelCacheFunction) {
-        this.repositorySystem = requireNonNull(repositorySystem);
-        this.remoteRepositoryManager = requireNonNull(remoteRepositoryManager);
-        this.modelBuilder = requireNonNull(modelBuilder);
-        this.repositoryEventDispatcher = requireNonNull(repositoryEventDispatcher);
-        this.modelCacheFunction = requireNonNull(modelCacheFunction);
+    public MavenModelReaderImpl(Context context) {
+        this.repositorySystem = context.repositorySystem();
+        this.session = context.repositorySystemSession();
+        this.remoteRepositoryManager = context.lookup()
+                .lookup(RemoteRepositoryManager.class)
+                .orElseThrow(() -> new IllegalStateException("RemoteRepositoryManager not available"));
+        this.modelBuilder = context.lookup()
+                .lookup(ModelBuilder.class)
+                .orElseThrow(() -> new IllegalStateException("ModelBuilder not available"));
+        this.repositoryEventDispatcher = context.lookup()
+                .lookup(RepositoryEventDispatcher.class)
+                .orElseThrow(() -> new IllegalStateException("RepositoryEventDispatcher not available"));
+        this.modelCacheFunction = ModelCacheImpl::newInstance;
     }
 
-    public ModelResponse readArtifactDescriptor(RepositorySystemSession session, ArtifactDescriptorRequest request)
+    public ModelResponse readModel(ArtifactDescriptorRequest request)
             throws VersionResolutionException, ArtifactResolutionException, ArtifactDescriptorException {
         ArtifactDescriptorResult artifactDescriptorResult = new ArtifactDescriptorResult(request);
         return new ModelResponse(loadPom(session, request, artifactDescriptorResult), m -> {
@@ -161,6 +163,7 @@ public class ArtifactDescriptorReaderImpl {
             modelRequest.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
             modelRequest.setProcessPlugins(false);
             modelRequest.setTwoPhaseBuilding(false);
+            modelRequest.setLocationTracking(true);
             // This merge is on purpose because otherwise user properties would override model
             // properties in dependencies the user does not know. See MNG-7563 for details.
             modelRequest.setSystemProperties(toProperties(session.getUserProperties(), session.getSystemProperties()));
@@ -211,10 +214,10 @@ public class ArtifactDescriptorReaderImpl {
             }
 
             // raw
-            resultMap.put(ModelLevel.RAW, modelResult.getRawModel());
+            resultMap.put(ModelLevel.RAW, modelResult.getRawModel().clone());
 
             // raw+interpolated
-            Model rawModel = modelResult.getRawModel();
+            Model rawModel = modelResult.getRawModel().clone();
             rawModel.setGroupId(modelResult.getEffectiveModel().getGroupId());
             rawModel.setArtifactId(modelResult.getEffectiveModel().getArtifactId());
             rawModel.setVersion(modelResult.getEffectiveModel().getVersion());
@@ -243,7 +246,7 @@ public class ArtifactDescriptorReaderImpl {
                             .interpolateModel(modelResult.getRawModel(), new File(""), modelRequest, req -> {}));
 
             // effective
-            resultMap.put(ModelLevel.EFFECTIVE, modelResult.getEffectiveModel());
+            resultMap.put(ModelLevel.EFFECTIVE, modelResult.getEffectiveModel().clone());
 
             return resultMap;
         } catch (ModelBuildingException e) {

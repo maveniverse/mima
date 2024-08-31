@@ -10,14 +10,10 @@ package eu.maveniverse.maven.mima.extensions.mmr;
 import static java.util.Objects.requireNonNull;
 
 import eu.maveniverse.maven.mima.context.Context;
-import eu.maveniverse.maven.mima.extensions.mmr.internal.ArtifactDescriptorReaderImpl;
-import eu.maveniverse.maven.mima.extensions.mmr.internal.DefaultModelCache;
+import eu.maveniverse.maven.mima.extensions.mmr.internal.MavenModelReaderImpl;
 import org.apache.maven.model.Model;
-import org.apache.maven.model.building.ModelBuilder;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
-import org.eclipse.aether.impl.RemoteRepositoryManager;
-import org.eclipse.aether.impl.RepositoryEventDispatcher;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
 import org.eclipse.aether.resolution.ArtifactDescriptorResult;
@@ -29,8 +25,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Maven Model Reader, an extension that is able to read POM Models at various levels.
  * <p>
- * This component resembles {@link org.eclipse.aether.impl.ArtifactDescriptorReader} somewhat, but have
- * notable differences:
+ * This component resembles {@link org.eclipse.aether.RepositorySystem#readArtifactDescriptor(RepositorySystemSession, ArtifactDescriptorRequest)}
+ * somewhat, but have notable differences:
  * <ul>
  *     <li>Does not follow redirections: it will read artifact you asked for. To follow redirections you may want to
  *     perform it manually: inspect the effective model and based on {@link org.apache.maven.model.Relocation}
@@ -49,24 +45,11 @@ import org.slf4j.LoggerFactory;
  */
 public class MavenModelReader {
     private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final ArtifactDescriptorReaderImpl artifactDescriptorReader;
-    private final RepositorySystemSession session;
+    private final MavenModelReaderImpl mavenModelReaderImpl;
 
     public MavenModelReader(Context context) {
         requireNonNull(context, "context");
-        this.artifactDescriptorReader = new ArtifactDescriptorReaderImpl(
-                context.repositorySystem(),
-                context.lookup()
-                        .lookup(RemoteRepositoryManager.class)
-                        .orElseThrow(() -> new IllegalStateException("RemoteRepositoryManager not available")),
-                context.lookup()
-                        .lookup(ModelBuilder.class)
-                        .orElseThrow(() -> new IllegalStateException("ModelBuilder not available")),
-                context.lookup()
-                        .lookup(RepositoryEventDispatcher.class)
-                        .orElseThrow(() -> new IllegalStateException("RepositoryEventDispatcher not available")),
-                DefaultModelCache::newInstance);
-        this.session = context.repositorySystemSession();
+        this.mavenModelReaderImpl = new MavenModelReaderImpl(context);
     }
 
     /**
@@ -95,6 +78,6 @@ public class MavenModelReader {
     public ModelResponse readModel(ArtifactDescriptorRequest request)
             throws VersionResolutionException, ArtifactResolutionException, ArtifactDescriptorException {
         requireNonNull(request, "request");
-        return artifactDescriptorReader.readArtifactDescriptor(session, request);
+        return mavenModelReaderImpl.readModel(request);
     }
 }
