@@ -59,13 +59,19 @@ public class MavenModelReader {
             throws VersionResolutionException, ArtifactResolutionException, ArtifactDescriptorException {
         requireNonNull(request, "request");
         requireNonNull(mode, "mode");
-        return readModel(request).toArtifactDescriptorResult(mode);
+        return readModel(ModelRequest.builder()
+                        .setArtifact(request.getArtifact())
+                        .setRepositories(request.getRepositories())
+                        .setRequestContext(request.getRequestContext())
+                        .setTrace(request.getTrace())
+                        .build())
+                .toArtifactDescriptorResult(mode);
     }
 
     /**
      * Reads POM as {@link Model}. This is just convenience method.
      */
-    public Model readModel(ArtifactDescriptorRequest request, ModelLevel mode)
+    public Model readModel(ModelRequest request, ModelLevel mode)
             throws VersionResolutionException, ArtifactResolutionException, ArtifactDescriptorException {
         requireNonNull(request, "request");
         requireNonNull(mode, "mode");
@@ -75,7 +81,7 @@ public class MavenModelReader {
     /**
      * Reads POM as {@link ModelResponse}.
      */
-    public ModelResponse readModel(ArtifactDescriptorRequest request)
+    public ModelResponse readModel(ModelRequest request)
             throws VersionResolutionException, ArtifactResolutionException, ArtifactDescriptorException {
         requireNonNull(request, "request");
         return mavenModelReaderImpl.readModel(request);

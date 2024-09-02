@@ -9,6 +9,7 @@ package eu.maveniverse.maven.mima.extensions.mmr.internal;
 
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.extensions.mmr.ModelLevel;
+import eu.maveniverse.maven.mima.extensions.mmr.ModelRequest;
 import eu.maveniverse.maven.mima.extensions.mmr.ModelResponse;
 import java.io.File;
 import java.util.ArrayList;
@@ -99,18 +100,23 @@ public class MavenModelReaderImpl {
         this.modelCacheFunction = ModelCacheImpl::newInstance;
     }
 
-    public ModelResponse readModel(ArtifactDescriptorRequest request)
+    public ModelResponse readModel(ModelRequest request)
             throws VersionResolutionException, ArtifactResolutionException, ArtifactDescriptorException {
-        ArtifactDescriptorResult artifactDescriptorResult = new ArtifactDescriptorResult(request);
+        ArtifactDescriptorRequest artifactDescriptorRequest = new ArtifactDescriptorRequest();
+        artifactDescriptorRequest.setArtifact(request.getArtifact());
+        artifactDescriptorRequest.setRepositories(request.getRepositories());
+        artifactDescriptorRequest.setRequestContext(request.getRequestContext());
+        artifactDescriptorRequest.setTrace(request.getTrace());
+        ArtifactDescriptorResult artifactDescriptorResult = new ArtifactDescriptorResult(artifactDescriptorRequest);
         return new ModelResponse(loadPom(session, request, artifactDescriptorResult), m -> {
-            ArtifactDescriptorResult r = new ArtifactDescriptorResult(request);
+            ArtifactDescriptorResult r = new ArtifactDescriptorResult(artifactDescriptorRequest);
             r.setRepository(artifactDescriptorResult.getRepository());
             return populateResult(session, r, m);
         });
     }
 
     private Map<ModelLevel, Model> loadPom(
-            RepositorySystemSession session, ArtifactDescriptorRequest request, ArtifactDescriptorResult result)
+            RepositorySystemSession session, ModelRequest request, ArtifactDescriptorResult result)
             throws VersionResolutionException, ArtifactResolutionException, ArtifactDescriptorException {
         HashMap<ModelLevel, Model> resultMap = new HashMap<>();
         RequestTrace trace = RequestTrace.newChild(request.getTrace(), request);

@@ -17,7 +17,6 @@ import eu.maveniverse.maven.mima.context.Runtimes;
 import org.apache.maven.model.Model;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
-import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
 import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 import org.junit.jupiter.api.Test;
 
@@ -28,8 +27,11 @@ public class MavenModelReaderTest {
                 Runtimes.INSTANCE.getRuntime().create(ContextOverrides.create().build())) {
             MavenModelReader reader = new MavenModelReader(context);
 
-            ModelResponse response = reader.readModel(new ArtifactDescriptorRequest(
-                    new DefaultArtifact("org.apache.maven:maven-core:3.9.9"), context.remoteRepositories(), "test"));
+            ModelResponse response = reader.readModel(ModelRequest.builder()
+                    .setArtifact(new DefaultArtifact("org.apache.maven:maven-core:3.9.9"))
+                    .setRepositories(context.remoteRepositories())
+                    .setRequestContext("test")
+                    .build());
             assertNotNull(response);
             Model model;
 
