@@ -59,7 +59,6 @@ public class Classpath {
             MavenModelReader mmr = new MavenModelReader(context);
             ModelResponse response = mmr.readModel(ModelRequest.builder()
                     .setArtifact(new DefaultArtifact(artifactStr))
-                    .setRepositories(context.remoteRepositories())
                     .setRequestContext("classpath-demo")
                     .build());
             Model model = response.getEffectiveModel();

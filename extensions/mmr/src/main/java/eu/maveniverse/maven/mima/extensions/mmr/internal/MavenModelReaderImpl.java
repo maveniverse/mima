@@ -57,6 +57,7 @@ import org.eclipse.aether.graph.Dependency;
 import org.eclipse.aether.graph.Exclusion;
 import org.eclipse.aether.impl.RemoteRepositoryManager;
 import org.eclipse.aether.impl.RepositoryEventDispatcher;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.WorkspaceRepository;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
@@ -77,6 +78,7 @@ import org.slf4j.LoggerFactory;
 public class MavenModelReaderImpl {
     private final RepositorySystem repositorySystem;
     private final RepositorySystemSession session;
+    private final List<RemoteRepository> repositories;
     private final RemoteRepositoryManager remoteRepositoryManager;
     private final RepositoryEventDispatcher repositoryEventDispatcher;
     private final ModelBuilder modelBuilder;
@@ -87,6 +89,7 @@ public class MavenModelReaderImpl {
     public MavenModelReaderImpl(Context context) {
         this.repositorySystem = context.repositorySystem();
         this.session = context.repositorySystemSession();
+        this.repositories = context.remoteRepositories();
         this.remoteRepositoryManager = context.lookup()
                 .lookup(RemoteRepositoryManager.class)
                 .orElseThrow(() -> new IllegalStateException("RemoteRepositoryManager not available"));
@@ -108,7 +111,7 @@ public class MavenModelReaderImpl {
             throws VersionResolutionException, ArtifactResolutionException, ArtifactDescriptorException {
         ArtifactDescriptorRequest artifactDescriptorRequest = new ArtifactDescriptorRequest();
         artifactDescriptorRequest.setArtifact(request.getArtifact());
-        artifactDescriptorRequest.setRepositories(request.getRepositories());
+        artifactDescriptorRequest.setRepositories(repositories);
         artifactDescriptorRequest.setRequestContext(request.getRequestContext());
         artifactDescriptorRequest.setTrace(request.getTrace());
         ArtifactDescriptorResult artifactDescriptorResult = new ArtifactDescriptorResult(artifactDescriptorRequest);
@@ -124,15 +127,13 @@ public class MavenModelReaderImpl {
         ArtifactResult resolveResult = null;
         if (pomArtifact.getFile() == null) {
             try {
-                VersionRequest versionRequest =
-                        new VersionRequest(a, request.getRepositories(), request.getRequestContext());
+                VersionRequest versionRequest = new VersionRequest(a, repositories, request.getRequestContext());
                 versionRequest.setTrace(trace);
                 VersionResult versionResult = repositorySystem.resolveVersion(session, versionRequest);
 
                 a = a.setVersion(versionResult.getVersion());
 
-                versionRequest =
-                        new VersionRequest(pomArtifact, request.getRepositories(), request.getRequestContext());
+                versionRequest = new VersionRequest(pomArtifact, repositories, request.getRequestContext());
                 versionRequest.setTrace(trace);
                 versionResult = repositorySystem.resolveVersion(session, versionRequest);
 
@@ -144,7 +145,7 @@ public class MavenModelReaderImpl {
 
             try {
                 ArtifactRequest resolveRequest =
-                        new ArtifactRequest(pomArtifact, request.getRepositories(), request.getRequestContext());
+                        new ArtifactRequest(pomArtifact, repositories, request.getRequestContext());
                 resolveRequest.setTrace(trace);
                 resolveResult = repositorySystem.resolveArtifact(session, resolveRequest);
                 pomArtifact = resolveResult.getArtifact();
@@ -175,7 +176,7 @@ public class MavenModelReaderImpl {
                     trace.newChild(modelRequest),
                     request.getRequestContext(),
                     remoteRepositoryManager,
-                    request.getRepositories()));
+                    repositories));
             if (resolveResult != null && resolveResult.getRepository() instanceof WorkspaceRepository) {
                 modelRequest.setPomFile(pomArtifact.getFile());
             } else {

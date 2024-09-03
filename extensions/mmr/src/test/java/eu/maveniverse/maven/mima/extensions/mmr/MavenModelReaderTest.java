@@ -29,7 +29,6 @@ public class MavenModelReaderTest {
 
             ModelResponse response = reader.readModel(ModelRequest.builder()
                     .setArtifact(new DefaultArtifact("org.apache.maven:maven-core:3.9.9"))
-                    .setRepositories(context.remoteRepositories())
                     .setRequestContext("test")
                     .build());
             assertNotNull(response);

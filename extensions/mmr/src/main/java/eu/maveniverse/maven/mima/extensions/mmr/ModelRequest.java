@@ -25,24 +25,17 @@ public class ModelRequest {
     }
 
     private final Artifact artifact;
-    private final List<RemoteRepository> repositories;
     private final String requestContext;
     private final RequestTrace trace;
 
-    private ModelRequest(
-            Artifact artifact, List<RemoteRepository> repositories, String requestContext, RequestTrace trace) {
+    private ModelRequest(Artifact artifact, String requestContext, RequestTrace trace) {
         this.artifact = requireNonNull(artifact);
-        this.repositories = repositories;
         this.requestContext = requestContext == null ? "" : requestContext;
         this.trace = trace;
     }
 
     public Artifact getArtifact() {
         return artifact;
-    }
-
-    public List<RemoteRepository> getRepositories() {
-        return repositories;
     }
 
     public String getRequestContext() {
@@ -67,13 +60,12 @@ public class ModelRequest {
 
         private Builder(ModelRequest request) {
             this.artifact = request.artifact;
-            this.repositories = request.repositories;
             this.requestContext = request.requestContext;
             this.trace = request.trace;
         }
 
         public ModelRequest build() {
-            return new ModelRequest(artifact, repositories, requestContext, trace);
+            return new ModelRequest(artifact, requestContext, trace);
         }
 
         public Builder setPomFile(Path pomFile) {
@@ -84,11 +76,6 @@ public class ModelRequest {
         public Builder setArtifact(Artifact artifact) {
             requireNonNull(artifact);
             this.artifact = artifact;
-            return this;
-        }
-
-        public Builder setRepositories(List<RemoteRepository> repositories) {
-            this.repositories = repositories;
             return this;
         }
 
