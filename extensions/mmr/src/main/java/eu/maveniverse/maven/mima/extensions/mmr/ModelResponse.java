@@ -15,7 +15,10 @@ import org.apache.maven.model.Model;
 import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 
 /**
- * Model response.
+ * Model response carries models (raw and effective) but also offers some tools within the context of the read model.
+ * <p>
+ * One example would be something similar like done in Toolbox: getting raw model, modify it, interpolate it and finally
+ * transform it to {@link ArtifactDescriptorResult} for friendlier after-processing in Resolver.
  */
 public class ModelResponse {
     private final Model rawModel;
@@ -42,6 +45,9 @@ public class ModelResponse {
 
     /**
      * Returns the built effective model.
+     * <p>
+     * If you intend to modify model but need to keep "original" as well, use method {@link Model#clone()} to clone the
+     * model instance, otherwise you will end up with modified model in this result instance.
      */
     public Model getEffectiveModel() {
         return effectiveModel;
@@ -49,13 +55,16 @@ public class ModelResponse {
 
     /**
      * Returns the "raw" (as is on disk) model.
+     * <p>
+     * If you intend to modify model but need to keep "original" as well, use method {@link Model#clone()} to clone the
+     * model instance, otherwise you will end up with modified model in this result instance.
      */
     public Model getRawModel() {
         return rawModel;
     }
 
     /**
-     * Returns artifact descriptor result of given model..
+     * Returns artifact descriptor result of given model.
      */
     public ArtifactDescriptorResult toArtifactDescriptorResult(Model model) {
         requireNonNull(model);
@@ -63,7 +72,7 @@ public class ModelResponse {
     }
 
     /**
-     * Returns the model "lineage", first in list represents "current" model, last the Super POM, and parents in
+     * Returns the model "lineage" keys, first in list represents "current" model, last the Super POM, and parents in
      * middle.
      */
     public List<String> getLineage() {
@@ -71,7 +80,9 @@ public class ModelResponse {
     }
 
     /**
-     * Returns RAW model with given modelId (that is string concatenated as {@code groupId:artifactId:versionId}).
+     * Returns RAW model with given key (that is string concatenated as {@code groupId:artifactId:versionId}).
+     *
+     * @see #getLineage()
      */
     public Model getLineageModel(String modelId) {
         return lineageFunction.apply(modelId);
@@ -79,7 +90,8 @@ public class ModelResponse {
 
     /**
      * Interpolates model. Make sense only on non-effective models, as effective models are already interpolated.
-     * Uses value set provided by this "current" model.
+     * Uses value set provided by this "current" model. The model is first cloned, then interpolated, so the returned
+     * instance is not the same instance as the passed in.
      */
     public Model interpolateModel(Model model) {
         return interpolatorFunction.apply(model);
