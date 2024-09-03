@@ -7,5 +7,7 @@
  */
 /**
  * MMR extension for MIMA.
+ *
+ * Note: this is experimental!
  */
 package eu.maveniverse.maven.mima.extensions.mmr;
