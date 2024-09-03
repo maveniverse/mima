@@ -14,7 +14,8 @@ import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.Runtime;
 import eu.maveniverse.maven.mima.context.Runtimes;
 import eu.maveniverse.maven.mima.extensions.mmr.MavenModelReader;
-import eu.maveniverse.maven.mima.extensions.mmr.ModelLevel;
+import eu.maveniverse.maven.mima.extensions.mmr.ModelRequest;
+import eu.maveniverse.maven.mima.extensions.mmr.ModelResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -29,7 +30,6 @@ import org.eclipse.aether.impl.RemoteRepositoryManager;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
-import org.eclipse.aether.resolution.ArtifactDescriptorRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.DependencyRequest;
 import org.eclipse.aether.resolution.DependencyResolutionException;
@@ -57,9 +57,11 @@ public class Classpath {
 
         try (Context context = runtime.create(overrides)) {
             MavenModelReader mmr = new MavenModelReader(context);
-            ArtifactDescriptorRequest request = new ArtifactDescriptorRequest(
-                    new DefaultArtifact(artifactStr), context.remoteRepositories(), "classpath-demo");
-            Model model = mmr.readModel(request, ModelLevel.EFFECTIVE);
+            ModelResponse response = mmr.readModel(ModelRequest.builder()
+                    .setArtifact(new DefaultArtifact(artifactStr))
+                    .setRequestContext("classpath-demo")
+                    .build());
+            Model model = response.getEffectiveModel();
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 String encoding = model.getModelEncoding();
                 if (encoding == null || encoding.length() <= 0) {
