@@ -9,7 +9,7 @@ package eu.maveniverse.maven.mima.extensions.mmr;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.Map;
+import java.util.List;
 import java.util.function.Function;
 import org.apache.maven.model.Model;
 import org.eclipse.aether.resolution.ArtifactDescriptorResult;
@@ -18,26 +18,70 @@ import org.eclipse.aether.resolution.ArtifactDescriptorResult;
  * Model response.
  */
 public class ModelResponse {
-    private final Map<ModelLevel, Model> models;
+    private final Model rawModel;
+    private final Model effectiveModel;
     private final Function<Model, ArtifactDescriptorResult> converter;
+    private final List<String> lineage;
+    private final Function<String, Model> lineageFunction;
+    private final Function<Model, Model> interpolatorFunction;
 
-    public ModelResponse(Map<ModelLevel, Model> models, Function<Model, ArtifactDescriptorResult> converter) {
-        this.models = requireNonNull(models);
+    public ModelResponse(
+            Model rawModel,
+            Model effectiveModel,
+            Function<Model, ArtifactDescriptorResult> converter,
+            List<String> lineage,
+            Function<String, Model> lineageFunction,
+            Function<Model, Model> interpolatorFunction) {
+        this.rawModel = requireNonNull(rawModel);
+        this.effectiveModel = requireNonNull(effectiveModel);
         this.converter = requireNonNull(converter);
+        this.lineage = requireNonNull(lineage);
+        this.lineageFunction = requireNonNull(lineageFunction);
+        this.interpolatorFunction = requireNonNull(interpolatorFunction);
     }
 
     /**
-     * Returns model in asked level, may return {@code null}.
+     * Returns the built effective model.
      */
-    public Model toModel(ModelLevel level) {
-        requireNonNull(level);
-        return models.get(level);
+    public Model getEffectiveModel() {
+        return effectiveModel;
     }
 
     /**
-     * Returns artifact descriptor result in asked level, may return {@code null}.
+     * Returns the "raw" (as is on disk) model.
      */
-    public ArtifactDescriptorResult toArtifactDescriptorResult(ModelLevel level) {
-        return converter.apply(toModel(level));
+    public Model getRawModel() {
+        return rawModel;
+    }
+
+    /**
+     * Returns artifact descriptor result of given model..
+     */
+    public ArtifactDescriptorResult toArtifactDescriptorResult(Model model) {
+        requireNonNull(model);
+        return converter.apply(model);
+    }
+
+    /**
+     * Returns the model "lineage", first in list represents "current" model, last the Super POM, and parents in
+     * middle.
+     */
+    public List<String> getLineage() {
+        return lineage;
+    }
+
+    /**
+     * Returns RAW model with given modelId (that is string concatenated as {@code groupId:artifactId:versionId}).
+     */
+    public Model getLineageModel(String modelId) {
+        return lineageFunction.apply(modelId);
+    }
+
+    /**
+     * Interpolates model. Make sense only on non-effective models, as effective models are already interpolated.
+     * Uses value set provided by this "current" model.
+     */
+    public Model interpolateModel(Model model) {
+        return interpolatorFunction.apply(model);
     }
 }

@@ -36,7 +36,7 @@ public class MavenModelReaderTest {
             Model model;
 
             // RAW
-            model = response.toModel(ModelLevel.RAW);
+            model = response.getRawModel();
             assertNotNull(model);
             assertNull(model.getGroupId());
             assertEquals("maven-core", model.getArtifactId());
@@ -44,7 +44,7 @@ public class MavenModelReaderTest {
             assertNull(model.getUrl());
 
             // Effective
-            model = response.toModel(ModelLevel.EFFECTIVE);
+            model = response.getEffectiveModel();
             assertNotNull(model);
             assertEquals("org.apache.maven", model.getGroupId());
             assertEquals("maven-core", model.getArtifactId());
@@ -54,7 +54,7 @@ public class MavenModelReaderTest {
             ArtifactDescriptorResult result;
             Artifact artifact;
             // ADR out of RAW
-            result = response.toArtifactDescriptorResult(ModelLevel.RAW_INTERPOLATED);
+            result = response.toArtifactDescriptorResult(response.interpolateModel(response.getRawModel()));
             // we cannot compare this RESOLVED artifact (has file and properties)
             artifact = result.getArtifact();
             assertEquals(
@@ -68,7 +68,7 @@ public class MavenModelReaderTest {
             assertEquals(0, result.getManagedDependencies().size());
 
             // ADR out of EFFECTIVE
-            result = response.toArtifactDescriptorResult(ModelLevel.EFFECTIVE);
+            result = response.toArtifactDescriptorResult(response.getEffectiveModel());
             // we cannot compare this RESOLVED artifact (has file and properties)
             artifact = result.getArtifact();
             assertEquals(
