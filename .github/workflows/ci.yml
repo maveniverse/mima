@@ -12,6 +12,6 @@ jobs:
     uses: maveniverse/parent/.github/workflows/ci.yml@release-18
     with:
       maven-matrix: '[ "3.6.3", "3.8.8", "3.9.9", "4.0.0-beta-4" ]'
-      jdk-matrix: '[ "21", "8" ]'
+      jdk-matrix: '[ "21", "17" ]'
       jdk-distribution-matrix: '[ "zulu" ]'
       maven-test: './mvnw -f demo install -e -B -V'
