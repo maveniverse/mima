@@ -18,7 +18,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.function.Function;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.model.DistributionManagement;
 import org.apache.maven.model.License;
@@ -31,13 +30,9 @@ import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
-import org.apache.maven.model.building.ModelCache;
 import org.apache.maven.model.building.ModelProblem;
 import org.apache.maven.model.building.ModelProblemUtils;
-import org.apache.maven.model.interpolation.DefaultModelVersionProcessor;
 import org.apache.maven.model.interpolation.StringVisitorModelInterpolator;
-import org.apache.maven.model.path.DefaultPathTranslator;
-import org.apache.maven.model.path.DefaultUrlNormalizer;
 import org.apache.maven.model.resolution.UnresolvableModelException;
 import org.apache.maven.repository.internal.ArtifactDescriptorUtils;
 import org.apache.maven.repository.internal.RequestTraceHelper;
@@ -82,7 +77,7 @@ public class MavenModelReaderImpl {
     private final RemoteRepositoryManager remoteRepositoryManager;
     private final RepositoryEventDispatcher repositoryEventDispatcher;
     private final ModelBuilder modelBuilder;
-    private final Function<RepositorySystemSession, ModelCache> modelCacheFunction;
+    private final StringVisitorModelInterpolator stringVisitorModelInterpolator;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -99,7 +94,9 @@ public class MavenModelReaderImpl {
         this.repositoryEventDispatcher = context.lookup()
                 .lookup(RepositoryEventDispatcher.class)
                 .orElseThrow(() -> new IllegalStateException("RepositoryEventDispatcher not available"));
-        this.modelCacheFunction = ModelCacheImpl::newInstance;
+        this.stringVisitorModelInterpolator = context.lookup()
+                .lookup(StringVisitorModelInterpolator.class)
+                .orElseThrow(() -> new IllegalStateException("StringVisitorModelInterpolator not available"));
     }
 
     public ModelResponse readModel(ModelRequest request)
@@ -169,7 +166,8 @@ public class MavenModelReaderImpl {
             // properties in dependencies the user does not know. See MNG-7563 for details.
             modelRequest.setSystemProperties(toProperties(session.getUserProperties(), session.getSystemProperties()));
             modelRequest.setUserProperties(new Properties());
-            modelRequest.setModelCache(modelCacheFunction.apply(session));
+            // no cache for now: to assure compatibility from 3.8 - 4.0
+            // modelRequest.setModelCache(modelCacheFunction != null ? modelCacheFunction.apply(session) : null);
             modelRequest.setModelResolver(new ModelResolverImpl(
                     repositorySystem,
                     session,
@@ -241,15 +239,8 @@ public class MavenModelReaderImpl {
                     },
                     modelResult.getModelIds(),
                     modelResult::getRawModel,
-                    m -> {
-                        Model rawModel = m.clone();
-                        new StringVisitorModelInterpolator()
-                                .setPathTranslator(new DefaultPathTranslator())
-                                .setUrlNormalizer(new DefaultUrlNormalizer())
-                                .setVersionPropertiesProcessor(new DefaultModelVersionProcessor())
-                                .interpolateModel(rawModel, new File(""), modelRequest, req -> {});
-                        return rawModel;
-                    });
+                    m -> stringVisitorModelInterpolator.interpolateModel(
+                            m.clone(), new File(""), modelRequest, req -> {}));
         } catch (ModelBuildingException e) {
             for (ModelProblem problem : e.getProblems()) {
                 if (problem.getException() instanceof UnresolvableModelException) {
