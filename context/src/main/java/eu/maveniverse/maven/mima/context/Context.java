@@ -175,6 +175,13 @@ public final class Context implements Closeable {
     }
 
     /**
+     * Exposes {@link Runtime} instance used to create this context instance.
+     */
+    public Runtime getRuntime() {
+        return runtime;
+    }
+
+    /**
      * Closes the context. Once closed context instance should not be used anymore.
      */
     @Override

@@ -18,6 +18,7 @@ import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
 import eu.maveniverse.maven.mima.runtime.maven.internal.PlexusLookup;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashMap;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -106,7 +107,8 @@ public final class MavenRuntime extends RuntimeSupport {
                         mavenSystemHome,
                         repositorySystem,
                         session,
-                        repositorySystem.newResolutionRepositories(session, effective.getRepositories()),
+                        Collections.unmodifiableList(
+                                repositorySystem.newResolutionRepositories(session, effective.getRepositories())),
                         toHTTPProxy(mavenSession.getSettings().getActiveProxy()),
                         new PlexusLookup(plexusContainer),
                         null),
