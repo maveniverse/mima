@@ -29,10 +29,6 @@ public class ModelMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
-        if (runtimeInformation.getMavenVersion().startsWith("3.6")) {
-            getLog().info("Unsupported Maven version: " + runtimeInformation.getMavenVersion());
-            return;
-        }
         try {
             Classpath classpath = new Classpath();
             ContextOverrides overrides =

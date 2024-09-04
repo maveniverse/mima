@@ -35,8 +35,6 @@ import org.apache.maven.model.building.ModelProblemUtils;
 import org.apache.maven.model.interpolation.StringVisitorModelInterpolator;
 import org.apache.maven.model.resolution.UnresolvableModelException;
 import org.apache.maven.repository.internal.ArtifactDescriptorUtils;
-import org.apache.maven.repository.internal.DefaultModelCacheFactory;
-import org.apache.maven.repository.internal.ModelCacheFactory;
 import org.apache.maven.repository.internal.RequestTraceHelper;
 import org.codehaus.plexus.util.StringUtils;
 import org.eclipse.aether.RepositoryEvent;
@@ -79,7 +77,6 @@ public class MavenModelReaderImpl {
     private final RemoteRepositoryManager remoteRepositoryManager;
     private final RepositoryEventDispatcher repositoryEventDispatcher;
     private final ModelBuilder modelBuilder;
-    private final ModelCacheFactory modelCacheFactory;
     private final StringVisitorModelInterpolator stringVisitorModelInterpolator;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
@@ -97,7 +94,6 @@ public class MavenModelReaderImpl {
         this.repositoryEventDispatcher = context.lookup()
                 .lookup(RepositoryEventDispatcher.class)
                 .orElseThrow(() -> new IllegalStateException("RepositoryEventDispatcher not available"));
-        this.modelCacheFactory = new DefaultModelCacheFactory();
         this.stringVisitorModelInterpolator = context.lookup()
                 .lookup(StringVisitorModelInterpolator.class)
                 .orElseThrow(() -> new IllegalStateException("StringVisitorModelInterpolator not available"));
@@ -170,7 +166,8 @@ public class MavenModelReaderImpl {
             // properties in dependencies the user does not know. See MNG-7563 for details.
             modelRequest.setSystemProperties(toProperties(session.getUserProperties(), session.getSystemProperties()));
             modelRequest.setUserProperties(new Properties());
-            modelRequest.setModelCache(modelCacheFactory.createCache(session));
+            // no cache for now: to assure compatibility from 3.8 - 4.0
+            // modelRequest.setModelCache(modelCacheFunction != null ? modelCacheFunction.apply(session) : null);
             modelRequest.setModelResolver(new ModelResolverImpl(
                     repositorySystem,
                     session,
@@ -242,11 +239,8 @@ public class MavenModelReaderImpl {
                     },
                     modelResult.getModelIds(),
                     modelResult::getRawModel,
-                    m -> {
-                        Model model = m.clone();
-                        stringVisitorModelInterpolator.interpolateModel(model, new File(""), modelRequest, req -> {});
-                        return model;
-                    });
+                    m -> stringVisitorModelInterpolator.interpolateModel(
+                            m.clone(), new File(""), modelRequest, req -> {}));
         } catch (ModelBuildingException e) {
             for (ModelProblem problem : e.getProblems()) {
                 if (problem.getException() instanceof UnresolvableModelException) {
