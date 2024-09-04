@@ -37,7 +37,8 @@ public class StandaloneStaticRuntime extends StandaloneRuntimeSupport {
     @Override
     public Context create(ContextOverrides overrides) {
         PreBoot preBoot = preBoot(overrides);
-        Lookup lookup = new IteratingLookup(createStaticLookup(preBoot), createRepositorySystemLookup(preBoot));
+        Lookup lookup = new IteratingLookup(
+                createStaticLookup(preBoot), createRepositorySystemLookup(preBoot), createCompatLookup(preBoot));
         RepositorySystem repositorySystem = lookup.lookup(RepositorySystem.class)
                 .orElseThrow(() -> new NoSuchElementException("No RepositorySystem present"));
         SettingsBuilder settingsBuilder = lookup.lookup(SettingsBuilder.class)
@@ -63,5 +64,9 @@ public class StandaloneStaticRuntime extends StandaloneRuntimeSupport {
 
     protected Lookup createRepositorySystemLookup(PreBoot preBoot) {
         return new MemoizingRepositorySystemSupplierLookup();
+    }
+
+    protected Lookup createCompatLookup(PreBoot preBoot) {
+        return new CompatLookup(preBoot);
     }
 }

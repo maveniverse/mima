@@ -32,10 +32,7 @@ import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
 import org.apache.maven.model.building.ModelProblem;
 import org.apache.maven.model.building.ModelProblemUtils;
-import org.apache.maven.model.interpolation.DefaultModelVersionProcessor;
 import org.apache.maven.model.interpolation.StringVisitorModelInterpolator;
-import org.apache.maven.model.path.DefaultPathTranslator;
-import org.apache.maven.model.path.DefaultUrlNormalizer;
 import org.apache.maven.model.resolution.UnresolvableModelException;
 import org.apache.maven.repository.internal.ArtifactDescriptorUtils;
 import org.apache.maven.repository.internal.DefaultModelCacheFactory;
@@ -101,13 +98,9 @@ public class MavenModelReaderImpl {
                 .lookup(RepositoryEventDispatcher.class)
                 .orElseThrow(() -> new IllegalStateException("RepositoryEventDispatcher not available"));
         this.modelCacheFactory = new DefaultModelCacheFactory();
-        this.stringVisitorModelInterpolator =
-                context.getRuntime().mavenVersion().startsWith("4.")
-                        ? null
-                        : (StringVisitorModelInterpolator) new StringVisitorModelInterpolator()
-                                .setPathTranslator(new DefaultPathTranslator())
-                                .setUrlNormalizer(new DefaultUrlNormalizer())
-                                .setVersionPropertiesProcessor(new DefaultModelVersionProcessor());
+        this.stringVisitorModelInterpolator = context.lookup()
+                .lookup(StringVisitorModelInterpolator.class)
+                .orElseThrow(() -> new IllegalStateException("StringVisitorModelInterpolator not available"));
     }
 
     public ModelResponse readModel(ModelRequest request)
