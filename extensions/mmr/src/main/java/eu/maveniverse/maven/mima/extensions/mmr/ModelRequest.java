@@ -25,12 +25,12 @@ public class ModelRequest {
     }
 
     private final Artifact artifact;
+    private final List<RemoteRepository> repositories;
     private final String requestContext;
     private final RequestTrace trace;
-    private final List<RemoteRepository> repositories;
 
     private ModelRequest(
-            Artifact artifact, String requestContext, RequestTrace trace, List<RemoteRepository> repositories) {
+            Artifact artifact, List<RemoteRepository> repositories, String requestContext, RequestTrace trace) {
         this.artifact = requireNonNull(artifact);
         this.requestContext = requestContext == null ? "" : requestContext;
         this.trace = trace;
@@ -41,16 +41,16 @@ public class ModelRequest {
         return artifact;
     }
 
+    public List<RemoteRepository> getRepositories() {
+        return repositories;
+    }
+
     public String getRequestContext() {
         return requestContext;
     }
 
     public RequestTrace getTrace() {
         return trace;
-    }
-
-    public List<RemoteRepository> getRepositories() {
-        return repositories;
     }
 
     public Builder toBuilder() {
@@ -67,38 +67,56 @@ public class ModelRequest {
 
         private Builder(ModelRequest request) {
             this.artifact = request.artifact;
+            this.repositories = request.repositories;
             this.requestContext = request.requestContext;
             this.trace = request.trace;
-            this.repositories = request.repositories;
         }
 
         public ModelRequest build() {
-            return new ModelRequest(artifact, requestContext, trace, repositories);
+            return new ModelRequest(artifact, repositories, requestContext, trace);
         }
 
+        /**
+         * Make possible to point at a POM anywhere on file system, to have it built. Naturally, all the required
+         * bits like parent POM, imported POM must be still resolvable (from local or remote repositories).
+         */
         public Builder setPomFile(Path pomFile) {
             requireNonNull(pomFile);
             return setArtifact(new DefaultArtifact("irrelevant:irrelevant:irrelevant").setFile(pomFile.toFile()));
         }
 
+        /**
+         * Sets the artifact whose POM we want to build model for. The artifact must be resolvable from local or
+         * remote repositories.
+         */
         public Builder setArtifact(Artifact artifact) {
             requireNonNull(artifact);
             this.artifact = artifact;
             return this;
         }
 
+        /**
+         * Optionally, user may want to override context "root" repositories with own set (ie appended or totally new
+         * list of repositories).
+         */
+        public Builder setRepositories(List<RemoteRepository> repositories) {
+            this.repositories = repositories;
+            return this;
+        }
+
+        /**
+         * Sets the request context for bookkeeping purposes.
+         */
         public Builder setRequestContext(String requestContext) {
             this.requestContext = requestContext;
             return this;
         }
 
+        /**
+         * Sets the request trace for bookkeeping purposes.
+         */
         public Builder setTrace(RequestTrace trace) {
             this.trace = trace;
-            return this;
-        }
-
-        public Builder setRepositories(List<RemoteRepository> repositories) {
-            this.repositories = repositories;
             return this;
         }
     }

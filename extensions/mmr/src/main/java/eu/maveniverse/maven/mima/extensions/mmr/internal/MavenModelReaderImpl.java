@@ -109,7 +109,8 @@ public class MavenModelReaderImpl {
         ArtifactDescriptorRequest artifactDescriptorRequest = new ArtifactDescriptorRequest();
         artifactDescriptorRequest.setArtifact(request.getArtifact());
         if (request.getRepositories() != null) {
-            artifactDescriptorRequest.setRepositories(request.getRepositories());
+            artifactDescriptorRequest.setRepositories(
+                    repositorySystem.newResolutionRepositories(session, request.getRepositories()));
         } else {
             artifactDescriptorRequest.setRepositories(this.repositories);
         }
@@ -236,6 +237,7 @@ public class MavenModelReaderImpl {
             return new ModelResponse(
                     modelResult.getRawModel().clone(),
                     modelResult.getEffectiveModel().clone(),
+                    artifactDescriptorResult.getRepository(),
                     m -> {
                         ArtifactDescriptorResult r = new ArtifactDescriptorResult(artifactDescriptorRequest);
                         r.setRepository(artifactDescriptorResult.getRepository());
