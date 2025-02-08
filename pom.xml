@@ -68,10 +68,8 @@
     <!-- Dependency versions -->
     <version.resolver>1.9.22</version.resolver>
     <version.maven>3.9.9</version.maven>
-    <version.mase>7.1.5</version.mase>
     <version.sisu>0.9.0.M3</version.sisu>
     <version.slf4j>1.7.36</version.slf4j>
-    <version.picocli>4.7.6</version.picocli>
   </properties>
 
   <dependencyManagement>
@@ -238,45 +236,6 @@
         <groupId>org.eclipse.sisu</groupId>
         <artifactId>org.eclipse.sisu.inject</artifactId>
         <version>${version.sisu}</version>
-      </dependency>
-
-      <!-- Maven Indexer -->
-      <dependency>
-        <groupId>org.apache.maven.indexer</groupId>
-        <artifactId>search-api</artifactId>
-        <version>${version.mase}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.indexer</groupId>
-        <artifactId>search-backend-remoterepository</artifactId>
-        <version>${version.mase}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.maven.indexer</groupId>
-        <artifactId>search-backend-smo</artifactId>
-        <version>${version.mase}</version>
-      </dependency>
-
-      <!-- CLI -->
-      <dependency>
-        <groupId>info.picocli</groupId>
-        <artifactId>picocli</artifactId>
-        <version>${version.picocli}</version>
-      </dependency>
-      <dependency>
-        <groupId>info.picocli</groupId>
-        <artifactId>picocli-codegen</artifactId>
-        <version>${version.picocli}</version>
-      </dependency>
-      <dependency>
-        <groupId>info.picocli</groupId>
-        <artifactId>picocli-shell-jline3</artifactId>
-        <version>${version.picocli}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.fusesource.jansi</groupId>
-        <artifactId>jansi</artifactId>
-        <version>2.4.1</version>
       </dependency>
 
       <dependency>
