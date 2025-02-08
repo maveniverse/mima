@@ -45,8 +45,8 @@ public class MavenModelReader {
     private final MavenModelReaderImpl mavenModelReaderImpl;
 
     /**
-     * Creates instance using passed in context. As context carries "root" remote repositories, they be used
-     * by default. They can be overridden in request.
+     * Creates instance using passed in context. As context carries "root" remote repositories, they are used
+     * by default, but can be overridden in {@link ModelRequest}.
      */
     public MavenModelReader(Context context) {
         requireNonNull(context, "context");
