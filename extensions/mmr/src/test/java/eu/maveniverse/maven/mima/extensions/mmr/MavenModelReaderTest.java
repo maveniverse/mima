@@ -53,7 +53,7 @@ public class MavenModelReaderTest {
             // REPO
             ArtifactRepository responseRepository = response.getRepository();
             if (overrideRepository == null) {
-                assertEquals(responseRepository, context.remoteRepositories().get(0));
+                assertEquals(context.remoteRepositories().get(0), responseRepository);
             } else {
                 assertEquals(overrideRepository, responseRepository);
             }
