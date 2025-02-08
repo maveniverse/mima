@@ -10,6 +10,8 @@ package eu.maveniverse.maven.mima.extensions.mmr;
 import static java.util.Objects.requireNonNull;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.eclipse.aether.RequestTrace;
 import org.eclipse.aether.artifact.Artifact;
@@ -73,7 +75,11 @@ public class ModelRequest {
         }
 
         public ModelRequest build() {
-            return new ModelRequest(artifact, repositories, requestContext, trace);
+            return new ModelRequest(
+                    artifact,
+                    repositories != null ? Collections.unmodifiableList(new ArrayList<>(repositories)) : null,
+                    requestContext,
+                    trace);
         }
 
         /**

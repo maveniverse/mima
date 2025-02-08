@@ -14,25 +14,49 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.Runtimes;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.stream.Stream;
 import org.apache.maven.model.Model;
 import org.eclipse.aether.artifact.Artifact;
 import org.eclipse.aether.artifact.DefaultArtifact;
+import org.eclipse.aether.repository.ArtifactRepository;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactDescriptorResult;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class MavenModelReaderTest {
-    @Test
-    void smoke() throws Exception {
+    private static Stream<RemoteRepository> repositories() {
+        return Arrays.stream(new RemoteRepository[] {
+            null, // context
+            ContextOverrides.CENTRAL, // central override
+            new RemoteRepository.Builder("foobar", "default", "https://repo1.maven.org/maven2").build() // alt central
+        });
+    }
+
+    @ParameterizedTest
+    @MethodSource("repositories")
+    void smoke(RemoteRepository overrideRepository) throws Exception {
         try (Context context =
                 Runtimes.INSTANCE.getRuntime().create(ContextOverrides.create().build())) {
             MavenModelReader reader = new MavenModelReader(context);
 
             ModelResponse response = reader.readModel(ModelRequest.builder()
                     .setArtifact(new DefaultArtifact("org.apache.maven:maven-core:3.9.9"))
+                    .setRepositories(overrideRepository != null ? Collections.singletonList(overrideRepository) : null)
                     .setRequestContext("test")
                     .build());
             assertNotNull(response);
             Model model;
+
+            // REPO
+            ArtifactRepository responseRepository = response.getRepository();
+            if (overrideRepository == null) {
+                assertEquals(responseRepository, context.remoteRepositories().get(0));
+            } else {
+                assertEquals(overrideRepository, responseRepository);
+            }
 
             // RAW
             model = response.getRawModel();
