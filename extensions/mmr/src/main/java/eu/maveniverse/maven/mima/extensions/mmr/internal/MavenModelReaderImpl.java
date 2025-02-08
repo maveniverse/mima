@@ -106,13 +106,14 @@ public class MavenModelReaderImpl {
 
     private ModelResponse loadPom(RepositorySystemSession session, ModelRequest request)
             throws VersionResolutionException, ArtifactResolutionException, ArtifactDescriptorException {
+        List<RemoteRepository> repositories = this.repositories;
+        if (request.getRepositories() != null) {
+            repositories = repositorySystem.newResolutionRepositories(session, request.getRepositories());
+        }
+
         ArtifactDescriptorRequest artifactDescriptorRequest = new ArtifactDescriptorRequest();
         artifactDescriptorRequest.setArtifact(request.getArtifact());
-        if (request.getRepositories() != null) {
-            artifactDescriptorRequest.setRepositories(request.getRepositories());
-        } else {
-            artifactDescriptorRequest.setRepositories(this.repositories);
-        }
+        artifactDescriptorRequest.setRepositories(repositories);
         artifactDescriptorRequest.setRequestContext(request.getRequestContext());
         artifactDescriptorRequest.setTrace(request.getTrace());
         ArtifactDescriptorResult artifactDescriptorResult = new ArtifactDescriptorResult(artifactDescriptorRequest);
@@ -236,6 +237,7 @@ public class MavenModelReaderImpl {
             return new ModelResponse(
                     modelResult.getRawModel().clone(),
                     modelResult.getEffectiveModel().clone(),
+                    artifactDescriptorResult.getRepository(),
                     m -> {
                         ArtifactDescriptorResult r = new ArtifactDescriptorResult(artifactDescriptorRequest);
                         r.setRepository(artifactDescriptorResult.getRepository());

@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
  *     perform it manually: inspect the effective model and based on {@link org.apache.maven.model.Relocation}
  *     issue another request for relocation target.</li>
  *     <li>Does not obey {@link RepositorySystemSession#getArtifactDescriptorPolicy()}, if asked artifact does not
- *     exists, it will fail.</li>
+ *     exist, it will fail.</li>
  *     <li>If passed in {@link Artifact} is resolved ({@link Artifact#getFile()} returns non-{@code null} value), then
  *     model will be read from that file directly. Naturally, to be able to build the model, the possible
  *     parent and other POMs must be resolvable.</li>
@@ -44,6 +44,10 @@ public class MavenModelReader {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final MavenModelReaderImpl mavenModelReaderImpl;
 
+    /**
+     * Creates instance using passed in context. As context carries "root" remote repositories, they are used
+     * by default, but can be overridden in {@link ModelRequest}.
+     */
     public MavenModelReader(Context context) {
         requireNonNull(context, "context");
         this.mavenModelReaderImpl = new MavenModelReaderImpl(context);
@@ -51,6 +55,10 @@ public class MavenModelReader {
 
     /**
      * Reads POM as {@link ModelResponse}.
+     * <p>
+     * Remark related to repositories: by default context "root" remote repositories will be used, unless
+     * request {@link ModelRequest#getRepositories()} returns non-null value, in which case request provided
+     * repositories will be used.
      */
     public ModelResponse readModel(ModelRequest request)
             throws VersionResolutionException, ArtifactResolutionException, ArtifactDescriptorException {

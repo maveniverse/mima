@@ -12,6 +12,7 @@ import static java.util.Objects.requireNonNull;
 import java.util.List;
 import java.util.function.Function;
 import org.apache.maven.model.Model;
+import org.eclipse.aether.repository.ArtifactRepository;
 import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 
 /**
@@ -23,6 +24,7 @@ import org.eclipse.aether.resolution.ArtifactDescriptorResult;
 public class ModelResponse {
     private final Model rawModel;
     private final Model effectiveModel;
+    private final ArtifactRepository repository;
     private final Function<Model, ArtifactDescriptorResult> converter;
     private final List<String> lineage;
     private final Function<String, Model> lineageFunction;
@@ -31,12 +33,14 @@ public class ModelResponse {
     public ModelResponse(
             Model rawModel,
             Model effectiveModel,
+            ArtifactRepository repository,
             Function<Model, ArtifactDescriptorResult> converter,
             List<String> lineage,
             Function<String, Model> lineageFunction,
             Function<Model, Model> interpolatorFunction) {
         this.rawModel = requireNonNull(rawModel);
         this.effectiveModel = requireNonNull(effectiveModel);
+        this.repository = repository;
         this.converter = requireNonNull(converter);
         this.lineage = requireNonNull(lineage);
         this.lineageFunction = requireNonNull(lineageFunction);
@@ -61,6 +65,13 @@ public class ModelResponse {
      */
     public Model getRawModel() {
         return rawModel;
+    }
+
+    /**
+     * Gets the repository from which the descriptor was eventually resolved or {@code null} if unknown.
+     */
+    public ArtifactRepository getRepository() {
+        return repository;
     }
 
     /**
