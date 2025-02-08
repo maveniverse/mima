@@ -108,7 +108,11 @@ public class MavenModelReaderImpl {
             throws VersionResolutionException, ArtifactResolutionException, ArtifactDescriptorException {
         ArtifactDescriptorRequest artifactDescriptorRequest = new ArtifactDescriptorRequest();
         artifactDescriptorRequest.setArtifact(request.getArtifact());
-        artifactDescriptorRequest.setRepositories(repositories);
+        if (request.getRepositories() != null) {
+            artifactDescriptorRequest.setRepositories(request.getRepositories());
+        } else {
+            artifactDescriptorRequest.setRepositories(this.repositories);
+        }
         artifactDescriptorRequest.setRequestContext(request.getRequestContext());
         artifactDescriptorRequest.setTrace(request.getTrace());
         ArtifactDescriptorResult artifactDescriptorResult = new ArtifactDescriptorResult(artifactDescriptorRequest);
