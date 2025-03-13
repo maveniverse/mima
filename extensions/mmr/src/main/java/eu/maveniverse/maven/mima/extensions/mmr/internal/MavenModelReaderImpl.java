@@ -10,7 +10,7 @@ package eu.maveniverse.maven.mima.extensions.mmr.internal;
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.extensions.mmr.ModelRequest;
 import eu.maveniverse.maven.mima.extensions.mmr.ModelResponse;
-import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -246,7 +246,7 @@ public class MavenModelReaderImpl {
                     modelResult.getModelIds(),
                     modelResult::getRawModel,
                     m -> stringVisitorModelInterpolator.interpolateModel(
-                            m.clone(), new File(""), modelRequest, req -> {}));
+                            m.clone(), Paths.get("").toFile(), modelRequest, req -> {}));
         } catch (ModelBuildingException e) {
             for (ModelProblem problem : e.getProblems()) {
                 if (problem.getException() instanceof UnresolvableModelException) {
