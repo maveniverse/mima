@@ -69,7 +69,7 @@
     <version.resolver>1.9.22</version.resolver>
     <version.maven>3.9.9</version.maven>
     <version.sisu>0.9.0.M3</version.sisu>
-    <version.slf4j>1.7.36</version.slf4j>
+    <version.slf4j>2.0.17</version.slf4j>
     <version.junit>5.12.1</version.junit>
   </properties>
 
