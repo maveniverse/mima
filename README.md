@@ -110,7 +110,16 @@ as well, this dependency may be always present.
 
 ### Standalone Sisu
 
-To be used when library using MIMA runs standalone. In this case you need to provide backend for SLF4J facade as well.
+To be used when library using MIMA runs standalone, and you still want to enjoy the benefits of Eclipse Sisu dynamism
+(component discovery from classpath). This is the recommended way if you want to extend Resolver in any way. 
+In this case you need to provide backend for SLF4J facade as well.
+
+The runtime uses [Eclipse Sisu](https://www.eclipse.org/sisu/) DI, same engine used by Maven itself.
+
+#### Embedding in Application not using DI
+
+If your application is not using Guice/Sisu/DI, but you still want to extend Resolver with dynamically discovered 
+components from application classpath, declare runtime as this:
 
 ```xml
 <dependency>
@@ -128,14 +137,68 @@ To be used when library using MIMA runs standalone. In this case you need to pro
 </dependency>
 ```
 
-This runtime brings in all dependencies needed for MIMA standalone runtime, and best is to have it in `runtine` scope, 
-is not needed during compile. The runtime uses [Eclipse Sisu](https://www.eclipse.org/sisu/) DI, same engine used 
-by Maven itself.
+And then doing this in application:
+
+```java
+    Runtime runtime = Runtimes.INSTANCE.getRuntime();
+    try (Context context = runtime.create(ContextOverrides.create().withUserSettings(true).build())) {
+        // here Runtime will create "own" Sisu DI, lookup and wire up Resolver components
+    }
+```
+
+#### Embedding in Application already using Guice/Sisu/DI
+
+If your application also uses Guice/Sisu/DI, an extra step is needed. First, you must declare the runtime in
+compile scope, as this:
+
+```xml
+<dependency>
+  <groupId>eu.maveniverse.maven.mima.runtime</groupId>
+  <artifactId>standalone-sisu</artifactId>
+  <version>${version.mima}</version>
+  <scope>compile</scope>
+</dependency>
+<!-- logging: runtime scope -->
+<dependency>
+  <groupId>org.slf4j</groupId>
+  <artifactId>slf4j-simple</artifactId>
+  <version>${version.slf4j}</version>
+  <scope>runtime</scope>
+</dependency>
+```
+
+Next, you need to install `PreBoot` to initialize MIMA environment properly:
+
+```java
+  @Named
+  public static class PreBootModule extends AbstractModule {
+    @Override
+    protected void configure() {
+      bind(PreBoot.class).toInstance(new PreBoot(
+              ContextOverrides.create().withUserSettings(true).build(), 
+              new MavenUserHomeImpl(Paths.get(System.getProperty("user.home")).resolve(".m2")), 
+              null, // maven.home 
+              Paths.get(System.getProperty("user.dir"))));
+    }
+  }
+```
+
+and finally bring up Guice (w/ Sisu to have Resolver components discovered), for example like this:
+
+```java
+    ClassLoader cl = getClass().getClassLoader();
+    Injector injector = Guice.createInjector(
+      new WireModule(
+        new SpaceModule(
+          new URLClassSpace(cl),
+          BeanScanning.INDEX,
+          false)));
+```
 
 This runtime may be used in case you already have an application that is using Sisu for DI as well, like apps 
 using [Ollie](https://github.com/takari/ollie) or alike.
 
-You are also required to provide SLF4J backend.
+In both cases you are required to provide SLF4J backend as well.
 
 ### Standalone Static
 
