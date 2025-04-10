@@ -146,6 +146,11 @@ And then doing this in application:
     }
 ```
 
+In try-with-resource, MIMA will boot up "private" Guice/Sisu, discover components, wire them up, and provide you an usable instance.
+Given Sisu is used, whatever "extension" component you have on classpath (w/ Sisu index file), will be discovered and
+picked up at proper place. You application does not have access to any of Guice/Sisu/DI, but MAY declare Resolver components
+and being enlisted on Sisu index. Container is torn down on context close.
+
 #### Embedding in Application already using Guice/Sisu/DI
 
 If your application also uses Guice/Sisu/DI, an extra step is needed. First, you must declare the runtime in
@@ -195,8 +200,17 @@ and finally bring up Guice (w/ Sisu to have Resolver components discovered), for
           false)));
 ```
 
-This runtime may be used in case you already have an application that is using Sisu for DI as well, like apps 
-using [Ollie](https://github.com/takari/ollie) or alike.
+Finally, a code in your application like this:
+
+```java
+    Runtime runtime = Runtimes.INSTANCE.getRuntime();
+    try (Context context = runtime.create(ContextOverrides.create().withUserSettings(true).build())) {
+        // here Runtime is singleton instance kept while Guice is alive, creating context is "cheap"
+    }
+```
+
+Will use components existing in container you manage. This runtime may be used in case you already have an 
+application that is using Sisu for DI as well, like apps using [Ollie](https://github.com/takari/ollie) or alike.
 
 In both cases you are required to provide SLF4J backend as well.
 
