@@ -27,8 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
-import eu.maveniverse.maven.mima.context.Runtime;
 import org.eclipse.aether.DefaultRepositoryCache;
 import org.eclipse.aether.DefaultSessionData;
 import org.eclipse.aether.RepositorySystemSession;
