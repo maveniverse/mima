@@ -393,6 +393,7 @@ public final class ContextOverrides {
                 .addRepositoriesOp(addRepositoriesOp)
                 .extraArtifactTypes(extraArtifactTypes)
                 .offline(offline)
+                .ignoreArtifactDescriptorRepositories(ignoreArtifactDescriptorRepositories)
                 .snapshotUpdatePolicy(snapshotUpdatePolicy)
                 .checksumPolicy(checksumPolicy)
                 .withUserSettings(withUserSettings)

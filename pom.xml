@@ -14,7 +14,7 @@
   <parent>
     <groupId>eu.maveniverse.maven.parent</groupId>
     <artifactId>parent</artifactId>
-    <version>15</version>
+    <version>26</version>
   </parent>
 
   <groupId>eu.maveniverse.maven.mima</groupId>
@@ -36,6 +36,7 @@
   <modules>
     <module>context</module>
     <module>runtime</module>
+    <module>extensions</module>
   </modules>
 
   <scm>
@@ -56,21 +57,20 @@
   </ciManagement>
 
   <properties>
-    <project.build.outputTimestamp>2024-01-19T17:43:04Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2025-04-08T09:03:39Z</project.build.outputTimestamp>
 
     <!--
     Build time: latest Maven and LTS Java.
     -->
     <requireBuildtimeMavenVersion.version>[3.9.6,)</requireBuildtimeMavenVersion.version>
-    <requireBuildtimeJavaVersion.version>[17.0.6,)</requireBuildtimeJavaVersion.version>
+    <requireBuildtimeJavaVersion.version>[21.0.2,)</requireBuildtimeJavaVersion.version>
 
     <!-- Dependency versions -->
-    <version.resolver>2.0.0</version.resolver>
-    <version.maven>4.0.0-beta-3</version.maven>
-    <version.mase>7.1.3</version.mase>
+    <version.resolver>2.0.8</version.resolver>
+    <version.maven>4.0.0-rc-3</version.maven>
     <version.sisu>0.9.0.M3</version.sisu>
-    <version.slf4j>2.0.13</version.slf4j>
-    <version.picocli>4.7.6</version.picocli>
+    <version.slf4j>2.0.17</version.slf4j>
+    <version.junit>5.12.2</version.junit>
   </properties>
 
   <dependencyManagement>
@@ -203,6 +203,11 @@
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
+        <artifactId>maven-model</artifactId>
+        <version>${version.maven}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
         <artifactId>maven-model-builder</artifactId>
         <version>${version.maven}</version>
         <exclusions>
@@ -214,6 +219,11 @@
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
+        <artifactId>maven-builder-support</artifactId>
+        <version>${version.maven}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven</groupId>
         <artifactId>maven-resolver-provider</artifactId>
         <version>${version.maven}</version>
       </dependency>
@@ -221,17 +231,12 @@
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-utils</artifactId>
-        <version>4.0.1</version>
+        <version>4.0.2</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-xml</artifactId>
-        <version>4.0.4</version>
-      </dependency>
-      <dependency>
-        <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-cipher</artifactId>
-        <version>2.0</version>
+        <version>4.1.0</version>
       </dependency>
 
       <!-- DI -->
@@ -249,7 +254,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>33.2.1-jre</version>
+        <version>33.4.7-jre</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.sisu</groupId>
@@ -260,40 +265,21 @@
       <dependency>
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
-        <version>9.7</version>
+        <version>9.8</version>
       </dependency>
 
       <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-api</artifactId>
-        <version>5.10.3</version>
+        <version>${version.junit}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-params</artifactId>
+        <version>${version.junit}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
-
-  <repositories>
-    <repository>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <id>maven-2157</id>
-      <url>https://repository.apache.org/content/repositories/maven-2157/</url>
-    </repository>
-    <repository>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <id>apache.snapshots.https</id>
-      <name>ASF Snapshots</name>
-      <url>https://repository.apache.org/content/repositories/snapshots/</url>
-    </repository>
-  </repositories>
 
   <build>
     <plugins>
