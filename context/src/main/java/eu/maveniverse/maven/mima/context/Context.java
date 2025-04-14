@@ -187,10 +187,14 @@ public final class Context implements Closeable {
     @Override
     public void close() {
         if (closed.compareAndSet(false, true)) {
-            // in the future session may become closeable as well
-            // repositorySystemSession.close();
-            if (managedCloser != null) {
-                managedCloser.run();
+            try {
+                if (repositorySystemSession instanceof RepositorySystemSession.CloseableSession) {
+                    ((RepositorySystemSession.CloseableSession) repositorySystemSession).close();
+                }
+            } finally {
+                if (managedCloser != null) {
+                    managedCloser.run();
+                }
             }
         }
     }

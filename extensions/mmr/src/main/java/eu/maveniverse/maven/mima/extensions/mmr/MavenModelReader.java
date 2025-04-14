@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  *     issue another request for relocation target.</li>
  *     <li>Does not obey {@link RepositorySystemSession#getArtifactDescriptorPolicy()}, if asked artifact does not
  *     exist, it will fail.</li>
- *     <li>If passed in {@link Artifact} is resolved ({@link Artifact#getFile()} returns non-{@code null} value), then
+ *     <li>If passed in {@link Artifact} is resolved ({@link Artifact#getPath()} ()} returns non-{@code null} value), then
  *     model will be read from that file directly. Naturally, to be able to build the model, the possible
  *     parent and other POMs must be resolvable.</li>
  * </ul>

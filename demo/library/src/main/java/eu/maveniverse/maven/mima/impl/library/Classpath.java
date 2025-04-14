@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.eclipse.aether.artifact.DefaultArtifact;
@@ -68,7 +69,7 @@ public class Classpath {
                     encoding = "UTF-8";
                 }
 
-                try (Writer out = new OutputStreamWriter(outputStream, encoding)) {
+                try (Writer out = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
                     new MavenXpp3Writer().write(out, model);
                 }
                 return outputStream.toString(encoding);

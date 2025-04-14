@@ -22,6 +22,9 @@ import org.eclipse.aether.internal.impl.collect.DependencyCollectorDelegate;
 import org.eclipse.aether.internal.impl.synccontext.named.NameMapper;
 import org.eclipse.aether.internal.impl.synccontext.named.NamedLockFactoryAdapterFactory;
 import org.eclipse.aether.named.NamedLockFactory;
+import org.eclipse.aether.spi.artifact.ArtifactPredicateFactory;
+import org.eclipse.aether.spi.artifact.decorator.ArtifactDecoratorFactory;
+import org.eclipse.aether.spi.artifact.generator.ArtifactGeneratorFactory;
 import org.eclipse.aether.spi.checksums.ProvidedChecksumsSource;
 import org.eclipse.aether.spi.checksums.TrustedChecksumsSource;
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
@@ -33,11 +36,14 @@ import org.eclipse.aether.spi.connector.layout.RepositoryLayoutFactory;
 import org.eclipse.aether.spi.connector.layout.RepositoryLayoutProvider;
 import org.eclipse.aether.spi.connector.transport.TransporterFactory;
 import org.eclipse.aether.spi.connector.transport.TransporterProvider;
-import org.eclipse.aether.spi.io.FileProcessor;
+import org.eclipse.aether.spi.connector.transport.http.ChecksumExtractor;
+import org.eclipse.aether.spi.connector.transport.http.ChecksumExtractorStrategy;
+import org.eclipse.aether.spi.io.ChecksumProcessor;
+import org.eclipse.aether.spi.io.PathProcessor;
 import org.eclipse.aether.spi.resolution.ArtifactResolverPostProcessor;
 import org.eclipse.aether.spi.synccontext.SyncContextFactory;
 import org.eclipse.aether.supplier.RepositorySystemSupplier;
-import org.eclipse.aether.transport.http.ChecksumExtractor;
+import org.eclipse.aether.version.VersionScheme;
 
 public class MemoizingRepositorySystemSupplierLookup extends RepositorySystemSupplier implements Lookup {
     private final HashMap<Class<?>, Object> singulars = new HashMap<>();
@@ -88,376 +94,252 @@ public class MemoizingRepositorySystemSupplierLookup extends RepositorySystemSup
     }
 
     @Override
-    protected FileProcessor getFileProcessor() {
-        return memoize(FileProcessor.class, super.getFileProcessor());
+    protected PathProcessor createPathProcessor() {
+        return memoize(PathProcessor.class, super.createPathProcessor());
     }
 
     @Override
-    protected TrackingFileManager getTrackingFileManager() {
-        return memoize(TrackingFileManager.class, super.getTrackingFileManager());
+    protected TrackingFileManager createTrackingFileManager() {
+        return memoize(TrackingFileManager.class, super.createTrackingFileManager());
     }
 
     @Override
-    protected LocalPathComposer getLocalPathComposer() {
-        return memoize(LocalPathComposer.class, super.getLocalPathComposer());
+    protected LocalPathComposer createLocalPathComposer() {
+        return memoize(LocalPathComposer.class, super.createLocalPathComposer());
     }
 
     @Override
-    protected LocalPathPrefixComposerFactory getLocalPathPrefixComposerFactory() {
-        return memoize(LocalPathPrefixComposerFactory.class, super.getLocalPathPrefixComposerFactory());
+    protected LocalPathPrefixComposerFactory createLocalPathPrefixComposerFactory() {
+        return memoize(LocalPathPrefixComposerFactory.class, super.createLocalPathPrefixComposerFactory());
     }
 
     @Override
-    protected RepositorySystemLifecycle getRepositorySystemLifecycle() {
-        return memoize(RepositorySystemLifecycle.class, super.getRepositorySystemLifecycle());
+    protected RepositorySystemLifecycle createRepositorySystemLifecycle() {
+        return memoize(RepositorySystemLifecycle.class, super.createRepositorySystemLifecycle());
     }
 
     @Override
-    protected OfflineController getOfflineController() {
-        return memoize(OfflineController.class, super.getOfflineController());
+    protected OfflineController createOfflineController() {
+        return memoize(OfflineController.class, super.createOfflineController());
     }
 
     @Override
-    protected UpdatePolicyAnalyzer getUpdatePolicyAnalyzer() {
-        return memoize(UpdatePolicyAnalyzer.class, super.getUpdatePolicyAnalyzer());
+    protected UpdatePolicyAnalyzer createUpdatePolicyAnalyzer() {
+        return memoize(UpdatePolicyAnalyzer.class, super.createUpdatePolicyAnalyzer());
     }
 
     @Override
-    protected ChecksumPolicyProvider getChecksumPolicyProvider() {
-        return memoize(ChecksumPolicyProvider.class, super.getChecksumPolicyProvider());
+    protected ChecksumPolicyProvider createChecksumPolicyProvider() {
+        return memoize(ChecksumPolicyProvider.class, super.createChecksumPolicyProvider());
     }
 
     @Override
-    protected UpdateCheckManager getUpdateCheckManager(
-            TrackingFileManager trackingFileManager, UpdatePolicyAnalyzer updatePolicyAnalyzer) {
-        return memoize(
-                UpdateCheckManager.class, super.getUpdateCheckManager(trackingFileManager, updatePolicyAnalyzer));
+    protected UpdateCheckManager createUpdateCheckManager() {
+        return memoize(UpdateCheckManager.class, super.createUpdateCheckManager());
     }
 
     @Override
-    protected Map<String, NamedLockFactory> getNamedLockFactories() {
-        return memoize(NamedLockFactory.class, super.getNamedLockFactories());
+    protected Map<String, NamedLockFactory> createNamedLockFactories() {
+        return memoize(NamedLockFactory.class, super.createNamedLockFactories());
     }
 
     @Override
-    protected Map<String, NameMapper> getNameMappers() {
-        return memoize(NameMapper.class, super.getNameMappers());
+    protected Map<String, NameMapper> createNameMappers() {
+        return memoize(NameMapper.class, super.createNameMappers());
     }
 
     @Override
-    protected NamedLockFactoryAdapterFactory getNamedLockFactoryAdapterFactory(
-            Map<String, NamedLockFactory> namedLockFactories,
-            Map<String, NameMapper> nameMappers,
-            RepositorySystemLifecycle repositorySystemLifecycle) {
-        return memoize(
-                NamedLockFactoryAdapterFactory.class,
-                super.getNamedLockFactoryAdapterFactory(namedLockFactories, nameMappers, repositorySystemLifecycle));
+    protected NamedLockFactoryAdapterFactory createNamedLockFactoryAdapterFactory() {
+        return memoize(NamedLockFactoryAdapterFactory.class, super.createNamedLockFactoryAdapterFactory());
     }
 
     @Override
-    protected SyncContextFactory getSyncContextFactory(NamedLockFactoryAdapterFactory namedLockFactoryAdapterFactory) {
-        return memoize(SyncContextFactory.class, super.getSyncContextFactory(namedLockFactoryAdapterFactory));
+    protected SyncContextFactory createSyncContextFactory() {
+        return memoize(SyncContextFactory.class, super.createSyncContextFactory());
     }
 
     @Override
-    protected Map<String, ChecksumAlgorithmFactory> getChecksumAlgorithmFactories() {
-        return memoize(ChecksumAlgorithmFactory.class, super.getChecksumAlgorithmFactories());
+    protected Map<String, ChecksumAlgorithmFactory> createChecksumAlgorithmFactories() {
+        return memoize(ChecksumAlgorithmFactory.class, super.createChecksumAlgorithmFactories());
     }
 
     @Override
-    protected ChecksumAlgorithmFactorySelector getChecksumAlgorithmFactorySelector(
-            Map<String, ChecksumAlgorithmFactory> checksumAlgorithmFactories) {
-        return memoize(
-                ChecksumAlgorithmFactorySelector.class,
-                super.getChecksumAlgorithmFactorySelector(checksumAlgorithmFactories));
+    protected ChecksumAlgorithmFactorySelector createChecksumAlgorithmFactorySelector() {
+        return memoize(ChecksumAlgorithmFactorySelector.class, super.createChecksumAlgorithmFactorySelector());
     }
 
     @Override
-    protected Map<String, RepositoryLayoutFactory> getRepositoryLayoutFactories(
-            ChecksumAlgorithmFactorySelector checksumAlgorithmFactorySelector) {
-        return memoize(
-                RepositoryLayoutFactory.class, super.getRepositoryLayoutFactories(checksumAlgorithmFactorySelector));
+    protected Map<String, RepositoryLayoutFactory> createRepositoryLayoutFactories() {
+        return memoize(RepositoryLayoutFactory.class, super.createRepositoryLayoutFactories());
     }
 
     @Override
-    protected RepositoryLayoutProvider getRepositoryLayoutProvider(
-            Map<String, RepositoryLayoutFactory> repositoryLayoutFactories) {
-        return memoize(RepositoryLayoutProvider.class, super.getRepositoryLayoutProvider(repositoryLayoutFactories));
+    protected RepositoryLayoutProvider createRepositoryLayoutProvider() {
+        return memoize(RepositoryLayoutProvider.class, super.createRepositoryLayoutProvider());
     }
 
     @Override
-    protected LocalRepositoryProvider getLocalRepositoryProvider(
-            LocalPathComposer localPathComposer,
-            TrackingFileManager trackingFileManager,
-            LocalPathPrefixComposerFactory localPathPrefixComposerFactory) {
-        return memoize(
-                LocalRepositoryProvider.class,
-                super.getLocalRepositoryProvider(
-                        localPathComposer, trackingFileManager, localPathPrefixComposerFactory));
+    protected LocalRepositoryProvider createLocalRepositoryProvider() {
+        return memoize(LocalRepositoryProvider.class, super.createLocalRepositoryProvider());
     }
 
     @Override
-    protected RemoteRepositoryManager getRemoteRepositoryManager(
-            UpdatePolicyAnalyzer updatePolicyAnalyzer, ChecksumPolicyProvider checksumPolicyProvider) {
-        return memoize(
-                RemoteRepositoryManager.class,
-                super.getRemoteRepositoryManager(updatePolicyAnalyzer, checksumPolicyProvider));
+    protected RemoteRepositoryManager createRemoteRepositoryManager() {
+        return memoize(RemoteRepositoryManager.class, super.createRemoteRepositoryManager());
     }
 
     @Override
-    protected Map<String, RemoteRepositoryFilterSource> getRemoteRepositoryFilterSources(
-            RepositorySystemLifecycle repositorySystemLifecycle, RepositoryLayoutProvider repositoryLayoutProvider) {
-        return memoize(
-                RemoteRepositoryFilterSource.class,
-                super.getRemoteRepositoryFilterSources(repositorySystemLifecycle, repositoryLayoutProvider));
+    protected Map<String, RemoteRepositoryFilterSource> createRemoteRepositoryFilterSources() {
+        return memoize(RemoteRepositoryFilterSource.class, super.createRemoteRepositoryFilterSources());
     }
 
     @Override
-    protected RemoteRepositoryFilterManager getRemoteRepositoryFilterManager(
-            Map<String, RemoteRepositoryFilterSource> remoteRepositoryFilterSources) {
-        return memoize(
-                RemoteRepositoryFilterManager.class,
-                super.getRemoteRepositoryFilterManager(remoteRepositoryFilterSources));
+    protected RemoteRepositoryFilterManager createRemoteRepositoryFilterManager() {
+        return memoize(RemoteRepositoryFilterManager.class, super.createRemoteRepositoryFilterManager());
     }
 
     @Override
-    protected Map<String, RepositoryListener> getRepositoryListeners() {
-        return memoize(RepositoryListener.class, super.getRepositoryListeners());
+    protected Map<String, RepositoryListener> createRepositoryListeners() {
+        return memoize(RepositoryListener.class, super.createRepositoryListeners());
     }
 
     @Override
-    protected RepositoryEventDispatcher getRepositoryEventDispatcher(
-            Map<String, RepositoryListener> repositoryListeners) {
-        return memoize(RepositoryEventDispatcher.class, super.getRepositoryEventDispatcher(repositoryListeners));
+    protected RepositoryEventDispatcher createRepositoryEventDispatcher() {
+        return memoize(RepositoryEventDispatcher.class, super.createRepositoryEventDispatcher());
     }
 
     @Override
-    protected Map<String, TrustedChecksumsSource> getTrustedChecksumsSources(
-            FileProcessor fileProcessor,
-            LocalPathComposer localPathComposer,
-            RepositorySystemLifecycle repositorySystemLifecycle) {
-        return memoize(
-                TrustedChecksumsSource.class,
-                super.getTrustedChecksumsSources(fileProcessor, localPathComposer, repositorySystemLifecycle));
+    protected Map<String, TrustedChecksumsSource> createTrustedChecksumsSources() {
+        return memoize(TrustedChecksumsSource.class, super.createTrustedChecksumsSources());
     }
 
     @Override
-    protected Map<String, ProvidedChecksumsSource> getProvidedChecksumsSources(
-            Map<String, TrustedChecksumsSource> trustedChecksumsSources) {
-        return memoize(ProvidedChecksumsSource.class, super.getProvidedChecksumsSources(trustedChecksumsSources));
+    protected Map<String, ProvidedChecksumsSource> createProvidedChecksumsSources() {
+        return memoize(ProvidedChecksumsSource.class, super.createProvidedChecksumsSources());
     }
 
     @Override
-    protected Map<String, ChecksumExtractor> getChecksumExtractors() {
-        return memoize(ChecksumExtractor.class, super.getChecksumExtractors());
+    protected Map<String, ChecksumExtractorStrategy> createChecksumExtractorStrategies() {
+        return memoize(ChecksumExtractorStrategy.class, super.createChecksumExtractorStrategies());
     }
 
     @Override
-    protected Map<String, TransporterFactory> getTransporterFactories(Map<String, ChecksumExtractor> extractors) {
-        return memoize(TransporterFactory.class, super.getTransporterFactories(extractors));
+    protected ChecksumProcessor createChecksumProcessor() {
+        return memoize(ChecksumProcessor.class, super.createChecksumProcessor());
     }
 
     @Override
-    protected TransporterProvider getTransporterProvider(Map<String, TransporterFactory> transporterFactories) {
-        return memoize(TransporterProvider.class, super.getTransporterProvider(transporterFactories));
+    protected ChecksumExtractor createChecksumExtractor() {
+        return memoize(ChecksumExtractor.class, super.createChecksumExtractor());
     }
 
     @Override
-    protected BasicRepositoryConnectorFactory getBasicRepositoryConnectorFactory(
-            TransporterProvider transporterProvider,
-            RepositoryLayoutProvider repositoryLayoutProvider,
-            ChecksumPolicyProvider checksumPolicyProvider,
-            FileProcessor fileProcessor,
-            Map<String, ProvidedChecksumsSource> providedChecksumsSources) {
-        return memoize(
-                BasicRepositoryConnectorFactory.class,
-                super.getBasicRepositoryConnectorFactory(
-                        transporterProvider,
-                        repositoryLayoutProvider,
-                        checksumPolicyProvider,
-                        fileProcessor,
-                        providedChecksumsSources));
+    protected Map<String, TransporterFactory> createTransporterFactories() {
+        return memoize(TransporterFactory.class, super.createTransporterFactories());
     }
 
     @Override
-    protected Map<String, RepositoryConnectorFactory> getRepositoryConnectorFactories(
-            BasicRepositoryConnectorFactory basicRepositoryConnectorFactory) {
-        return memoize(
-                RepositoryConnectorFactory.class,
-                super.getRepositoryConnectorFactories(basicRepositoryConnectorFactory));
+    protected TransporterProvider createTransporterProvider() {
+        return memoize(TransporterProvider.class, super.createTransporterProvider());
     }
 
     @Override
-    protected RepositoryConnectorProvider getRepositoryConnectorProvider(
-            Map<String, RepositoryConnectorFactory> repositoryConnectorFactories,
-            RemoteRepositoryFilterManager remoteRepositoryFilterManager) {
-        return memoize(
-                RepositoryConnectorProvider.class,
-                super.getRepositoryConnectorProvider(repositoryConnectorFactories, remoteRepositoryFilterManager));
+    protected BasicRepositoryConnectorFactory createBasicRepositoryConnectorFactory() {
+        return memoize(BasicRepositoryConnectorFactory.class, super.createBasicRepositoryConnectorFactory());
     }
 
     @Override
-    protected Installer getInstaller(
-            FileProcessor fileProcessor,
-            RepositoryEventDispatcher repositoryEventDispatcher,
-            Map<String, MetadataGeneratorFactory> metadataGeneratorFactories,
-            SyncContextFactory syncContextFactory) {
-        return memoize(
-                Installer.class,
-                super.getInstaller(
-                        fileProcessor, repositoryEventDispatcher, metadataGeneratorFactories, syncContextFactory));
+    protected Map<String, RepositoryConnectorFactory> createRepositoryConnectorFactories() {
+        return memoize(RepositoryConnectorFactory.class, super.createRepositoryConnectorFactories());
     }
 
     @Override
-    protected Deployer getDeployer(
-            FileProcessor fileProcessor,
-            RepositoryEventDispatcher repositoryEventDispatcher,
-            RepositoryConnectorProvider repositoryConnectorProvider,
-            RemoteRepositoryManager remoteRepositoryManager,
-            UpdateCheckManager updateCheckManager,
-            Map<String, MetadataGeneratorFactory> metadataGeneratorFactories,
-            SyncContextFactory syncContextFactory,
-            OfflineController offlineController) {
-        return memoize(
-                Deployer.class,
-                super.getDeployer(
-                        fileProcessor,
-                        repositoryEventDispatcher,
-                        repositoryConnectorProvider,
-                        remoteRepositoryManager,
-                        updateCheckManager,
-                        metadataGeneratorFactories,
-                        syncContextFactory,
-                        offlineController));
+    protected RepositoryConnectorProvider createRepositoryConnectorProvider() {
+        return memoize(RepositoryConnectorProvider.class, super.createRepositoryConnectorProvider());
     }
 
     @Override
-    protected Map<String, DependencyCollectorDelegate> getDependencyCollectorDelegates(
-            RemoteRepositoryManager remoteRepositoryManager,
-            ArtifactDescriptorReader artifactDescriptorReader,
-            VersionRangeResolver versionRangeResolver) {
-        return memoize(
-                DependencyCollectorDelegate.class,
-                super.getDependencyCollectorDelegates(
-                        remoteRepositoryManager, artifactDescriptorReader, versionRangeResolver));
+    protected Installer createInstaller() {
+        return memoize(Installer.class, super.createInstaller());
     }
 
     @Override
-    protected DependencyCollector getDependencyCollector(
-            Map<String, DependencyCollectorDelegate> dependencyCollectorDelegates) {
-        return memoize(DependencyCollector.class, super.getDependencyCollector(dependencyCollectorDelegates));
+    protected Deployer createDeployer() {
+        return memoize(Deployer.class, super.createDeployer());
     }
 
     @Override
-    protected Map<String, ArtifactResolverPostProcessor> getArtifactResolverPostProcessors(
-            ChecksumAlgorithmFactorySelector checksumAlgorithmFactorySelector,
-            Map<String, TrustedChecksumsSource> trustedChecksumsSources) {
-        return memoize(
-                ArtifactResolverPostProcessor.class,
-                super.getArtifactResolverPostProcessors(checksumAlgorithmFactorySelector, trustedChecksumsSources));
+    protected Map<String, DependencyCollectorDelegate> createDependencyCollectorDelegates() {
+        return memoize(DependencyCollectorDelegate.class, super.createDependencyCollectorDelegates());
     }
 
     @Override
-    protected ArtifactResolver getArtifactResolver(
-            FileProcessor fileProcessor,
-            RepositoryEventDispatcher repositoryEventDispatcher,
-            VersionResolver versionResolver,
-            UpdateCheckManager updateCheckManager,
-            RepositoryConnectorProvider repositoryConnectorProvider,
-            RemoteRepositoryManager remoteRepositoryManager,
-            SyncContextFactory syncContextFactory,
-            OfflineController offlineController,
-            Map<String, ArtifactResolverPostProcessor> artifactResolverPostProcessors,
-            RemoteRepositoryFilterManager remoteRepositoryFilterManager) {
-        return memoize(
-                ArtifactResolver.class,
-                super.getArtifactResolver(
-                        fileProcessor,
-                        repositoryEventDispatcher,
-                        versionResolver,
-                        updateCheckManager,
-                        repositoryConnectorProvider,
-                        remoteRepositoryManager,
-                        syncContextFactory,
-                        offlineController,
-                        artifactResolverPostProcessors,
-                        remoteRepositoryFilterManager));
+    protected DependencyCollector createDependencyCollector() {
+        return memoize(DependencyCollector.class, super.createDependencyCollector());
     }
 
     @Override
-    protected MetadataResolver getMetadataResolver(
-            RepositoryEventDispatcher repositoryEventDispatcher,
-            UpdateCheckManager updateCheckManager,
-            RepositoryConnectorProvider repositoryConnectorProvider,
-            RemoteRepositoryManager remoteRepositoryManager,
-            SyncContextFactory syncContextFactory,
-            OfflineController offlineController,
-            RemoteRepositoryFilterManager remoteRepositoryFilterManager) {
-        return memoize(
-                MetadataResolver.class,
-                super.getMetadataResolver(
-                        repositoryEventDispatcher,
-                        updateCheckManager,
-                        repositoryConnectorProvider,
-                        remoteRepositoryManager,
-                        syncContextFactory,
-                        offlineController,
-                        remoteRepositoryFilterManager));
+    protected Map<String, ArtifactResolverPostProcessor> createArtifactResolverPostProcessors() {
+        return memoize(ArtifactResolverPostProcessor.class, super.createArtifactResolverPostProcessors());
     }
 
     @Override
-    protected Map<String, MetadataGeneratorFactory> getMetadataGeneratorFactories() {
-        return memoize(MetadataGeneratorFactory.class, super.getMetadataGeneratorFactories());
+    protected ArtifactResolver createArtifactResolver() {
+        return memoize(ArtifactResolver.class, super.createArtifactResolver());
     }
 
     @Override
-    protected ArtifactDescriptorReader getArtifactDescriptorReader(
-            RemoteRepositoryManager remoteRepositoryManager,
-            VersionResolver versionResolver,
-            VersionRangeResolver versionRangeResolver,
-            ArtifactResolver artifactResolver,
-            ModelBuilder modelBuilder,
-            RepositoryEventDispatcher repositoryEventDispatcher,
-            ModelCacheFactory modelCacheFactory) {
-        return memoize(
-                ArtifactDescriptorReader.class,
-                super.getArtifactDescriptorReader(
-                        remoteRepositoryManager,
-                        versionResolver,
-                        versionRangeResolver,
-                        artifactResolver,
-                        modelBuilder,
-                        repositoryEventDispatcher,
-                        modelCacheFactory));
+    protected MetadataResolver createMetadataResolver() {
+        return memoize(MetadataResolver.class, super.createMetadataResolver());
     }
 
     @Override
-    protected VersionResolver getVersionResolver(
-            MetadataResolver metadataResolver,
-            SyncContextFactory syncContextFactory,
-            RepositoryEventDispatcher repositoryEventDispatcher) {
-        return memoize(
-                VersionResolver.class,
-                super.getVersionResolver(metadataResolver, syncContextFactory, repositoryEventDispatcher));
+    protected Map<String, MetadataGeneratorFactory> createMetadataGeneratorFactories() {
+        return memoize(MetadataGeneratorFactory.class, super.createMetadataGeneratorFactories());
     }
 
     @Override
-    protected VersionRangeResolver getVersionRangeResolver(
-            MetadataResolver metadataResolver,
-            SyncContextFactory syncContextFactory,
-            RepositoryEventDispatcher repositoryEventDispatcher) {
-        return memoize(
-                VersionRangeResolver.class,
-                super.getVersionRangeResolver(metadataResolver, syncContextFactory, repositoryEventDispatcher));
+    protected ArtifactDescriptorReader createArtifactDescriptorReader() {
+        return memoize(ArtifactDescriptorReader.class, super.createArtifactDescriptorReader());
     }
 
     @Override
-    protected ModelBuilder getModelBuilder() {
-        return memoize(ModelBuilder.class, super.getModelBuilder());
+    protected VersionResolver createVersionResolver() {
+        return memoize(VersionResolver.class, super.createVersionResolver());
     }
 
     @Override
-    protected ModelCacheFactory getModelCacheFactory() {
-        return memoize(ModelCacheFactory.class, super.getModelCacheFactory());
+    protected VersionRangeResolver createVersionRangeResolver() {
+        return memoize(VersionRangeResolver.class, super.createVersionRangeResolver());
+    }
+
+    @Override
+    protected ModelBuilder createModelBuilder() {
+        return memoize(ModelBuilder.class, super.createModelBuilder());
+    }
+
+    @Override
+    protected ArtifactPredicateFactory createArtifactPredicateFactory() {
+        return memoize(ArtifactPredicateFactory.class, super.createArtifactPredicateFactory());
+    }
+
+    @Override
+    protected VersionScheme createVersionScheme() {
+        return memoize(VersionScheme.class, super.createVersionScheme());
+    }
+
+    @Override
+    protected Map<String, ArtifactGeneratorFactory> createArtifactGeneratorFactories() {
+        return memoize(ArtifactGeneratorFactory.class, super.createArtifactGeneratorFactories());
+    }
+
+    @Override
+    protected Map<String, ArtifactDecoratorFactory> createArtifactDecoratorFactories() {
+        return memoize(ArtifactDecoratorFactory.class, super.createArtifactDecoratorFactories());
+    }
+
+    @Override
+    protected ModelCacheFactory createModelCacheFactory() {
+        return memoize(ModelCacheFactory.class, super.createModelCacheFactory());
     }
 }

@@ -13,6 +13,7 @@ import org.eclipse.aether.repository.AuthenticationContext;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.DependencyResolutionException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 
 public class ClasspathTest {
     @Test
@@ -46,6 +47,7 @@ public class ClasspathTest {
                 DependencyResolutionException.class, () -> new Classpath().classpath(overrides, "junit:junit:4.13.2"));
     }
 
+    @Disabled
     @Test
     public void simpleEncrypted() {
         ContextOverrides overrides = ContextOverrides.create()

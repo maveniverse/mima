@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.maven.model.ActivationFile;
@@ -36,7 +37,6 @@ import org.apache.maven.model.building.ModelProblemCollector;
 import org.apache.maven.model.building.ModelProblemCollectorRequest;
 import org.apache.maven.model.profile.DefaultProfileActivationContext;
 import org.apache.maven.model.profile.ProfileSelector;
-import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.apache.maven.settings.Activation;
 import org.apache.maven.settings.ActivationOS;
 import org.apache.maven.settings.ActivationProperty;
@@ -58,10 +58,13 @@ import org.apache.maven.settings.merge.MavenSettingsMerger;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.eclipse.aether.ConfigurationProperties;
 import org.eclipse.aether.DefaultRepositoryCache;
-import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession.CloseableSession;
+import org.eclipse.aether.RepositorySystemSession.SessionBuilder;
+import org.eclipse.aether.artifact.ArtifactTypeRegistry;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
+import org.eclipse.aether.supplier.SessionBuilderSupplier;
 import org.eclipse.aether.util.artifact.DefaultArtifactTypeRegistry;
 import org.eclipse.aether.util.repository.AuthenticationBuilder;
 import org.eclipse.aether.util.repository.DefaultAuthenticationSelector;
@@ -191,7 +194,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                         .build();
             }
 
-            DefaultRepositorySystemSession session = newRepositorySession(
+            CloseableSession session = newRepositorySession(
                     alteredOverrides, mavenUserHomeImpl, repositorySystem, settings, settingsDecrypter);
 
             // settings: active profile repositories (if enabled), strictly preserve order
@@ -360,16 +363,26 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         return new ArrayList<>(result.values());
     }
 
-    protected DefaultRepositorySystemSession newRepositorySession(
+    protected CloseableSession newRepositorySession(
             ContextOverrides overrides,
             MavenUserHome mavenUserHome,
             RepositorySystem repositorySystem,
             Settings settings,
             SettingsDecrypter settingsDecrypter) {
-        DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
+        AtomicReference<ArtifactTypeRegistry> artifactTypeRegistryRef = new AtomicReference<>(null);
+        SessionBuilderSupplier supplier = new SessionBuilderSupplier(repositorySystem) {
+            @Override
+            protected ArtifactTypeRegistry getArtifactTypeRegistry() {
+                ArtifactTypeRegistry registry = super.getArtifactTypeRegistry();
+                artifactTypeRegistryRef.set(registry);
+                return registry;
+            }
+        };
+
+        SessionBuilder session = supplier.get();
 
         if (!overrides.extraArtifactTypes().isEmpty()) {
-            DefaultArtifactTypeRegistry registry = (DefaultArtifactTypeRegistry) session.getArtifactTypeRegistry();
+            DefaultArtifactTypeRegistry registry = (DefaultArtifactTypeRegistry) artifactTypeRegistryRef.get();
             overrides.extraArtifactTypes().forEach(registry::add);
         }
 
@@ -504,9 +517,9 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             session.setRepositoryListener(overrides.getRepositoryListener());
         }
 
-        newLocalRepositoryManager(mavenUserHome.localRepository(), repositorySystem, session);
+        newLocalRepositoryManager(overrides, mavenUserHome.localRepository(), session);
 
-        return session;
+        return session.build();
     }
 
     protected String getUserAgent() {

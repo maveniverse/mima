@@ -11,10 +11,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import com.google.common.jimfs.Configuration;
+import com.google.common.jimfs.Jimfs;
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.Runtimes;
-import java.util.Arrays;
+import java.nio.file.FileSystem;
 import java.util.Collections;
 import java.util.stream.Stream;
 import org.apache.maven.model.Model;
@@ -23,23 +25,43 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.repository.ArtifactRepository;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactDescriptorResult;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 public class MavenModelReaderTest {
-    private static Stream<RemoteRepository> repositories() {
-        return Arrays.stream(new RemoteRepository[] {
-            null, // context
-            ContextOverrides.CENTRAL, // central override
-            new RemoteRepository.Builder("foobar", "default", "https://repo1.maven.org/maven2").build() // alt central
-        });
+    enum LocalRepository {
+        FS,
+        JIMFS
+    }
+
+    private static Stream<Arguments> repositories() {
+        return Stream.of(
+                Arguments.arguments(null, LocalRepository.FS),
+                Arguments.arguments(null, LocalRepository.JIMFS),
+                Arguments.arguments(ContextOverrides.CENTRAL, LocalRepository.FS),
+                Arguments.arguments(ContextOverrides.CENTRAL, LocalRepository.JIMFS),
+                Arguments.arguments(
+                        new RemoteRepository.Builder("foobar", "default", "https://repo1.maven.org/maven2").build(),
+                        LocalRepository.FS),
+                Arguments.arguments(
+                        new RemoteRepository.Builder("foobar", "default", "https://repo1.maven.org/maven2").build(),
+                        LocalRepository.JIMFS));
     }
 
     @ParameterizedTest
     @MethodSource("repositories")
-    void smoke(RemoteRepository overrideRepository) throws Exception {
-        try (Context context =
-                Runtimes.INSTANCE.getRuntime().create(ContextOverrides.create().build())) {
+    void smoke(RemoteRepository overrideRepository, LocalRepository localRepository) throws Exception {
+        // see https://issues.apache.org/jira/browse/MNG-8687
+        // Maven4 compat classes (those used by MIMA) are not fully JIMFS capable
+        Assumptions.assumeTrue(LocalRepository.FS == localRepository);
+        ContextOverrides.Builder overrides = ContextOverrides.create();
+        if (localRepository == LocalRepository.JIMFS) {
+            FileSystem fs = Jimfs.newFileSystem(Configuration.unix());
+            overrides.withLocalRepositoryOverride(fs.getPath("/"));
+        }
+        try (Context context = Runtimes.INSTANCE.getRuntime().create(overrides.build())) {
             MavenModelReader reader = new MavenModelReader(context);
 
             ModelResponse response = reader.readModel(ModelRequest.builder()
