@@ -14,7 +14,7 @@
   <parent>
     <groupId>eu.maveniverse.maven.parent</groupId>
     <artifactId>parent</artifactId>
-    <version>22</version>
+    <version>27</version>
     <relativePath />
   </parent>
 
@@ -32,7 +32,7 @@
   </modules>
 
   <properties>
-    <modernizer.version>2.9.0</modernizer.version>
+    <modernizer.version>3.1.0</modernizer.version>
     <version.mima>2.4.24-SNAPSHOT</version.mima>
     <!-- tied to MIMA/Maven -->
     <version.resolver>1.9.22</version.resolver>

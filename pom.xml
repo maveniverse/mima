@@ -14,7 +14,7 @@
   <parent>
     <groupId>eu.maveniverse.maven.parent</groupId>
     <artifactId>parent</artifactId>
-    <version>26</version>
+    <version>27</version>
   </parent>
 
   <groupId>eu.maveniverse.maven.mima</groupId>
@@ -58,12 +58,6 @@
 
   <properties>
     <project.build.outputTimestamp>2025-04-08T09:03:39Z</project.build.outputTimestamp>
-
-    <!--
-    Build time: latest Maven and LTS Java.
-    -->
-    <requireBuildtimeMavenVersion.version>[3.9.6,)</requireBuildtimeMavenVersion.version>
-    <requireBuildtimeJavaVersion.version>[21.0.2,)</requireBuildtimeJavaVersion.version>
 
     <!-- Dependency versions -->
     <version.resolver>1.9.22</version.resolver>
