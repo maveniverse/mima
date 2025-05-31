@@ -220,8 +220,8 @@
       <dependency>
         <groupId>com.google.inject</groupId>
         <artifactId>guice</artifactId>
-        <classifier>classes</classifier>
         <version>6.0.0</version>
+        <classifier>classes</classifier>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
