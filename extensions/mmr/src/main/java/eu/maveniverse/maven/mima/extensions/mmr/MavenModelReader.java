@@ -11,8 +11,15 @@ import static java.util.Objects.requireNonNull;
 
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.extensions.mmr.internal.MavenModelReaderImpl;
+import java.util.List;
+import org.apache.maven.model.building.ModelBuilder;
+import org.apache.maven.model.interpolation.StringVisitorModelInterpolator;
+import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.impl.RemoteRepositoryManager;
+import org.eclipse.aether.impl.RepositoryEventDispatcher;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.VersionResolutionException;
@@ -43,6 +50,27 @@ import org.slf4j.LoggerFactory;
 public class MavenModelReader {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final MavenModelReaderImpl mavenModelReaderImpl;
+
+    /**
+     * Creates instance using passed in parameters.
+     */
+    public MavenModelReader(
+            RepositorySystem repositorySystem,
+            RepositorySystemSession session,
+            RemoteRepositoryManager remoteRepositoryManager,
+            RepositoryEventDispatcher repositoryEventDispatcher,
+            ModelBuilder modelBuilder,
+            StringVisitorModelInterpolator stringVisitorModelInterpolator,
+            List<RemoteRepository> repositories) {
+        this.mavenModelReaderImpl = new MavenModelReaderImpl(
+                repositorySystem,
+                session,
+                remoteRepositoryManager,
+                repositoryEventDispatcher,
+                modelBuilder,
+                stringVisitorModelInterpolator,
+                repositories);
+    }
 
     /**
      * Creates instance using passed in context. As context carries "root" remote repositories, they are used
