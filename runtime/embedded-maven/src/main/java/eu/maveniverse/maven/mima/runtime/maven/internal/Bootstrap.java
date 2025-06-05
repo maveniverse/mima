@@ -21,7 +21,7 @@ import org.eclipse.sisu.Nullable;
 public class Bootstrap {
     @Inject
     public Bootstrap(@Nullable MavenRuntime mavenEngine) {
-        if (mavenEngine != null) {
+        if (mavenEngine != null && mavenEngine.isReady()) {
             Runtimes.INSTANCE.registerRuntime(mavenEngine);
         }
     }
