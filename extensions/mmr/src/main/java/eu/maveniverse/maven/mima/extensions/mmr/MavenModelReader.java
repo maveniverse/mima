@@ -47,7 +47,7 @@ public class MavenModelReader {
     /**
      * Creates instance using passed in impl instance.
      */
-    public MavenModelReader(MavenModelReaderImpl  mavenModelReaderImpl) {
+    public MavenModelReader(MavenModelReaderImpl mavenModelReaderImpl) {
         this.mavenModelReaderImpl = requireNonNull(mavenModelReaderImpl);
     }
 
@@ -56,8 +56,7 @@ public class MavenModelReader {
      * by default, but can be overridden in {@link ModelRequest}.
      */
     public MavenModelReader(Context context) {
-        requireNonNull(context, "context");
-        this.mavenModelReaderImpl = new MavenModelReaderImpl(context);
+        this(new MavenModelReaderImpl(context));
     }
 
     /**
