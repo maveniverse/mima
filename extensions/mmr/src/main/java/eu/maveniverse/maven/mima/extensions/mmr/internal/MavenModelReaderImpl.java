@@ -7,6 +7,8 @@
  */
 package eu.maveniverse.maven.mima.extensions.mmr.internal;
 
+import static java.util.Objects.requireNonNull;
+
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.extensions.mmr.ModelRequest;
 import eu.maveniverse.maven.mima.extensions.mmr.ModelResponse;
@@ -73,30 +75,54 @@ import org.slf4j.LoggerFactory;
 public class MavenModelReaderImpl {
     private final RepositorySystem repositorySystem;
     private final RepositorySystemSession session;
-    private final List<RemoteRepository> repositories;
     private final RemoteRepositoryManager remoteRepositoryManager;
     private final RepositoryEventDispatcher repositoryEventDispatcher;
     private final ModelBuilder modelBuilder;
     private final StringVisitorModelInterpolator stringVisitorModelInterpolator;
+    private final List<RemoteRepository> repositories;
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+    /**
+     * Full ctor. Not usable for injection as repositories are not a component.
+     */
+    public MavenModelReaderImpl(
+            RepositorySystem repositorySystem,
+            RepositorySystemSession session,
+            RemoteRepositoryManager remoteRepositoryManager,
+            RepositoryEventDispatcher repositoryEventDispatcher,
+            ModelBuilder modelBuilder,
+            StringVisitorModelInterpolator stringVisitorModelInterpolator,
+            List<RemoteRepository> repositories) {
+        this.repositorySystem = requireNonNull(repositorySystem);
+        this.session = requireNonNull(session);
+        this.remoteRepositoryManager = requireNonNull(remoteRepositoryManager);
+        this.repositoryEventDispatcher = requireNonNull(repositoryEventDispatcher);
+        this.modelBuilder = requireNonNull(modelBuilder);
+        this.stringVisitorModelInterpolator = requireNonNull(stringVisitorModelInterpolator);
+        this.repositories = requireNonNull(repositories);
+    }
+
+    /**
+     * Ctor to be used with {@link Context} when available. Fully initializes instance with remote repositories as well.
+     */
     public MavenModelReaderImpl(Context context) {
-        this.repositorySystem = context.repositorySystem();
-        this.session = context.repositorySystemSession();
-        this.repositories = context.remoteRepositories();
-        this.remoteRepositoryManager = context.lookup()
-                .lookup(RemoteRepositoryManager.class)
-                .orElseThrow(() -> new IllegalStateException("RemoteRepositoryManager not available"));
-        this.modelBuilder = context.lookup()
-                .lookup(ModelBuilder.class)
-                .orElseThrow(() -> new IllegalStateException("ModelBuilder not available"));
-        this.repositoryEventDispatcher = context.lookup()
-                .lookup(RepositoryEventDispatcher.class)
-                .orElseThrow(() -> new IllegalStateException("RepositoryEventDispatcher not available"));
-        this.stringVisitorModelInterpolator = context.lookup()
-                .lookup(StringVisitorModelInterpolator.class)
-                .orElseThrow(() -> new IllegalStateException("StringVisitorModelInterpolator not available"));
+        this(
+                context.repositorySystem(),
+                context.repositorySystemSession(),
+                context.lookup()
+                        .lookup(RemoteRepositoryManager.class)
+                        .orElseThrow(() -> new IllegalStateException("RemoteRepositoryManager not available")),
+                context.lookup()
+                        .lookup(RepositoryEventDispatcher.class)
+                        .orElseThrow(() -> new IllegalStateException("RepositoryEventDispatcher not available")),
+                context.lookup()
+                        .lookup(ModelBuilder.class)
+                        .orElseThrow(() -> new IllegalStateException("ModelBuilder not available")),
+                context.lookup()
+                        .lookup(StringVisitorModelInterpolator.class)
+                        .orElseThrow(() -> new IllegalStateException("StringVisitorModelInterpolator not available")),
+                context.remoteRepositories());
     }
 
     public ModelResponse readModel(ModelRequest request)
