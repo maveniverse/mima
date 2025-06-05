@@ -31,6 +31,7 @@ import org.apache.maven.settings.Proxy;
 import org.codehaus.plexus.PlexusContainer;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.sisu.Nullable;
 
 @Singleton
 @Named
@@ -41,12 +42,14 @@ public final class MavenRuntime extends RuntimeSupport {
 
     private final Provider<MavenSession> mavenSessionProvider;
 
+    private final RuntimeInformation runtimeInformation;
+
     @Inject
     public MavenRuntime(
-            RepositorySystem repositorySystem,
-            PlexusContainer plexusContainer,
+            @Nullable RepositorySystem repositorySystem,
+            @Nullable PlexusContainer plexusContainer,
             Provider<MavenSession> mavenSessionProvider,
-            RuntimeInformation rt) {
+            @Nullable RuntimeInformation rt) {
         super(
                 "embedded-maven",
                 discoverArtifactVersion("eu.maveniverse.maven.mima.runtime", "embedded-maven", UNKNOWN),
@@ -55,14 +58,21 @@ public final class MavenRuntime extends RuntimeSupport {
         this.repositorySystem = repositorySystem;
         this.plexusContainer = plexusContainer;
         this.mavenSessionProvider = mavenSessionProvider;
+        this.runtimeInformation = rt;
+    }
+
+    public boolean isReady() {
+        return repositorySystem != null && plexusContainer != null && runtimeInformation != null;
     }
 
     private static String mavenVersion(RuntimeInformation runtimeInformation) {
-        String mavenVersion = runtimeInformation.getMavenVersion();
-        if (mavenVersion == null || mavenVersion.trim().isEmpty()) {
-            return UNKNOWN;
+        if (runtimeInformation != null) {
+            String mavenVersion = runtimeInformation.getMavenVersion();
+            if (mavenVersion != null && !mavenVersion.trim().isEmpty()) {
+                return mavenVersion;
+            }
         }
-        return mavenVersion;
+        return UNKNOWN;
     }
 
     @Override
