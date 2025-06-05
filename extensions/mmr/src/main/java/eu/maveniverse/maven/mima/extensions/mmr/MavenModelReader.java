@@ -11,8 +11,12 @@ import static java.util.Objects.requireNonNull;
 
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.extensions.mmr.internal.MavenModelReaderImpl;
+import org.apache.maven.model.building.ModelBuilder;
+import org.apache.maven.model.interpolation.StringVisitorModelInterpolator;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.Artifact;
+import org.eclipse.aether.impl.RemoteRepositoryManager;
+import org.eclipse.aether.impl.RepositoryEventDispatcher;
 import org.eclipse.aether.resolution.ArtifactDescriptorException;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
 import org.eclipse.aether.resolution.VersionResolutionException;
@@ -42,21 +46,30 @@ import org.slf4j.LoggerFactory;
  */
 public class MavenModelReader {
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final Context context;
     private final MavenModelReaderImpl mavenModelReaderImpl;
-
-    /**
-     * Creates instance using passed in impl instance.
-     */
-    public MavenModelReader(MavenModelReaderImpl mavenModelReaderImpl) {
-        this.mavenModelReaderImpl = requireNonNull(mavenModelReaderImpl);
-    }
 
     /**
      * Creates instance using passed in context. As context carries "root" remote repositories, they are used
      * by default, but can be overridden in {@link ModelRequest}.
      */
     public MavenModelReader(Context context) {
-        this(new MavenModelReaderImpl(context));
+        this.context = requireNonNull(context);
+        this.mavenModelReaderImpl = new MavenModelReaderImpl(
+                context.repositorySystem(),
+                context.lookup()
+                        .lookup(RemoteRepositoryManager.class)
+                        .orElseThrow(() -> new IllegalStateException("RemoteRepositoryManager not available")),
+                context.lookup()
+                        .lookup(RepositoryEventDispatcher.class)
+                        .orElseThrow(() -> new IllegalStateException("RepositoryEventDispatcher not available")),
+                context.lookup()
+                        .lookup(ModelBuilder.class)
+                        .orElseThrow(() -> new IllegalStateException("ModelBuilder not available")),
+                context.lookup()
+                        .lookup(StringVisitorModelInterpolator.class)
+                        .orElseThrow(() -> new IllegalStateException("StringVisitorModelInterpolator not available")),
+                context.remoteRepositories());
     }
 
     /**
@@ -69,6 +82,13 @@ public class MavenModelReader {
     public ModelResponse readModel(ModelRequest request)
             throws VersionResolutionException, ArtifactResolutionException, ArtifactDescriptorException {
         requireNonNull(request, "request");
-        return mavenModelReaderImpl.readModel(request);
+        return mavenModelReaderImpl.readModel(context.repositorySystemSession(), request);
+    }
+
+    /**
+     * Just to allow easier testing.
+     */
+    public MavenModelReaderImpl getImpl() {
+        return mavenModelReaderImpl;
     }
 }
