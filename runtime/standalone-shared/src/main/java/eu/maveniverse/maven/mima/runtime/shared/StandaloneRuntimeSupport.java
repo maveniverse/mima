@@ -444,6 +444,9 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                     }
                 }
 
+                // stash config entries just like Maven does
+                configProps.put("aether.connector.wagon.config." + server.getId(), dom);
+
                 // Translate to proper resolver configuration properties as well (as Plexus XML above is Wagon specific
                 // only), but support only configuration/httpConfiguration/all, see
                 // https://maven.apache.org/guides/mini/guide-http-settings.html
