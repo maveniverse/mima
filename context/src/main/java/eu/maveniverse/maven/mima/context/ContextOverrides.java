@@ -11,12 +11,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import org.eclipse.aether.RepositoryListener;
 import org.eclipse.aether.artifact.ArtifactType;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -72,9 +67,9 @@ public final class ContextOverrides {
 
     private final List<ArtifactType> extraArtifactTypes;
 
-    private final boolean offline;
+    private final Boolean offline;
 
-    private final boolean ignoreArtifactDescriptorRepositories;
+    private final Boolean ignoreArtifactDescriptorRepositories;
 
     private final SnapshotUpdatePolicy snapshotUpdatePolicy;
 
@@ -118,8 +113,8 @@ public final class ContextOverrides {
             final List<RemoteRepository> repositories,
             final AddRepositoriesOp addRepositoriesOp,
             final List<ArtifactType> extraArtifactTypes,
-            final boolean offline,
-            final boolean ignoreArtifactDescriptorRepositories,
+            final Boolean offline,
+            final Boolean ignoreArtifactDescriptorRepositories,
             final SnapshotUpdatePolicy snapshotUpdatePolicy,
             final ChecksumPolicy checksumPolicy,
             final boolean withUserSettings,
@@ -222,8 +217,8 @@ public final class ContextOverrides {
     /**
      * Is session offline?
      */
-    public boolean isOffline() {
-        return offline;
+    public Optional<Boolean> isOffline() {
+        return Optional.ofNullable(offline);
     }
 
     /**
@@ -231,8 +226,8 @@ public final class ContextOverrides {
      *
      * @since 2.4.13
      */
-    public boolean isIgnoreArtifactDescriptorRepositories() {
-        return ignoreArtifactDescriptorRepositories;
+    public Optional<Boolean> isIgnoreArtifactDescriptorRepositories() {
+        return Optional.ofNullable(ignoreArtifactDescriptorRepositories);
     }
 
     /**
@@ -423,6 +418,7 @@ public final class ContextOverrides {
         }
         ContextOverrides that = (ContextOverrides) o;
         return offline == that.offline
+                && ignoreArtifactDescriptorRepositories == that.ignoreArtifactDescriptorRepositories
                 && withUserSettings == that.withUserSettings
                 && Objects.equals(basedirOverride, that.basedirOverride)
                 && Objects.equals(systemProperties, that.systemProperties)
@@ -460,6 +456,7 @@ public final class ContextOverrides {
                 addRepositoriesOp,
                 extraArtifactTypes,
                 offline,
+                ignoreArtifactDescriptorRepositories,
                 snapshotUpdatePolicy,
                 checksumPolicy,
                 withUserSettings,
@@ -504,9 +501,9 @@ public final class ContextOverrides {
 
         private List<ArtifactType> extraArtifactTypes = Collections.emptyList();
 
-        private boolean offline = false;
+        private Boolean offline;
 
-        private boolean ignoreArtifactDescriptorRepositories;
+        private Boolean ignoreArtifactDescriptorRepositories;
 
         private SnapshotUpdatePolicy snapshotUpdatePolicy = null;
 
@@ -650,7 +647,7 @@ public final class ContextOverrides {
         /**
          * Sets session offline.
          */
-        public Builder offline(boolean offline) {
+        public Builder offline(Boolean offline) {
             this.offline = offline;
             return this;
         }
@@ -660,7 +657,7 @@ public final class ContextOverrides {
          *
          * @since 2.4.13
          */
-        public Builder ignoreArtifactDescriptorRepositories(boolean ignoreArtifactDescriptorRepositories) {
+        public Builder ignoreArtifactDescriptorRepositories(Boolean ignoreArtifactDescriptorRepositories) {
             this.ignoreArtifactDescriptorRepositories = ignoreArtifactDescriptorRepositories;
             return this;
         }

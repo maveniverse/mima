@@ -103,9 +103,9 @@ public abstract class RuntimeSupport implements Runtime {
             session.setConfigProperties(overrides.getConfigProperties());
         }
 
-        session.setOffline(overrides.isOffline());
+        overrides.isOffline().ifPresent(session::setOffline);
 
-        session.setIgnoreArtifactDescriptorRepositories(overrides.isIgnoreArtifactDescriptorRepositories());
+        overrides.isIgnoreArtifactDescriptorRepositories().ifPresent(session::setIgnoreArtifactDescriptorRepositories);
 
         customizeLocalRepositoryManager(context, session);
 

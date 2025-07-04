@@ -382,9 +382,9 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         configProps.put(ConfigurationProperties.INTERACTIVE, false);
         configProps.put("maven.startTime", new Date());
 
-        session.setOffline(overrides.isOffline());
+        overrides.isOffline().ifPresent(session::setOffline);
 
-        session.setIgnoreArtifactDescriptorRepositories(overrides.isIgnoreArtifactDescriptorRepositories());
+        overrides.isIgnoreArtifactDescriptorRepositories().ifPresent(session::setIgnoreArtifactDescriptorRepositories);
 
         customizeChecksumPolicy(overrides, session);
 
