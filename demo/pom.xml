@@ -33,7 +33,7 @@
 
   <properties>
     <modernizer.version>3.1.0</modernizer.version>
-    <version.mima>2.4.30-SNAPSHOT</version.mima>
+    <version.mima>2.4.31-SNAPSHOT</version.mima>
     <!-- tied to MIMA/Maven -->
     <version.resolver>1.9.22</version.resolver>
     <version.slf4j>1.7.36</version.slf4j>
