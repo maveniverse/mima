@@ -14,7 +14,7 @@
   <parent>
     <groupId>eu.maveniverse.maven.parent</groupId>
     <artifactId>parent</artifactId>
-    <version>38</version>
+    <version>40</version>
     <relativePath />
   </parent>
 
@@ -35,9 +35,9 @@
     <modernizer.version>3.1.0</modernizer.version>
     <version.mima>2.4.31-SNAPSHOT</version.mima>
     <!-- tied to MIMA/Maven -->
-    <version.resolver>1.9.22</version.resolver>
+    <version.resolver>1.9.24</version.resolver>
     <version.slf4j>1.7.36</version.slf4j>
-    <version.maven>3.9.9</version.maven>
+    <version.maven>3.9.10</version.maven>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -125,7 +125,7 @@
       <dependency>
         <groupId>org.junit.jupiter</groupId>
         <artifactId>junit-jupiter-api</artifactId>
-        <version>5.12.2</version>
+        <version>5.13.3</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
