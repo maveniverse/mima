@@ -184,6 +184,7 @@ public class MavenModelReaderImpl {
                 modelRequest.setPomFile(pomArtifact.getFile());
             } else {
                 modelRequest.setModelSource(new FileModelSource(pomArtifact.getFile()));
+                modelRequest.setPomFile(pomArtifact.getFile());
             }
 
             ModelBuildingResult modelResult = modelBuilder.build(modelRequest);
