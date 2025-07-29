@@ -27,9 +27,7 @@ public class MavenHttpClient4FactoryTest {
     void deploymentHttps() throws IOException {
         try (Context context = Runtimes.INSTANCE
                 .getRuntime()
-                .create(ContextOverrides.create()
-                        .withUserSettings(true)
-                        .build())) {
+                .create(ContextOverrides.create().withUserSettings(true).build())) {
             MavenHttpClient4Factory factory = new MavenHttpClient4Factory(context);
             try (CloseableHttpClient client =
                     factory.createDeploymentClient(ContextOverrides.CENTRAL).build()) {
@@ -47,9 +45,7 @@ public class MavenHttpClient4FactoryTest {
     void deploymentHttp() throws IOException {
         try (Context context = Runtimes.INSTANCE
                 .getRuntime()
-                .create(ContextOverrides.create()
-                        .withUserSettings(true)
-                        .build())) {
+                .create(ContextOverrides.create().withUserSettings(true).build())) {
             MavenHttpClient4Factory factory = new MavenHttpClient4Factory(context);
             try (CloseableHttpClient client =
                     factory.createDeploymentClient(httpCentral).build()) {
@@ -68,9 +64,7 @@ public class MavenHttpClient4FactoryTest {
     void resolutionHttps() throws IOException {
         try (Context context = Runtimes.INSTANCE
                 .getRuntime()
-                .create(ContextOverrides.create()
-                        .withUserSettings(true)
-                        .build())) {
+                .create(ContextOverrides.create().withUserSettings(true).build())) {
             MavenHttpClient4Factory factory = new MavenHttpClient4Factory(context);
             try (CloseableHttpClient client =
                     factory.createResolutionClient(ContextOverrides.CENTRAL).build()) {
@@ -88,9 +82,7 @@ public class MavenHttpClient4FactoryTest {
     void resolutionHttp() {
         try (Context context = Runtimes.INSTANCE
                 .getRuntime()
-                .create(ContextOverrides.create()
-                        .withUserSettings(true)
-                        .build())) {
+                .create(ContextOverrides.create().withUserSettings(true).build())) {
             MavenHttpClient4Factory factory = new MavenHttpClient4Factory(context);
             IllegalArgumentException e = Assertions.assertThrows(
                     IllegalArgumentException.class, () -> factory.createResolutionClient(httpCentral));
