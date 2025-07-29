@@ -20,8 +20,9 @@ import org.junit.jupiter.api.Test;
 public class MavenHttpClient4FactoryTest {
     @Test
     void smokeHttps() throws IOException {
-        try (Context context =
-                Runtimes.INSTANCE.getRuntime().create(ContextOverrides.create().withUserSettings(true).build())) {
+        try (Context context = Runtimes.INSTANCE
+                .getRuntime()
+                .create(ContextOverrides.create().withUserSettings(true).build())) {
             MavenHttpClient4Factory factory = new MavenHttpClient4Factory(context);
             try (CloseableHttpClient client =
                     factory.createClient(ContextOverrides.CENTRAL).build()) {
