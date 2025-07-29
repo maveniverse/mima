@@ -15,8 +15,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.HostnameVerifier;
@@ -98,13 +100,37 @@ public class MavenHttpClient4Factory {
     }
 
     /**
+     * Creates {@link HttpClientBuilder} preconfigured from Maven environment for resolving.
+     */
+    public HttpClientBuilder createResolutionClient(RemoteRepository repository) {
+        requireNonNull(repository, "repository");
+        List<RemoteRepository> repositories = context.repositorySystem()
+                .newResolutionRepositories(context.repositorySystemSession(), Collections.singletonList(repository));
+        if (repositories.size() != 1) {
+            throw new IllegalArgumentException("No remote repository to build from: " + repositories);
+        } else {
+            RemoteRepository remoteRepository = repositories.get(0);
+            if (remoteRepository.isBlocked()) {
+                throw new IllegalArgumentException("Remote repository is blocked: " + remoteRepository);
+            }
+            return createClient(remoteRepository);
+        }
+    }
+
+    /**
+     * Creates {@link HttpClientBuilder} preconfigured from Maven environment for deployment.
+     */
+    public HttpClientBuilder createDeploymentClient(RemoteRepository repository) {
+        requireNonNull(repository, "repository");
+        return createClient(
+                context.repositorySystem().newDeploymentRepository(context.repositorySystemSession(), repository));
+    }
+
+    /**
      * Creates {@link HttpClientBuilder} preconfigured from Maven environment.
      */
-    public HttpClientBuilder createClient(RemoteRepository repository) {
-        requireNonNull(repository, "repository");
-        repository = context.repositorySystem().newDeploymentRepository(context.repositorySystemSession(), repository);
+    protected HttpClientBuilder createClient(RemoteRepository repository) {
         RepositorySystemSession session = context.repositorySystemSession();
-
         URI baseUri;
         HttpHost server;
         try {
