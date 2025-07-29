@@ -17,11 +17,11 @@
     <version>2.4.32-SNAPSHOT</version>
   </parent>
 
-  <artifactId>mmr</artifactId>
+  <artifactId>mhc4</artifactId>
   <name>${project.groupId}:${project.artifactId}</name>
 
   <properties>
-    <Automatic-Module-Name>eu.maveniverse.maven.mima.extensions.mmr</Automatic-Module-Name>
+    <Automatic-Module-Name>eu.maveniverse.maven.mima.extensions.mhc4</Automatic-Module-Name>
   </properties>
 
   <dependencies>
@@ -50,29 +50,29 @@
       <artifactId>maven-resolver-util</artifactId>
       <scope>provided</scope>
     </dependency>
+
     <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-core</artifactId>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.5.14</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-model</artifactId>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpmime</artifactId>
+      <version>4.5.14</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-model-builder</artifactId>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+      <version>4.4.16</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-builder-support</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-resolver-provider</artifactId>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.19.0</version>
       <scope>provided</scope>
     </dependency>
 

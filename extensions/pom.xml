@@ -24,5 +24,6 @@
 
   <modules>
     <module>mmr</module>
+    <module>mhc4</module>
   </modules>
 </project>

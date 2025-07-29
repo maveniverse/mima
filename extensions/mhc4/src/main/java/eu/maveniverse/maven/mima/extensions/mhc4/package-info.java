@@ -6,6 +6,6 @@
  * https://www.eclipse.org/legal/epl-v20.html
  */
 /**
- * MMR extension for MIMA.
+ * MHC4 extension for MIMA.
  */
-package eu.maveniverse.maven.mima.extensions.mmr;
+package eu.maveniverse.maven.mima.extensions.mhc4;
