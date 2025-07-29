@@ -12,35 +12,16 @@ import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.Runtimes;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.maven.settings.Mirror;
-import org.apache.maven.settings.Settings;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class MavenHttpClient4FactoryTest {
     private final RemoteRepository httpCentral =
             new RemoteRepository.Builder("central-http", "default", "http://repo1.maven.org/maven2/").build();
-    private Settings settings;
-
-    @BeforeEach
-    void createSettings() {
-        settings = new Settings();
-        List<Mirror> mirrors = new ArrayList<>();
-        Mirror httpBlocker = new Mirror();
-        httpBlocker.setId("http-blocker");
-        httpBlocker.setBlocked(true);
-        httpBlocker.setMirrorOf("external:http:*");
-        httpBlocker.setUrl("http://0.0.0.0/");
-        mirrors.add(httpBlocker);
-        settings.setMirrors(mirrors);
-    }
 
     @Test
     void deploymentHttps() throws IOException {
@@ -48,7 +29,6 @@ public class MavenHttpClient4FactoryTest {
                 .getRuntime()
                 .create(ContextOverrides.create()
                         .withUserSettings(true)
-                        .withEffectiveSettings(settings)
                         .build())) {
             MavenHttpClient4Factory factory = new MavenHttpClient4Factory(context);
             try (CloseableHttpClient client =
@@ -69,7 +49,6 @@ public class MavenHttpClient4FactoryTest {
                 .getRuntime()
                 .create(ContextOverrides.create()
                         .withUserSettings(true)
-                        .withEffectiveSettings(settings)
                         .build())) {
             MavenHttpClient4Factory factory = new MavenHttpClient4Factory(context);
             try (CloseableHttpClient client =
@@ -91,7 +70,6 @@ public class MavenHttpClient4FactoryTest {
                 .getRuntime()
                 .create(ContextOverrides.create()
                         .withUserSettings(true)
-                        .withEffectiveSettings(settings)
                         .build())) {
             MavenHttpClient4Factory factory = new MavenHttpClient4Factory(context);
             try (CloseableHttpClient client =
@@ -112,7 +90,6 @@ public class MavenHttpClient4FactoryTest {
                 .getRuntime()
                 .create(ContextOverrides.create()
                         .withUserSettings(true)
-                        .withEffectiveSettings(settings)
                         .build())) {
             MavenHttpClient4Factory factory = new MavenHttpClient4Factory(context);
             IllegalArgumentException e = Assertions.assertThrows(
