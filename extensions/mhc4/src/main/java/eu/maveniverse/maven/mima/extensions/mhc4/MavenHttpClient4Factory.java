@@ -49,9 +49,6 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.NoConnectionReuseStrategy;
 import org.apache.http.impl.auth.BasicSchemeFactory;
 import org.apache.http.impl.auth.DigestSchemeFactory;
-import org.apache.http.impl.auth.KerberosSchemeFactory;
-import org.apache.http.impl.auth.NTLMSchemeFactory;
-import org.apache.http.impl.auth.SPNegoSchemeFactory;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -71,30 +68,27 @@ import org.eclipse.aether.repository.AuthenticationContext;
 import org.eclipse.aether.repository.Proxy;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.util.ConfigUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Maven HttpClient 4.x factory.
  */
 public class MavenHttpClient4Factory {
-    private static final String BIND_ADDRESS = "aether.connector.bind.address";
+    protected static final String BIND_ADDRESS = "aether.connector.bind.address";
 
-    private static final String PREEMPTIVE_PUT_AUTH = "aether.connector.http.preemptivePutAuth";
+    protected static final String PREEMPTIVE_PUT_AUTH = "aether.connector.http.preemptivePutAuth";
 
-    private static final String USE_SYSTEM_PROPERTIES = "aether.connector.http.useSystemProperties";
+    protected static final String USE_SYSTEM_PROPERTIES = "aether.connector.http.useSystemProperties";
 
-    private static final String HTTP_RETRY_HANDLER_NAME = "aether.connector.http.retryHandler.name";
+    protected static final String HTTP_RETRY_HANDLER_NAME = "aether.connector.http.retryHandler.name";
 
-    private static final String HTTP_RETRY_HANDLER_NAME_STANDARD = "standard";
+    protected static final String HTTP_RETRY_HANDLER_NAME_STANDARD = "standard";
 
-    private static final String HTTP_RETRY_HANDLER_NAME_DEFAULT = "default";
+    protected static final String HTTP_RETRY_HANDLER_NAME_DEFAULT = "default";
 
-    private static final String HTTP_RETRY_HANDLER_REQUEST_SENT_ENABLED =
+    protected static final String HTTP_RETRY_HANDLER_REQUEST_SENT_ENABLED =
             "aether.connector.http.retryHandler.requestSentEnabled";
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final Context context;
+    protected final Context context;
 
     /**
      * Creates instance using passed in context.
@@ -149,11 +143,13 @@ public class MavenHttpClient4Factory {
         HttpClientConnectionManager connectionManager = newConnectionManager(new ConnMgrConfig(
                 session, repoAuthContext, httpsSecurityMode, connectionMaxTtlSeconds, maxConnectionsPerRoute));
 
+        // TODO
         boolean preemptiveAuth = ConfigUtils.getBoolean(
                 session,
                 ConfigurationProperties.DEFAULT_HTTP_PREEMPTIVE_AUTH,
                 ConfigurationProperties.HTTP_PREEMPTIVE_AUTH + "." + repository.getId(),
                 ConfigurationProperties.HTTP_PREEMPTIVE_AUTH);
+        // TODO
         boolean preemptivePutAuth = // defaults to true: Wagon does same
                 ConfigUtils.getBoolean(
                         session, true, PREEMPTIVE_PUT_AUTH + "." + repository.getId(), PREEMPTIVE_PUT_AUTH);
@@ -224,9 +220,6 @@ public class MavenHttpClient4Factory {
         Registry<AuthSchemeProvider> authSchemeRegistry = RegistryBuilder.<AuthSchemeProvider>create()
                 .register(AuthSchemes.BASIC, new BasicSchemeFactory(credentialsCharset))
                 .register(AuthSchemes.DIGEST, new DigestSchemeFactory(credentialsCharset))
-                .register(AuthSchemes.NTLM, new NTLMSchemeFactory())
-                .register(AuthSchemes.SPNEGO, new SPNegoSchemeFactory())
-                .register(AuthSchemes.KERBEROS, new KerberosSchemeFactory())
                 .build();
         SocketConfig socketConfig =
                 SocketConfig.custom().setSoTimeout(requestTimeout).build();
@@ -293,7 +286,7 @@ public class MavenHttpClient4Factory {
         return builder;
     }
 
-    private static InetAddress getHttpLocalAddress(RepositorySystemSession session, RemoteRepository repository) {
+    protected static InetAddress getHttpLocalAddress(RepositorySystemSession session, RemoteRepository repository) {
         String bindAddress =
                 ConfigUtils.getString(session, null, BIND_ADDRESS + "." + repository.getId(), BIND_ADDRESS);
         if (bindAddress == null) {
@@ -308,7 +301,7 @@ public class MavenHttpClient4Factory {
         }
     }
 
-    private static HttpHost toHost(Proxy proxy) {
+    protected static HttpHost toHost(Proxy proxy) {
         HttpHost host = null;
         if (proxy != null) {
             // in Maven, the proxy.protocol is used for proxy matching against remote repository protocol; no TLS proxy
@@ -320,7 +313,7 @@ public class MavenHttpClient4Factory {
         return host;
     }
 
-    private static CredentialsProvider toCredentialsProvider(
+    protected static CredentialsProvider toCredentialsProvider(
             HttpHost server, AuthenticationContext serverAuthCtx, HttpHost proxy, AuthenticationContext proxyAuthCtx) {
         BasicCredentialsProvider provider = new BasicCredentialsProvider();
         if (serverAuthCtx != null) {
@@ -334,7 +327,7 @@ public class MavenHttpClient4Factory {
         return provider;
     }
 
-    private static Credentials newCredentials(AuthenticationContext authContext) {
+    protected static Credentials newCredentials(AuthenticationContext authContext) {
         String username = authContext.get(AuthenticationContext.USERNAME);
         if (username == null) {
             return null;
@@ -343,7 +336,7 @@ public class MavenHttpClient4Factory {
         return new UsernamePasswordCredentials(username, password);
     }
 
-    private static class ConnMgrConfig {
+    protected static class ConnMgrConfig {
         private static final String CIPHER_SUITES = "https.cipherSuites";
         private static final String PROTOCOLS = "https.protocols";
 
@@ -355,7 +348,7 @@ public class MavenHttpClient4Factory {
         private final int connectionMaxTtlSeconds;
         private final int maxConnectionsPerRoute;
 
-        private ConnMgrConfig(
+        protected ConnMgrConfig(
                 RepositorySystemSession session,
                 AuthenticationContext authContext,
                 String httpsSecurityMode,
@@ -390,7 +383,7 @@ public class MavenHttpClient4Factory {
         }
     }
 
-    private static HttpClientConnectionManager newConnectionManager(ConnMgrConfig connMgrConfig) {
+    protected static HttpClientConnectionManager newConnectionManager(ConnMgrConfig connMgrConfig) {
         RegistryBuilder<ConnectionSocketFactory> registryBuilder = RegistryBuilder.<ConnectionSocketFactory>create()
                 .register("http", PlainConnectionSocketFactory.getSocketFactory());
         int connectionMaxTtlSeconds = ConfigurationProperties.DEFAULT_HTTP_CONNECTION_MAX_TTL;
@@ -449,23 +442,20 @@ public class MavenHttpClient4Factory {
         return connMgr;
     }
 
-    private static class ResolverServiceUnavailableRetryStrategy implements ServiceUnavailableRetryStrategy {
-        private final int retryCount;
-
-        private final long retryInterval;
-
-        private final long retryIntervalMax;
-
-        private final Set<Integer> serviceUnavailableHttpCodes;
+    protected static class ResolverServiceUnavailableRetryStrategy implements ServiceUnavailableRetryStrategy {
+        protected final int retryCount;
+        protected final long retryInterval;
+        protected final long retryIntervalMax;
+        protected final Set<Integer> serviceUnavailableHttpCodes;
 
         /**
          * Ugly, but forced by HttpClient API {@link ServiceUnavailableRetryStrategy}: the calls for
          * {@link #retryRequest(HttpResponse, int, HttpContext)} and {@link #getRetryInterval()} are done by same
          * thread and are actually done from spot that are very close to each other (almost subsequent calls).
          */
-        private static final ThreadLocal<Long> RETRY_INTERVAL_HOLDER = new ThreadLocal<>();
+        protected static final ThreadLocal<Long> RETRY_INTERVAL_HOLDER = new ThreadLocal<>();
 
-        private ResolverServiceUnavailableRetryStrategy(
+        protected ResolverServiceUnavailableRetryStrategy(
                 int retryCount, long retryInterval, long retryIntervalMax, Set<Integer> serviceUnavailableHttpCodes) {
             if (retryCount < 0) {
                 throw new IllegalArgumentException("retryCount must be >= 0");
@@ -505,7 +495,7 @@ public class MavenHttpClient4Factory {
          *
          * @return Long representing the retry interval as millis, or {@code null} if the request should be failed.
          */
-        private Long retryInterval(HttpResponse httpResponse, int executionCount, HttpContext httpContext) {
+        protected Long retryInterval(HttpResponse httpResponse, int executionCount, HttpContext httpContext) {
             Long result = null;
             Header header = httpResponse.getFirstHeader(HttpHeaders.RETRY_AFTER);
             if (header != null && header.getValue() != null) {
