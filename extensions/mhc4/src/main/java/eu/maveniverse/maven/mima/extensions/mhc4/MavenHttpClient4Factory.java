@@ -72,7 +72,23 @@ import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.util.ConfigUtils;
 
 /**
- * Maven HttpClient 4.x factory.
+ * Maven HttpClient 4.x factory. Creates Maven env configured {@link HttpClientBuilder} instance.
+ * <p>
+ * Configuration <em>not applied</em>, which should be handled by caller/user of this factory:
+ * <ul>
+ *     <li>most obviously, in Resolver the used remote repository base URI, in this case makes no sense</li>
+ *     <li>Custom headers {@link ConfigurationProperties#HTTP_HEADERS}</li>
+ *     <li>Preemptive authorization {@link ConfigurationProperties#HTTP_PREEMPTIVE_AUTH}</li>
+ *     <li>Preemptive PUT authorization {@link #PREEMPTIVE_PUT_AUTH}</li>
+ * </ul>
+ * <p>
+ * Differences between {@link #createResolutionClient(RemoteRepository)} and {@link #createDeploymentClient(RemoteRepository)}
+ * are exactly the same as in Maven/Resolver. See corresponding Javadoc.
+ * <p>
+ * This class can be extended if needed.
+ *
+ * @see org.eclipse.aether.RepositorySystem#newResolutionRepositories(RepositorySystemSession, List)
+ * @see org.eclipse.aether.RepositorySystem#newDeploymentRepository(RepositorySystemSession, RemoteRepository)
  */
 public class MavenHttpClient4Factory {
     protected static final String BIND_ADDRESS = "aether.connector.bind.address";
@@ -126,9 +142,6 @@ public class MavenHttpClient4Factory {
                 context.repositorySystem().newDeploymentRepository(context.repositorySystemSession(), repository));
     }
 
-    /**
-     * Creates {@link HttpClientBuilder} preconfigured from Maven environment.
-     */
     protected HttpClientBuilder createClient(RemoteRepository repository) {
         RepositorySystemSession session = context.repositorySystemSession();
         URI baseUri;
@@ -169,16 +182,6 @@ public class MavenHttpClient4Factory {
         HttpClientConnectionManager connectionManager = newConnectionManager(new ConnMgrConfig(
                 session, repoAuthContext, httpsSecurityMode, connectionMaxTtlSeconds, maxConnectionsPerRoute));
 
-        // TODO
-        boolean preemptiveAuth = ConfigUtils.getBoolean(
-                session,
-                ConfigurationProperties.DEFAULT_HTTP_PREEMPTIVE_AUTH,
-                ConfigurationProperties.HTTP_PREEMPTIVE_AUTH + "." + repository.getId(),
-                ConfigurationProperties.HTTP_PREEMPTIVE_AUTH);
-        // TODO
-        boolean preemptivePutAuth = // defaults to true: Wagon does same
-                ConfigUtils.getBoolean(
-                        session, true, PREEMPTIVE_PUT_AUTH + "." + repository.getId(), PREEMPTIVE_PUT_AUTH);
         String credentialEncoding = ConfigUtils.getString(
                 session,
                 ConfigurationProperties.DEFAULT_HTTP_CREDENTIAL_ENCODING,

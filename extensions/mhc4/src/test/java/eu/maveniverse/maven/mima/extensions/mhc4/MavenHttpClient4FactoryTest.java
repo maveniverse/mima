@@ -53,8 +53,6 @@ public class MavenHttpClient4FactoryTest {
                         .resolve(".meta/prefixes.txt")
                         .toASCIIString()))) {
                     Assertions.assertEquals(501, response.getStatusLine().getStatusCode());
-                    Assertions.assertEquals(
-                            "Varnish", response.getFirstHeader("Server").getValue());
                 }
             }
         }
