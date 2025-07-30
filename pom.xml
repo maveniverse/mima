@@ -77,7 +77,7 @@
       </dependency>
       <dependency>
         <groupId>eu.maveniverse.maven.mima.runtime</groupId>
-        <artifactId>maven</artifactId>
+        <artifactId>embedded-maven</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -103,6 +103,16 @@
       <dependency>
         <groupId>eu.maveniverse.maven.mima.runtime</groupId>
         <artifactId>standalone-static-uber</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>eu.maveniverse.maven.mima.extensions</groupId>
+        <artifactId>mhc4</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>eu.maveniverse.maven.mima.extensions</groupId>
+        <artifactId>mmr</artifactId>
         <version>${project.version}</version>
       </dependency>
 
