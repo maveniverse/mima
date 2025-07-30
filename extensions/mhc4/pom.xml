@@ -17,11 +17,11 @@
     <version>2.4.32-SNAPSHOT</version>
   </parent>
 
-  <artifactId>mmr</artifactId>
+  <artifactId>mhc4</artifactId>
   <name>${project.groupId}:${project.artifactId}</name>
 
   <properties>
-    <Automatic-Module-Name>eu.maveniverse.maven.mima.extensions.mmr</Automatic-Module-Name>
+    <Automatic-Module-Name>eu.maveniverse.maven.mima.extensions.mhc4</Automatic-Module-Name>
   </properties>
 
   <dependencies>
@@ -50,29 +50,30 @@
       <artifactId>maven-resolver-util</artifactId>
       <scope>provided</scope>
     </dependency>
+
     <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-core</artifactId>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-model</artifactId>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpmime</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-model-builder</artifactId>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-builder-support</artifactId>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-resolver-provider</artifactId>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
       <scope>provided</scope>
     </dependency>
 
@@ -97,4 +98,18 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <systemProperties>
+            <maven.home>${maven.home}</maven.home>
+          </systemProperties>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
