@@ -131,7 +131,9 @@ public abstract class RuntimeSupport implements Runtime {
                 overrides,
                 overrides.getBasedirOverride() != null ? overrides.getBasedirOverride() : context.basedir(),
                 ((MavenUserHomeImpl) context.mavenUserHome()).derive(overrides),
-                ((MavenSystemHomeImpl) context.mavenSystemHome()).derive(overrides),
+                context.mavenSystemHome() != null
+                        ? ((MavenSystemHomeImpl) context.mavenSystemHome()).derive(overrides)
+                        : null,
                 context.repositorySystem(),
                 session,
                 Collections.unmodifiableList(
