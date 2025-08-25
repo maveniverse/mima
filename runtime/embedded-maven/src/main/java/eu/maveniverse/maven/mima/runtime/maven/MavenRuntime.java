@@ -18,8 +18,12 @@ import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
 import eu.maveniverse.maven.mima.runtime.maven.internal.PlexusLookup;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -31,6 +35,7 @@ import org.apache.maven.settings.Proxy;
 import org.codehaus.plexus.PlexusContainer;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.sisu.Nullable;
 
 @Singleton
@@ -91,24 +96,45 @@ public final class MavenRuntime extends RuntimeSupport {
         } else {
             basedir = DEFAULT_BASEDIR;
         }
+
+        List<RemoteRepository> repositories =
+                new ArrayList<>(mavenSession.getCurrentProject().getRemoteProjectRepositories());
+        switch (overrides.addRepositoriesOp()) {
+            case REPLACE:
+                repositories.clear();
+                repositories.addAll(overrides.getRepositories());
+                break;
+            case PREPEND:
+                repositories.addAll(0, overrides.getRepositories());
+                break;
+            case APPEND:
+                repositories.addAll(overrides.getRepositories());
+                break;
+            default:
+                throw new IllegalStateException("Unknown overrides op: " + overrides.addRepositoriesOp());
+        }
+
         MavenUserHome mavenUserHome = discoverMavenUserHome(mavenSession.getRequest());
         MavenSystemHome mavenSystemHome = discoverMavenSystemHome(mavenSession.getRequest());
         RepositorySystemSession session = mavenSession.getRepositorySession();
 
         ContextOverrides.Builder effectiveOverridesBuilder = overrides.toBuilder();
         effectiveOverridesBuilder.withUserSettings(true); // embedded
-        if (projectPresent) {
-            effectiveOverridesBuilder.repositories(
-                    mavenSession.getCurrentProject().getRemoteProjectRepositories());
-        }
+        effectiveOverridesBuilder.repositories(repositories);
         effectiveOverridesBuilder.systemProperties(session.getSystemProperties());
         effectiveOverridesBuilder.userProperties(session.getUserProperties());
         effectiveOverridesBuilder.configProperties(session.getConfigProperties());
+        effectiveOverridesBuilder.withActiveProfileIds(
+                mavenSession.getCurrentProject().getInjectedProfileIds().values().stream()
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toList()));
+        effectiveOverridesBuilder.withInactiveProfileIds(
+                mavenSession.getRequest().getInactiveProfiles());
 
         ContextOverrides effective = effectiveOverridesBuilder.build();
         return customizeContext(
                 this,
-                overrides,
+                effective,
                 new Context(
                         this,
                         effective,
