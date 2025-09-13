@@ -9,6 +9,6 @@ on:
 jobs:
   build:
     name: Verify
-    uses: maveniverse/parent/.github/workflows/ci.yml@release-41
+    uses: maveniverse/parent/.github/workflows/ci.yml@release-42
     with:
       maven-test: './mvnw -f demo install -e -B -V'
