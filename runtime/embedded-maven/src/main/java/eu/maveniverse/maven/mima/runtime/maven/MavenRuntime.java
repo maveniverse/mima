@@ -99,19 +99,21 @@ public final class MavenRuntime extends RuntimeSupport {
 
         List<RemoteRepository> repositories =
                 new ArrayList<>(mavenSession.getCurrentProject().getRemoteProjectRepositories());
-        switch (overrides.addRepositoriesOp()) {
-            case REPLACE:
-                repositories.clear();
-                repositories.addAll(overrides.getRepositories());
-                break;
-            case PREPEND:
-                repositories.addAll(0, overrides.getRepositories());
-                break;
-            case APPEND:
-                repositories.addAll(overrides.getRepositories());
-                break;
-            default:
-                throw new IllegalStateException("Unknown overrides op: " + overrides.addRepositoriesOp());
+        if (overrides.getRepositories() != ContextOverrides.DEFAULT_REMOTE_REPOSITORIES) {
+            switch (overrides.addRepositoriesOp()) {
+                case REPLACE:
+                    repositories.clear();
+                    repositories.addAll(overrides.getRepositories());
+                    break;
+                case PREPEND:
+                    repositories.addAll(0, overrides.getRepositories());
+                    break;
+                case APPEND:
+                    repositories.addAll(overrides.getRepositories());
+                    break;
+                default:
+                    throw new IllegalStateException("Unknown overrides op: " + overrides.addRepositoriesOp());
+            }
         }
 
         MavenUserHome mavenUserHome = discoverMavenUserHome(mavenSession.getRequest());
