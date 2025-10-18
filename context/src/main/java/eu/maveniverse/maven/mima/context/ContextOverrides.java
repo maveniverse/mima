@@ -36,6 +36,12 @@ public final class ContextOverrides {
                     false, RepositoryPolicy.UPDATE_POLICY_NEVER, RepositoryPolicy.CHECKSUM_POLICY_WARN))
             .build();
 
+    /**
+     * This instance is special: is used to detect "defaults" in various runtimes, like in case of embedded-maven
+     * runtime, where you (by default) want to use Maven defined repositories.
+     */
+    public static final List<RemoteRepository> DEFAULT_REMOTE_REPOSITORIES = Collections.singletonList(CENTRAL);
+
     public enum SnapshotUpdatePolicy {
         ALWAYS,
         NEVER
@@ -137,7 +143,11 @@ public final class ContextOverrides {
         this.systemProperties = Collections.unmodifiableMap(systemProperties);
         this.userProperties = Collections.unmodifiableMap(userProperties);
         this.configProperties = Collections.unmodifiableMap(configProperties);
-        this.repositories = Collections.unmodifiableList(repositories);
+        this.repositories = repositories == DEFAULT_REMOTE_REPOSITORIES
+                ? DEFAULT_REMOTE_REPOSITORIES
+                : (repositories == null || repositories.isEmpty())
+                        ? Collections.emptyList()
+                        : Collections.unmodifiableList(repositories);
         this.addRepositoriesOp = requireNonNull(addRepositoriesOp);
         this.extraArtifactTypes = requireNonNull(extraArtifactTypes);
         this.offline = offline;
@@ -495,7 +505,7 @@ public final class ContextOverrides {
 
         private Map<String, Object> configProperties = Collections.emptyMap();
 
-        private List<RemoteRepository> repositories = Collections.singletonList(CENTRAL);
+        private List<RemoteRepository> repositories = DEFAULT_REMOTE_REPOSITORIES;
 
         private AddRepositoriesOp addRepositoriesOp = AddRepositoriesOp.PREPEND;
 
@@ -609,10 +619,12 @@ public final class ContextOverrides {
          * the current project repositories will be provided.
          */
         public Builder repositories(List<RemoteRepository> repositories) {
-            if (repositories != null) {
+            if (repositories == DEFAULT_REMOTE_REPOSITORIES) {
+                this.repositories = DEFAULT_REMOTE_REPOSITORIES;
+            } else if (repositories != null && !repositories.isEmpty()) {
                 this.repositories = new ArrayList<>(repositories);
             } else {
-                this.repositories = Collections.emptyList();
+                this.repositories = null;
             }
             return this;
         }
