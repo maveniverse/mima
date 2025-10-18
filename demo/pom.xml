@@ -32,7 +32,7 @@
   </modules>
 
   <properties>
-    <version.mima>2.4.35-SNAPSHOT</version.mima>
+    <version.mima>2.4.36-SNAPSHOT</version.mima>
     <!-- tied to MIMA/Maven -->
     <version.resolver>1.9.24</version.resolver>
     <version.slf4j>1.7.36</version.slf4j>
