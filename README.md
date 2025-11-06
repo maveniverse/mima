@@ -288,6 +288,7 @@ they REPLACE current repositories, if any.
 ## Extensions
 
 * mmr -- adds ability to get Maven models (effective and raw). Use of this extension raises Maven requirement to 3.8.5+!
+* mhc4 -- is a factory for ASF HttpClient 4.x (creates instances w/ Maven config applied)
 
 ## Requirements
 
