@@ -121,8 +121,6 @@ public abstract class RuntimeSupport implements Runtime {
         if (overrides.getRepositoryListener() != null) {
             session.setRepositoryListener(overrides.getRepositoryListener());
         }
-        List<RemoteRepository> remoteRepositories =
-                customizeRemoteRepositories(overrides, context.remoteRepositories());
 
         session.setReadOnly();
 
@@ -136,8 +134,7 @@ public abstract class RuntimeSupport implements Runtime {
                         : null,
                 context.repositorySystem(),
                 session,
-                Collections.unmodifiableList(
-                        context.repositorySystem().newResolutionRepositories(session, remoteRepositories)),
+                customizeRemoteRepositories(overrides, context.remoteRepositories()),
                 context.httpProxy(),
                 context.lookup(),
                 null); // derived context: close should NOT shut down repositorySystem
@@ -204,6 +201,10 @@ public abstract class RuntimeSupport implements Runtime {
 
     protected List<RemoteRepository> customizeRemoteRepositories(
             ContextOverrides contextOverrides, List<RemoteRepository> remoteRepositories) {
+        if (Objects.equals(contextOverrides.getRepositories(), remoteRepositories)) {
+            // no change here
+            return remoteRepositories;
+        }
         ArrayList<RemoteRepository> result = new ArrayList<>();
         if (contextOverrides.addRepositoriesOp() == ContextOverrides.AddRepositoriesOp.REPLACE) {
             result.addAll(contextOverrides.getRepositories());
@@ -216,7 +217,7 @@ public abstract class RuntimeSupport implements Runtime {
                 result.addAll(contextOverrides.getRepositories());
             }
         }
-        return result;
+        return Collections.unmodifiableList(result);
     }
 
     protected MavenUserHomeImpl defaultMavenUserHome() {

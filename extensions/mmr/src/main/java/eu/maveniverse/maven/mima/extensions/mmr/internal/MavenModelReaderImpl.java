@@ -129,15 +129,10 @@ public class MavenModelReaderImpl {
         ArtifactResult resolveResult = null;
         if (pomArtifact.getFile() == null) {
             try {
-                VersionRequest versionRequest = new VersionRequest(a, repositories, request.getRequestContext());
+                VersionRequest versionRequest =
+                        new VersionRequest(pomArtifact, repositories, request.getRequestContext());
                 versionRequest.setTrace(trace);
                 VersionResult versionResult = repositorySystem.resolveVersion(session, versionRequest);
-
-                a = a.setVersion(versionResult.getVersion());
-
-                versionRequest = new VersionRequest(pomArtifact, repositories, request.getRequestContext());
-                versionRequest.setTrace(trace);
-                versionResult = repositorySystem.resolveVersion(session, versionRequest);
 
                 pomArtifact = pomArtifact.setVersion(versionResult.getVersion());
             } catch (VersionResolutionException e) {

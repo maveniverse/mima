@@ -238,8 +238,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                     mavenSystemHomeImpl,
                     repositorySystem,
                     session,
-                    Collections.unmodifiableList(repositorySystem.newResolutionRepositories(
-                            session, new ArrayList<>(remoteRepositories.values()))),
+                    Collections.unmodifiableList(new ArrayList<>(remoteRepositories.values())),
                     httpProxy,
                     lookup,
                     managedCloser);
