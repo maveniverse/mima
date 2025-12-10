@@ -56,9 +56,12 @@ public final class MavenRuntime extends RuntimeSupport {
             @Nullable RuntimeInformation rt) {
         super(
                 "embedded-maven",
-                discoverArtifactVersion("eu.maveniverse.maven.mima.runtime", "embedded-maven", UNKNOWN),
+                discoverArtifactVersion(
+                        MavenRuntime.class, "eu.maveniverse.maven.mima.runtime", "embedded-maven", UNKNOWN_VERSION),
                 10,
-                mavenVersion(rt));
+                mavenVersion(rt),
+                "embedded");
+        // when embedded in Maven, classloading isolation does not allow us to discover Resolver version
         this.repositorySystem = repositorySystem;
         this.plexusContainer = plexusContainer;
         this.mavenSessionProvider = mavenSessionProvider;
@@ -76,7 +79,7 @@ public final class MavenRuntime extends RuntimeSupport {
                 return mavenVersion;
             }
         }
-        return UNKNOWN;
+        return UNKNOWN_VERSION;
     }
 
     @Override
