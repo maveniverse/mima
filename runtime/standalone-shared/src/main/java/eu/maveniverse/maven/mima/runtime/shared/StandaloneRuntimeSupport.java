@@ -75,15 +75,16 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected StandaloneRuntimeSupport(String name, int priority) {
-        super(name, discoverVersion(), priority, discoverMavenVersion());
+        super(name, discoverVersion(), priority, discoverMavenVersion(), discoverResolverVersion());
     }
 
     private static String discoverVersion() {
-        Map<String, String> version =
-                loadClasspathProperties("/eu/maveniverse/maven/mima/runtime/shared/internal/version.properties");
+        Map<String, String> version = loadClasspathProperties(
+                StandaloneRuntimeSupport.class,
+                "/eu/maveniverse/maven/mima/runtime/shared/internal/version.properties");
         String result = version.get("version");
         if (result == null || result.trim().isEmpty() || result.startsWith("${")) {
-            return UNKNOWN;
+            return UNKNOWN_VERSION;
         }
         return result;
     }

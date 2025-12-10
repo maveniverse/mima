@@ -18,7 +18,7 @@ import org.mockito.Mockito;
 class RuntimeSupportTest {
     @Test
     void itPropagatesNullMavenSystemHome() {
-        RuntimeSupport runtimeSupport = new RuntimeSupport("test", "123", 999, "123") {
+        RuntimeSupport runtimeSupport = new RuntimeSupport("test", "123", 999, "123", "123") {
             @Override
             public boolean managedRepositorySystem() {
                 return false;

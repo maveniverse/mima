@@ -18,7 +18,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
 import org.eclipse.aether.DefaultRepositoryCache;
 import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.DefaultSessionData;
@@ -34,8 +41,6 @@ import org.eclipse.aether.util.repository.ChainedLocalRepositoryManager;
  * Support class for {@link Runtime} implementations.
  */
 public abstract class RuntimeSupport implements Runtime {
-    public static final String UNKNOWN = "(unknown)";
-
     private static final String MAVEN_REPO_LOCAL_TAIL = "maven.repo.local.tail";
 
     private static final String MAVEN_REPO_LOCAL_TAIL_IGNORE_AVAILABILITY = "maven.repo.local.tail.ignoreAvailability";
@@ -56,11 +61,14 @@ public abstract class RuntimeSupport implements Runtime {
 
     private final String mavenVersion;
 
-    protected RuntimeSupport(String name, String version, int priority, String mavenVersion) {
+    private final String resolverVersion;
+
+    protected RuntimeSupport(String name, String version, int priority, String mavenVersion, String resolverVersion) {
         this.name = requireNonNull(name);
         this.version = requireNonNull(version);
         this.priority = priority;
         this.mavenVersion = requireNonNull(mavenVersion);
+        this.resolverVersion = requireNonNull(resolverVersion);
     }
 
     @Override
@@ -78,8 +86,14 @@ public abstract class RuntimeSupport implements Runtime {
         return priority;
     }
 
+    @Override
     public String mavenVersion() {
         return mavenVersion;
+    }
+
+    @Override
+    public String resolverVersion() {
+        return resolverVersion;
     }
 
     @Override
@@ -225,25 +239,31 @@ public abstract class RuntimeSupport implements Runtime {
     }
 
     protected static String discoverMavenVersion() {
-        return discoverArtifactVersion("org.apache.maven", "maven-resolver-provider", UNKNOWN);
+        return discoverArtifactVersion(
+                RuntimeSupport.class, "org.apache.maven", "maven-resolver-provider", UNKNOWN_VERSION);
     }
 
-    protected static String discoverArtifactVersion(String groupId, String artifactId, String defVal) {
-        Map<String, String> mavenPomProperties = loadPomProperties(groupId, artifactId);
+    protected static String discoverResolverVersion() {
+        return discoverArtifactVersion(
+                RuntimeSupport.class, "org.apache.maven.resolver", "maven-resolver-api", UNKNOWN_VERSION);
+    }
+
+    protected static String discoverArtifactVersion(Class<?> clazz, String groupId, String artifactId, String defVal) {
+        Map<String, String> mavenPomProperties = loadPomProperties(clazz, groupId, artifactId);
         String versionString = mavenPomProperties.getOrDefault("version", "").trim();
-        if (!versionString.startsWith("${")) {
+        if (!versionString.isEmpty() && !versionString.startsWith("${")) {
             return versionString;
         }
         return defVal;
     }
 
-    protected static Map<String, String> loadPomProperties(String groupId, String artifactId) {
-        return loadClasspathProperties("/META-INF/maven/" + groupId + "/" + artifactId + "/pom.properties");
+    protected static Map<String, String> loadPomProperties(Class<?> clazz, String groupId, String artifactId) {
+        return loadClasspathProperties(clazz, "/META-INF/maven/" + groupId + "/" + artifactId + "/pom.properties");
     }
 
-    protected static Map<String, String> loadClasspathProperties(String resource) {
+    protected static Map<String, String> loadClasspathProperties(Class<?> clazz, String resource) {
         final Properties props = new Properties();
-        try (InputStream is = RuntimeSupport.class.getResourceAsStream(resource)) {
+        try (InputStream is = clazz.getResourceAsStream(resource)) {
             if (is != null) {
                 props.load(is);
             }
@@ -264,7 +284,8 @@ public abstract class RuntimeSupport implements Runtime {
                 + name + "', version="
                 + version + ", priority="
                 + priority + ", mavenVersion="
-                + mavenVersion + ", managedRepositorySystem="
+                + mavenVersion + ", resolverVersion="
+                + resolverVersion + ", managedRepositorySystem="
                 + managedRepositorySystem() + "}";
     }
 }

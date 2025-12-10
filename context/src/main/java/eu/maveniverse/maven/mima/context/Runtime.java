@@ -11,6 +11,12 @@ package eu.maveniverse.maven.mima.context;
  * Runtime is a factory for {@link Context} instances.
  */
 public interface Runtime {
+    /**
+     * String representation returned for versions, when discovery was unsuccessful.
+     *
+     * @since 2.4.38
+     */
+    String UNKNOWN_VERSION = "(unknown)";
 
     /**
      * The runtime name (mostly for keying purposes), never {@code null}.
@@ -32,6 +38,16 @@ public interface Runtime {
      * "maven models" version, except when MIMA runs inside of Maven, when it carries the "actual Maven version".
      */
     String mavenVersion();
+
+    /**
+     * Returns a string representing Resolver version this runtime uses, never {@code null}. In case of embedded
+     * Maven, discovery of resolver is not possible due Maven classloader encapsulation (then resolver version
+     * can be derived from Maven version).
+     *
+     * @since 2.4.38
+     * @return discovered resolver version or {@link #UNKNOWN_VERSION}
+     */
+    String resolverVersion();
 
     /**
      * Returns {@code true} if this runtime creates managed repository system, that is opposite when MIMA runs
