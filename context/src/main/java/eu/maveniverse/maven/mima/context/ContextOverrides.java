@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import org.eclipse.aether.RepositoryListener;
+import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.ArtifactType;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
@@ -71,6 +72,8 @@ public final class ContextOverrides {
 
     private final AddRepositoriesOp addRepositoriesOp;
 
+    private final boolean keepBareRepositories;
+
     private final List<ArtifactType> extraArtifactTypes;
 
     private final Boolean offline;
@@ -118,6 +121,7 @@ public final class ContextOverrides {
             final Map<String, Object> configProperties,
             final List<RemoteRepository> repositories,
             final AddRepositoriesOp addRepositoriesOp,
+            final boolean keepBareRepositories,
             final List<ArtifactType> extraArtifactTypes,
             final Boolean offline,
             final Boolean ignoreArtifactDescriptorRepositories,
@@ -149,6 +153,7 @@ public final class ContextOverrides {
                         ? Collections.emptyList()
                         : Collections.unmodifiableList(repositories);
         this.addRepositoriesOp = requireNonNull(addRepositoriesOp);
+        this.keepBareRepositories = keepBareRepositories;
         this.extraArtifactTypes = requireNonNull(extraArtifactTypes);
         this.offline = offline;
         this.ignoreArtifactDescriptorRepositories = ignoreArtifactDescriptorRepositories;
@@ -213,6 +218,18 @@ public final class ContextOverrides {
      */
     public AddRepositoriesOp addRepositoriesOp() {
         return addRepositoriesOp;
+    }
+
+    /**
+     * Should context keep "bare" remote repositories? If enabled, it is client code duty to manually invoke methods
+     * like {@link org.eclipse.aether.RepositorySystem#newResolutionRepositories(RepositorySystemSession, List)}.
+     * By default, this is {@code false} and context carries "dipped" repositories. To see "original bare" repositories,
+     * query {@link ContextOverrides} carried by {@link Context}, that was used to create context.
+     *
+     * @since 2.4.38
+     */
+    public boolean isKeepBareRepositories() {
+        return keepBareRepositories;
     }
 
     /**
@@ -396,6 +413,7 @@ public final class ContextOverrides {
                 .configProperties(configProperties)
                 .repositories(repositories)
                 .addRepositoriesOp(addRepositoriesOp)
+                .keepBareRepositories(keepBareRepositories)
                 .extraArtifactTypes(extraArtifactTypes)
                 .offline(offline)
                 .ignoreArtifactDescriptorRepositories(ignoreArtifactDescriptorRepositories)
@@ -436,6 +454,7 @@ public final class ContextOverrides {
                 && Objects.equals(configProperties, that.configProperties)
                 && Objects.equals(repositories, that.repositories)
                 && addRepositoriesOp == that.addRepositoriesOp
+                && keepBareRepositories == that.keepBareRepositories
                 && Objects.equals(extraArtifactTypes, that.extraArtifactTypes)
                 && snapshotUpdatePolicy == that.snapshotUpdatePolicy
                 && checksumPolicy == that.checksumPolicy
@@ -464,6 +483,7 @@ public final class ContextOverrides {
                 configProperties,
                 repositories,
                 addRepositoriesOp,
+                keepBareRepositories,
                 extraArtifactTypes,
                 offline,
                 ignoreArtifactDescriptorRepositories,
@@ -508,6 +528,8 @@ public final class ContextOverrides {
         private List<RemoteRepository> repositories = DEFAULT_REMOTE_REPOSITORIES;
 
         private AddRepositoriesOp addRepositoriesOp = AddRepositoriesOp.PREPEND;
+
+        private boolean keepBareRepositories = false;
 
         private List<ArtifactType> extraArtifactTypes = Collections.emptyList();
 
@@ -636,6 +658,16 @@ public final class ContextOverrides {
          */
         public Builder addRepositoriesOp(AddRepositoriesOp addRepositoriesOp) {
             this.addRepositoriesOp = addRepositoriesOp;
+            return this;
+        }
+
+        /**
+         * Should context keep "bare" remote repositories or not.
+         *
+         * @since 2.4.38
+         */
+        public Builder keepBareRepositories(boolean keepBareRepositories) {
+            this.keepBareRepositories = keepBareRepositories;
             return this;
         }
 
@@ -860,6 +892,7 @@ public final class ContextOverrides {
                     configProperties,
                     repositories,
                     addRepositoriesOp,
+                    keepBareRepositories,
                     extraArtifactTypes,
                     offline,
                     ignoreArtifactDescriptorRepositories,

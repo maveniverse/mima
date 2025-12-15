@@ -79,8 +79,10 @@ public final class Context implements Closeable {
         this.mavenSystemHome = mavenSystemHome;
         this.repositorySystemSession = requireNonNull(repositorySystemSession);
         this.repositorySystem = requireNonNull(repositorySystem);
-        this.remoteRepositories =
-                repositorySystem.newResolutionRepositories(repositorySystemSession, contextOverrides.getRepositories());
+        this.remoteRepositories = contextOverrides.isKeepBareRepositories()
+                ? contextOverrides.getRepositories()
+                : repositorySystem.newResolutionRepositories(
+                        repositorySystemSession, contextOverrides.getRepositories());
         this.httpProxy = httpProxy;
         this.lookup = requireNonNull(lookup);
         this.managedCloser = managedCloser;
