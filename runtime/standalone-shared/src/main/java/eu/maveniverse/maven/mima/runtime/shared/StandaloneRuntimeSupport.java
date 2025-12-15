@@ -22,7 +22,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -231,6 +230,9 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
             } else {
                 alteredOverrides.getRepositories().forEach(r -> remoteRepositories.put(r.getId(), r));
             }
+            alteredOverrides = alteredOverrides.toBuilder()
+                    .repositories(new ArrayList<>(remoteRepositories.values()))
+                    .build();
             return new Context(
                     runtime,
                     alteredOverrides,
@@ -239,7 +241,6 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                     mavenSystemHomeImpl,
                     repositorySystem,
                     session,
-                    Collections.unmodifiableList(new ArrayList<>(remoteRepositories.values())),
                     httpProxy,
                     lookup,
                     managedCloser);

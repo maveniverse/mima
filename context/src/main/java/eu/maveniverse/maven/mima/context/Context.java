@@ -68,7 +68,6 @@ public final class Context implements Closeable {
             MavenSystemHome mavenSystemHome,
             RepositorySystem repositorySystem,
             RepositorySystemSession repositorySystemSession,
-            List<RemoteRepository> remoteRepositories,
             HTTPProxy httpProxy,
             Lookup lookup,
             Runnable managedCloser) {
@@ -80,7 +79,8 @@ public final class Context implements Closeable {
         this.mavenSystemHome = mavenSystemHome;
         this.repositorySystemSession = requireNonNull(repositorySystemSession);
         this.repositorySystem = requireNonNull(repositorySystem);
-        this.remoteRepositories = requireNonNull(remoteRepositories);
+        this.remoteRepositories =
+                repositorySystem.newResolutionRepositories(repositorySystemSession, contextOverrides.getRepositories());
         this.httpProxy = httpProxy;
         this.lookup = requireNonNull(lookup);
         this.managedCloser = managedCloser;

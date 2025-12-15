@@ -138,6 +138,10 @@ public abstract class RuntimeSupport implements Runtime {
 
         session.setReadOnly();
 
+        overrides = overrides.toBuilder()
+                .repositories(customizeRemoteRepositories(overrides, context.remoteRepositories()))
+                .build();
+
         return new Context(
                 runtime,
                 overrides,
@@ -148,7 +152,6 @@ public abstract class RuntimeSupport implements Runtime {
                         : null,
                 context.repositorySystem(),
                 session,
-                customizeRemoteRepositories(overrides, context.remoteRepositories()),
                 context.httpProxy(),
                 context.lookup(),
                 null); // derived context: close should NOT shut down repositorySystem

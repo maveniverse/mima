@@ -147,7 +147,6 @@ public final class MavenRuntime extends RuntimeSupport {
                         mavenSystemHome,
                         repositorySystem,
                         session,
-                        effective.getRepositories(),
                         toHTTPProxy(mavenSession.getSettings().getActiveProxy()),
                         new PlexusLookup(plexusContainer),
                         null),
