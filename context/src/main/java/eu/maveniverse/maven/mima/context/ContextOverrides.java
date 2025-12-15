@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import org.eclipse.aether.RepositoryListener;
+import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.ArtifactType;
 import org.eclipse.aether.repository.RemoteRepository;
@@ -222,7 +223,7 @@ public final class ContextOverrides {
 
     /**
      * Should context keep "bare" remote repositories? If enabled, it is client code duty to manually invoke methods
-     * like {@link org.eclipse.aether.RepositorySystem#newResolutionRepositories(RepositorySystemSession, List)}.
+     * like {@link RepositorySystem#newResolutionRepositories(RepositorySystemSession, List)}.
      * By default, this is {@code false} and context carries "dipped" repositories. To see "original bare" repositories,
      * query {@link ContextOverrides} carried by {@link Context}, that was used to create context.
      *
