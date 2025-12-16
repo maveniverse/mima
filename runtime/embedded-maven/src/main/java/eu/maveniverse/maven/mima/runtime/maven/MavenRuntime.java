@@ -102,16 +102,18 @@ public final class MavenRuntime extends RuntimeSupport {
         List<RemoteRepository> repositories =
                 new ArrayList<>(mavenSession.getCurrentProject().getRemoteProjectRepositories());
         if (overrides.getRepositories() != ContextOverrides.DEFAULT_REMOTE_REPOSITORIES) {
+            List<RemoteRepository> overrideRepositories = repositorySystem.newResolutionRepositories(
+                    mavenSession.getRepositorySession(), overrides.getRepositories());
             switch (overrides.addRepositoriesOp()) {
                 case REPLACE:
                     repositories.clear();
-                    repositories.addAll(overrides.getRepositories());
+                    repositories.addAll(overrideRepositories);
                     break;
                 case PREPEND:
-                    repositories.addAll(0, overrides.getRepositories());
+                    repositories.addAll(0, overrideRepositories);
                     break;
                 case APPEND:
-                    repositories.addAll(overrides.getRepositories());
+                    repositories.addAll(overrideRepositories);
                     break;
                 default:
                     throw new IllegalStateException("Unknown overrides op: " + overrides.addRepositoriesOp());
@@ -123,6 +125,7 @@ public final class MavenRuntime extends RuntimeSupport {
         RepositorySystemSession session = mavenSession.getRepositorySession();
 
         ContextOverrides.Builder effectiveOverridesBuilder = overrides.toBuilder();
+        effectiveOverridesBuilder.keepBareRepositories(true); // embedded; maven handles them
         effectiveOverridesBuilder.withUserSettings(true); // embedded
         effectiveOverridesBuilder.repositories(repositories);
         effectiveOverridesBuilder.systemProperties(session.getSystemProperties());
@@ -147,7 +150,6 @@ public final class MavenRuntime extends RuntimeSupport {
                         mavenSystemHome,
                         repositorySystem,
                         session,
-                        effective.getRepositories(),
                         toHTTPProxy(mavenSession.getSettings().getActiveProxy()),
                         new PlexusLookup(plexusContainer),
                         null),

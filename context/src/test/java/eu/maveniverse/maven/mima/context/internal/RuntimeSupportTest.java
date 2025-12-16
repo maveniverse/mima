@@ -4,7 +4,6 @@ import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.Lookup;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.eclipse.aether.DefaultRepositorySystemSession;
@@ -50,7 +49,6 @@ class RuntimeSupportTest {
                 null,
                 Mockito.mock(RepositorySystem.class),
                 Mockito.mock(RepositorySystemSession.class),
-                new ArrayList<>(),
                 null,
                 new Lookup() {
                     @Override
