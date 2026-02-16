@@ -60,7 +60,7 @@
     <project.build.outputTimestamp>2025-12-17T10:44:56Z</project.build.outputTimestamp>
 
     <!-- Dependency versions -->
-    <version.resolver>1.9.25</version.resolver>
+    <version.resolver>1.9.26</version.resolver>
     <version.maven>3.9.12</version.maven>
     <version.sisu>1.0.0</version.sisu>
     <version.slf4j>1.7.36</version.slf4j>
