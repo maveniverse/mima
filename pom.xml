@@ -64,7 +64,7 @@
     <version.maven>3.9.12</version.maven>
     <version.sisu>1.0.0</version.sisu>
     <version.slf4j>1.7.36</version.slf4j>
-    <version.junit>6.0.2</version.junit>
+    <version.junit>6.0.3</version.junit>
   </properties>
 
   <dependencyManagement>
