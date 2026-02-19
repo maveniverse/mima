@@ -125,6 +125,8 @@ public abstract class RuntimeSupport implements Runtime {
 
         customizeChecksumPolicy(overrides, session);
 
+        customizeArtifactDescriptorPolicy(overrides, session);
+
         customizeSnapshotUpdatePolicy(overrides, session);
 
         // settings are used only in creation, not customization
@@ -200,6 +202,13 @@ public abstract class RuntimeSupport implements Runtime {
                     session.setChecksumPolicy(RepositoryPolicy.CHECKSUM_POLICY_IGNORE);
                     break;
             }
+        }
+    }
+
+    protected void customizeArtifactDescriptorPolicy(
+            ContextOverrides overrides, DefaultRepositorySystemSession session) {
+        if (overrides.getArtifactDescriptorPolicy() != null) {
+            session.setArtifactDescriptorPolicy(overrides.getArtifactDescriptorPolicy());
         }
     }
 
