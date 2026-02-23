@@ -389,6 +389,8 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
 
         customizeChecksumPolicy(overrides, session);
 
+        customizeArtifactDescriptorPolicy(overrides, session);
+
         customizeSnapshotUpdatePolicy(overrides, session);
 
         // we should not interfere with "real Maven"

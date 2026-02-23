@@ -11,13 +11,20 @@ import static java.util.Objects.requireNonNull;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import org.eclipse.aether.RepositoryListener;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.artifact.ArtifactType;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.eclipse.aether.repository.RepositoryPolicy;
+import org.eclipse.aether.resolution.ArtifactDescriptorPolicy;
 import org.eclipse.aether.transfer.TransferListener;
 
 /**
@@ -85,6 +92,8 @@ public final class ContextOverrides {
 
     private final ChecksumPolicy checksumPolicy;
 
+    private final ArtifactDescriptorPolicy artifactDescriptorPolicy;
+
     private final boolean withUserSettings;
 
     private final List<String> activeProfileIds;
@@ -128,6 +137,7 @@ public final class ContextOverrides {
             final Boolean ignoreArtifactDescriptorRepositories,
             final SnapshotUpdatePolicy snapshotUpdatePolicy,
             final ChecksumPolicy checksumPolicy,
+            final ArtifactDescriptorPolicy artifactDescriptorPolicy,
             final boolean withUserSettings,
             final List<String> activeProfileIds,
             final List<String> inactiveProfileIds,
@@ -160,6 +170,7 @@ public final class ContextOverrides {
         this.ignoreArtifactDescriptorRepositories = ignoreArtifactDescriptorRepositories;
         this.snapshotUpdatePolicy = snapshotUpdatePolicy;
         this.checksumPolicy = checksumPolicy;
+        this.artifactDescriptorPolicy = artifactDescriptorPolicy;
         this.withUserSettings = withUserSettings;
         this.activeProfileIds = Collections.unmodifiableList(activeProfileIds);
         this.inactiveProfileIds = Collections.unmodifiableList(inactiveProfileIds);
@@ -270,6 +281,15 @@ public final class ContextOverrides {
      */
     public ChecksumPolicy getChecksumPolicy() {
         return checksumPolicy;
+    }
+
+    /**
+     * Artifact descriptor policy, or {@code null} if "resolver default" (ignore all errors).
+     *
+     * @since 2.4.40
+     */
+    public ArtifactDescriptorPolicy getArtifactDescriptorPolicy() {
+        return artifactDescriptorPolicy;
     }
 
     /**
@@ -420,6 +440,7 @@ public final class ContextOverrides {
                 .ignoreArtifactDescriptorRepositories(ignoreArtifactDescriptorRepositories)
                 .snapshotUpdatePolicy(snapshotUpdatePolicy)
                 .checksumPolicy(checksumPolicy)
+                .artifactDescriptorPolicy(artifactDescriptorPolicy)
                 .withUserSettings(withUserSettings)
                 .withActiveProfileIds(activeProfileIds)
                 .withInactiveProfileIds(inactiveProfileIds)
@@ -459,6 +480,7 @@ public final class ContextOverrides {
                 && Objects.equals(extraArtifactTypes, that.extraArtifactTypes)
                 && snapshotUpdatePolicy == that.snapshotUpdatePolicy
                 && checksumPolicy == that.checksumPolicy
+                && Objects.equals(artifactDescriptorPolicy, that.artifactDescriptorPolicy)
                 && Objects.equals(activeProfileIds, that.activeProfileIds)
                 && Objects.equals(inactiveProfileIds, that.inactiveProfileIds)
                 && Objects.equals(repositoryListener, that.repositoryListener)
@@ -490,6 +512,7 @@ public final class ContextOverrides {
                 ignoreArtifactDescriptorRepositories,
                 snapshotUpdatePolicy,
                 checksumPolicy,
+                artifactDescriptorPolicy,
                 withUserSettings,
                 activeProfileIds,
                 inactiveProfileIds,
@@ -541,6 +564,8 @@ public final class ContextOverrides {
         private SnapshotUpdatePolicy snapshotUpdatePolicy = null;
 
         private ChecksumPolicy checksumPolicy = null;
+
+        private ArtifactDescriptorPolicy artifactDescriptorPolicy = null;
 
         private boolean withUserSettings = false;
 
@@ -724,6 +749,16 @@ public final class ContextOverrides {
         }
 
         /**
+         * Sets the artifact descriptor policy, use {@code null} to revert to "resolver default" (ignore all errors).
+         *
+         * @since 2.4.40
+         */
+        public Builder artifactDescriptorPolicy(ArtifactDescriptorPolicy artifactDescriptorPolicy) {
+            this.artifactDescriptorPolicy = artifactDescriptorPolicy;
+            return this;
+        }
+
+        /**
          * Enables or disables use of userSettingsXml, used to find out location of local repository,
          * authentication, remote repositories and many more.
          */
@@ -899,6 +934,7 @@ public final class ContextOverrides {
                     ignoreArtifactDescriptorRepositories,
                     snapshotUpdatePolicy,
                     checksumPolicy,
+                    artifactDescriptorPolicy,
                     withUserSettings,
                     activeProfileIds,
                     inactiveProfileIds,
