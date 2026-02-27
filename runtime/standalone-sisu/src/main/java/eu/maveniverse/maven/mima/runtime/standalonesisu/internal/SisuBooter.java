@@ -56,6 +56,9 @@ public class SisuBooter implements Closeable {
     }
 
     public static SisuBooter newSisuBooter(PreBoot preBoot) {
+        if (System.getProperty("guice_custom_class_loading", "").isEmpty()) {
+            System.setProperty("guice_custom_class_loading", "CHILD");
+        }
         final Module app = Main.wire(BeanScanning.CACHE, new AbstractModule() {
             @Override
             protected void configure() {
