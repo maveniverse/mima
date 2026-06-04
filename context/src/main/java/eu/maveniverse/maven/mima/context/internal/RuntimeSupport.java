@@ -212,10 +212,10 @@ public abstract class RuntimeSupport implements Runtime {
         if (overrides.getSnapshotUpdatePolicy() != null) {
             switch (overrides.getSnapshotUpdatePolicy()) {
                 case ALWAYS:
-                    session.setUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_ALWAYS);
+                    session.setMetadataUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_ALWAYS);
                     break;
                 case NEVER:
-                    session.setUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_NEVER);
+                    session.setMetadataUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_NEVER);
                     break;
             }
         }
