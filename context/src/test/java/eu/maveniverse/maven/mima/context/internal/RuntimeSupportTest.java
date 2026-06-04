@@ -1,20 +1,39 @@
 package eu.maveniverse.maven.mima.context.internal;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.Lookup;
+import eu.maveniverse.maven.mima.context.MavenUserHome;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
-import org.eclipse.aether.DefaultRepositorySystemSession;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.RemoteRepository;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 class RuntimeSupportTest {
+    private RepositorySystem repositorySystem;
+    private RepositorySystemSession.SessionBuilder sessionBuilder;
+    private RepositorySystemSession.CloseableSession session;
+
+    @BeforeEach
+    void prepare() {
+        repositorySystem = Mockito.mock(RepositorySystem.class);
+        sessionBuilder = Mockito.mock(RepositorySystemSession.SessionBuilder.class);
+        session = Mockito.mock(RepositorySystemSession.CloseableSession.class);
+
+        when(repositorySystem.createSessionBuilder()).thenReturn(sessionBuilder);
+        when(sessionBuilder.withRepositorySystemSession(any())).thenReturn(sessionBuilder);
+        when(sessionBuilder.build()).thenReturn(session);
+    }
+
     @Test
     void itPropagatesNullMavenSystemHome() {
         RuntimeSupport runtimeSupport = new RuntimeSupport("test", "123", 999, "123", "123") {
@@ -29,7 +48,11 @@ class RuntimeSupportTest {
             }
 
             @Override
-            protected void customizeLocalRepositoryManager(Context context, DefaultRepositorySystemSession session) {
+            protected void customizeLocalRepositoryManager(
+                    Context context,
+                    ContextOverrides contextOverrides,
+                    MavenUserHome mavenUserHome,
+                    RepositorySystemSession.SessionBuilder session) {
                 // Intentionally skipped
             }
 
@@ -47,8 +70,8 @@ class RuntimeSupportTest {
                 Paths.get("/test"),
                 runtimeSupport.defaultMavenUserHome(),
                 null,
-                Mockito.mock(RepositorySystem.class),
-                Mockito.mock(RepositorySystemSession.class),
+                repositorySystem,
+                session,
                 null,
                 new Lookup() {
                     @Override

@@ -64,11 +64,11 @@
     </dependency>
     <dependency>
       <groupId>org.apache.maven.resolver</groupId>
-      <artifactId>maven-resolver-transport-http</artifactId>
+      <artifactId>maven-resolver-transport-apache</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.maven.resolver</groupId>
-      <artifactId>maven-resolver-supplier</artifactId>
+      <artifactId>maven-resolver-supplier-mvn3</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.maven</groupId>

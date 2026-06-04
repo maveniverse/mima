@@ -60,10 +60,10 @@
     <project.build.outputTimestamp>2026-05-28T12:15:22Z</project.build.outputTimestamp>
 
     <!-- Dependency versions -->
-    <version.resolver>1.9.27</version.resolver>
-    <version.maven>3.9.16</version.maven>
+    <version.resolver>2.0.19-SNAPSHOT</version.resolver>
+    <version.maven>3.10.0-SNAPSHOT</version.maven>
     <version.sisu>1.0.0</version.sisu>
-    <version.slf4j>1.7.36</version.slf4j>
+    <version.slf4j>2.0.18</version.slf4j>
     <version.junit>5.14.4</version.junit>
   </properties>
 
@@ -176,12 +176,12 @@
       </dependency>
       <dependency>
         <groupId>org.apache.maven.resolver</groupId>
-        <artifactId>maven-resolver-transport-http</artifactId>
+        <artifactId>maven-resolver-transport-apache</artifactId>
         <version>${version.resolver}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven.resolver</groupId>
-        <artifactId>maven-resolver-supplier</artifactId>
+        <artifactId>maven-resolver-supplier-mvn3</artifactId>
         <version>${version.resolver}</version>
       </dependency>
 
