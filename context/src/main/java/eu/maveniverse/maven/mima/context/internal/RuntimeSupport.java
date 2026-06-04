@@ -131,7 +131,7 @@ public abstract class RuntimeSupport implements Runtime {
 
         customizeArtifactDescriptorPolicy(overrides, session);
 
-        customizeSnapshotUpdatePolicy(overrides, session);
+        customizeUpdatePolicies(overrides, session);
 
         // settings are used only in creation, not customization
 
@@ -208,9 +208,19 @@ public abstract class RuntimeSupport implements Runtime {
         }
     }
 
-    protected void customizeSnapshotUpdatePolicy(ContextOverrides overrides, SessionBuilder session) {
-        if (overrides.getSnapshotUpdatePolicy() != null) {
-            switch (overrides.getSnapshotUpdatePolicy()) {
+    protected void customizeUpdatePolicies(ContextOverrides overrides, SessionBuilder session) {
+        if (overrides.getArtifactUpdatePolicy() != null) {
+            switch (overrides.getArtifactUpdatePolicy()) {
+                case ALWAYS:
+                    session.setArtifactUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_ALWAYS);
+                    break;
+                case NEVER:
+                    session.setArtifactUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_NEVER);
+                    break;
+            }
+        }
+        if (overrides.getMetadataUpdatePolicy() != null) {
+            switch (overrides.getMetadataUpdatePolicy()) {
                 case ALWAYS:
                     session.setMetadataUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_ALWAYS);
                     break;

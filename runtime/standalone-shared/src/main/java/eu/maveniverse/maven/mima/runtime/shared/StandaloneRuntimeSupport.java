@@ -394,7 +394,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
 
         customizeArtifactDescriptorPolicy(overrides, session);
 
-        customizeSnapshotUpdatePolicy(overrides, session);
+        customizeUpdatePolicies(overrides, session);
 
         // we should not interfere with "real Maven"
         session.setResolutionErrorPolicy(new SimpleResolutionErrorPolicy(false, false));

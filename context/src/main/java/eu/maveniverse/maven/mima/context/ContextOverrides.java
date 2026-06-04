@@ -51,7 +51,7 @@ public final class ContextOverrides {
      */
     public static final List<RemoteRepository> DEFAULT_REMOTE_REPOSITORIES = Collections.singletonList(CENTRAL);
 
-    public enum SnapshotUpdatePolicy {
+    public enum UpdatePolicy {
         ALWAYS,
         NEVER
     }
@@ -88,7 +88,9 @@ public final class ContextOverrides {
 
     private final Boolean ignoreArtifactDescriptorRepositories;
 
-    private final SnapshotUpdatePolicy snapshotUpdatePolicy;
+    private final UpdatePolicy artifactUpdatePolicy;
+
+    private final UpdatePolicy metadataUpdatePolicy;
 
     private final ChecksumPolicy checksumPolicy;
 
@@ -135,7 +137,8 @@ public final class ContextOverrides {
             final List<ArtifactType> extraArtifactTypes,
             final Boolean offline,
             final Boolean ignoreArtifactDescriptorRepositories,
-            final SnapshotUpdatePolicy snapshotUpdatePolicy,
+            final UpdatePolicy artifactUpdatePolicy,
+            final UpdatePolicy metadataUpdatePolicy,
             final ChecksumPolicy checksumPolicy,
             final ArtifactDescriptorPolicy artifactDescriptorPolicy,
             final boolean withUserSettings,
@@ -168,7 +171,8 @@ public final class ContextOverrides {
         this.extraArtifactTypes = requireNonNull(extraArtifactTypes);
         this.offline = offline;
         this.ignoreArtifactDescriptorRepositories = ignoreArtifactDescriptorRepositories;
-        this.snapshotUpdatePolicy = snapshotUpdatePolicy;
+        this.artifactUpdatePolicy = artifactUpdatePolicy;
+        this.metadataUpdatePolicy = metadataUpdatePolicy;
         this.checksumPolicy = checksumPolicy;
         this.artifactDescriptorPolicy = artifactDescriptorPolicy;
         this.withUserSettings = withUserSettings;
@@ -270,10 +274,17 @@ public final class ContextOverrides {
     }
 
     /**
-     * Snapshot update policy, {@code null} is to use Resolver default.
+     * Artifact update policy, {@code null} is to use Resolver default.
      */
-    public SnapshotUpdatePolicy getSnapshotUpdatePolicy() {
-        return snapshotUpdatePolicy;
+    public UpdatePolicy getArtifactUpdatePolicy() {
+        return artifactUpdatePolicy;
+    }
+
+    /**
+     * Metadata update policy, {@code null} is to use Resolver default.
+     */
+    public UpdatePolicy getMetadataUpdatePolicy() {
+        return metadataUpdatePolicy;
     }
 
     /**
@@ -438,7 +449,8 @@ public final class ContextOverrides {
                 .extraArtifactTypes(extraArtifactTypes)
                 .offline(offline)
                 .ignoreArtifactDescriptorRepositories(ignoreArtifactDescriptorRepositories)
-                .snapshotUpdatePolicy(snapshotUpdatePolicy)
+                .artifactUpdatePolicy(artifactUpdatePolicy)
+                .metadataUpdatePolicy(metadataUpdatePolicy)
                 .checksumPolicy(checksumPolicy)
                 .artifactDescriptorPolicy(artifactDescriptorPolicy)
                 .withUserSettings(withUserSettings)
@@ -478,7 +490,8 @@ public final class ContextOverrides {
                 && addRepositoriesOp == that.addRepositoriesOp
                 && keepBareRepositories == that.keepBareRepositories
                 && Objects.equals(extraArtifactTypes, that.extraArtifactTypes)
-                && snapshotUpdatePolicy == that.snapshotUpdatePolicy
+                && artifactUpdatePolicy == that.artifactUpdatePolicy
+                && metadataUpdatePolicy == that.metadataUpdatePolicy
                 && checksumPolicy == that.checksumPolicy
                 && Objects.equals(artifactDescriptorPolicy, that.artifactDescriptorPolicy)
                 && Objects.equals(activeProfileIds, that.activeProfileIds)
@@ -510,7 +523,8 @@ public final class ContextOverrides {
                 extraArtifactTypes,
                 offline,
                 ignoreArtifactDescriptorRepositories,
-                snapshotUpdatePolicy,
+                artifactUpdatePolicy,
+                metadataUpdatePolicy,
                 checksumPolicy,
                 artifactDescriptorPolicy,
                 withUserSettings,
@@ -561,7 +575,9 @@ public final class ContextOverrides {
 
         private Boolean ignoreArtifactDescriptorRepositories;
 
-        private SnapshotUpdatePolicy snapshotUpdatePolicy = null;
+        private UpdatePolicy artifactUpdatePolicy = null;
+
+        private UpdatePolicy metadataUpdatePolicy = null;
 
         private ChecksumPolicy checksumPolicy = null;
 
@@ -733,10 +749,18 @@ public final class ContextOverrides {
         }
 
         /**
-         * Sets the snapshot update policy.
+         * Sets the artifact update policy.
          */
-        public Builder snapshotUpdatePolicy(SnapshotUpdatePolicy snapshotUpdatePolicy) {
-            this.snapshotUpdatePolicy = snapshotUpdatePolicy;
+        public Builder artifactUpdatePolicy(UpdatePolicy artifactUpdatePolicy) {
+            this.artifactUpdatePolicy = artifactUpdatePolicy;
+            return this;
+        }
+
+        /**
+         * Sets the metadata update policy.
+         */
+        public Builder metadataUpdatePolicy(UpdatePolicy metadataUpdatePolicy) {
+            this.metadataUpdatePolicy = metadataUpdatePolicy;
             return this;
         }
 
@@ -932,7 +956,8 @@ public final class ContextOverrides {
                     extraArtifactTypes,
                     offline,
                     ignoreArtifactDescriptorRepositories,
-                    snapshotUpdatePolicy,
+                    artifactUpdatePolicy,
+                    metadataUpdatePolicy,
                     checksumPolicy,
                     artifactDescriptorPolicy,
                     withUserSettings,
