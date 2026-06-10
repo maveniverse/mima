@@ -55,7 +55,9 @@ public class StandaloneSisuRuntimeTest extends AbstractModule {
         ClassLoader classloader = StandaloneSisuRuntime.class.getClassLoader();
         Guice.createInjector(new WireModule(new SpaceModule(new URLClassSpace(classloader), BeanScanning.ON, true)))
                 .injectMembers(this);
-        try (Context context = runtime.create(ContextOverrides.create().build())) {
+        try (Context context = runtime.create(ContextOverrides.create()
+                .withLocalRepositoryOverride(Paths.get("target/local-repo"))
+                .build())) {
             VersionResult versionResult = context.repositorySystem()
                     .resolveVersion(
                             context.repositorySystemSession(),

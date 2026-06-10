@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -78,6 +79,7 @@ public class StandaloneStaticRuntimeTest {
 
         StandaloneStaticRuntime runtime = new StandaloneStaticRuntime();
         try (Context context = runtime.create(ContextOverrides.create()
+                .withLocalRepositoryOverride(Paths.get("target/local-repo"))
                 .withStaticExtensions(extensions)
                 .userProperties(userProperties)
                 .build())) {
