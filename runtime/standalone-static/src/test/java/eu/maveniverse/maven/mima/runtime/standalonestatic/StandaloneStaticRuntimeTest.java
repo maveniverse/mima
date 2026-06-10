@@ -35,7 +35,9 @@ public class StandaloneStaticRuntimeTest {
     @Test
     void smoke() {
         StandaloneStaticRuntime runtime = new StandaloneStaticRuntime();
-        try (Context context = runtime.create(ContextOverrides.create().build())) {
+        try (Context context = runtime.create(ContextOverrides.create()
+                .withLocalRepositoryOverride(Paths.get("target/local-repo"))
+                .build())) {
             VersionResult versionResult = context.repositorySystem()
                     .resolveVersion(
                             context.repositorySystemSession(),
