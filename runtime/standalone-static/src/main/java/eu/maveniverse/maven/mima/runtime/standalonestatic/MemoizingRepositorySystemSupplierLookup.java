@@ -8,7 +8,11 @@
 package eu.maveniverse.maven.mima.runtime.standalonestatic;
 
 import eu.maveniverse.maven.mima.context.Lookup;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import org.apache.maven.model.building.ModelBuilder;
 import org.apache.maven.repository.internal.ModelCacheFactory;
 import org.eclipse.aether.RepositoryListener;
@@ -40,11 +44,12 @@ import org.eclipse.aether.supplier.RepositorySystemSupplier;
 import org.eclipse.aether.transport.http.ChecksumExtractor;
 
 public class MemoizingRepositorySystemSupplierLookup extends RepositorySystemSupplier implements Lookup {
+    private final Map<Class<?>, Map<String, Object>> staticExtensions;
     private final HashMap<Class<?>, Object> singulars = new HashMap<>();
-
     private final HashMap<Class<?>, Map<String, Object>> plurals = new HashMap<>();
 
-    public MemoizingRepositorySystemSupplierLookup() {
+    public MemoizingRepositorySystemSupplierLookup(Map<Class<?>, Map<String, Object>> staticExtensions) {
+        this.staticExtensions = staticExtensions;
         memoize(RepositorySystem.class, super.get()); // to trigger filling up of memoized components
     }
 
@@ -58,10 +63,17 @@ public class MemoizingRepositorySystemSupplierLookup extends RepositorySystemSup
         return instance;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     protected <T> Map<String, T> memoize(Class<T> key, Map<String, T> instances) {
-        plurals.put(key, (Map) instances);
-        return instances;
+        HashMap<String, Object> memoized = new HashMap<>();
+        memoized.putAll(instances);
+        memoized.putAll(staticExtensions.getOrDefault(key, Collections.emptyMap()));
+        // ensure map values are all subtypes of key
+        if (memoized.values().stream().anyMatch(v -> !key.isAssignableFrom(v.getClass()))) {
+            throw new IllegalArgumentException(
+                    String.format("User provided static extensions for key %s are of wrong type", key.getName()));
+        }
+        plurals.put(key, memoized);
+        return (Map) memoized;
     }
 
     @Override
