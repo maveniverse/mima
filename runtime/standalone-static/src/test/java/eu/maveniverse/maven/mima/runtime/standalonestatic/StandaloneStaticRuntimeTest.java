@@ -100,7 +100,7 @@ public class StandaloneStaticRuntimeTest {
 
     @Test
     void smokeWithBadExtensions() {
-        // set up static extensions
+        // set up static extensions with bad type (of type String, but key is TrustedChecksumsSource)
         HashMap<String, Object> trustedSources = new HashMap<>();
         trustedSources.put("fake", "this should not be a string but a TrustedChecksumsSource instance");
         HashMap<Class<?>, Map<String, Object>> extensions = new HashMap<>();
