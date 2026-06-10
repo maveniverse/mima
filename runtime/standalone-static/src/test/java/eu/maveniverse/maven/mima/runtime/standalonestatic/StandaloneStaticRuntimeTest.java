@@ -9,6 +9,7 @@ package eu.maveniverse.maven.mima.runtime.standalonestatic;
 
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
@@ -22,7 +23,6 @@ import org.eclipse.aether.artifact.DefaultArtifact;
 import org.eclipse.aether.repository.ArtifactRepository;
 import org.eclipse.aether.resolution.ArtifactRequest;
 import org.eclipse.aether.resolution.ArtifactResolutionException;
-import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.VersionRequest;
 import org.eclipse.aether.resolution.VersionResolutionException;
 import org.eclipse.aether.resolution.VersionResult;
@@ -81,13 +81,14 @@ public class StandaloneStaticRuntimeTest {
                 .withStaticExtensions(extensions)
                 .userProperties(userProperties)
                 .build())) {
-            ArtifactResult artifactResult = context.repositorySystem()
+            context.repositorySystem()
                     .resolveArtifact(
                             context.repositorySystemSession(),
                             new ArtifactRequest(
                                     new DefaultArtifact("eu.maveniverse.maven.mima:context:2.4.45"),
                                     context.remoteRepositories(),
                                     "test"));
+            fail("Resolution should have fail");
         } catch (ArtifactResolutionException e) {
             assertTrue(e.getMessage().contains("trusted checksum mismatch"), e.getMessage());
         }
