@@ -124,6 +124,8 @@ public final class ContextOverrides {
 
     private final Object effectiveSettingsMixin;
 
+    private final Map<Class<?>, Map<String, Object>> staticExtensions;
+
     private ContextOverrides(
             final Path basedirOverride,
             final Map<String, String> systemProperties,
@@ -152,7 +154,8 @@ public final class ContextOverrides {
             final Path globalSettingsXmlOverride,
             final Path globalToolchainsXmlOverride,
             final Object effectiveSettings,
-            final Object effectiveSettingsMixin) {
+            final Object effectiveSettingsMixin,
+            final Map<Class<?>, Map<String, Object>> staticExtensions) {
 
         this.basedirOverride = basedirOverride;
         this.systemProperties = Collections.unmodifiableMap(systemProperties);
@@ -186,6 +189,8 @@ public final class ContextOverrides {
         this.globalToolchainsXmlOverride = globalToolchainsXmlOverride;
         this.effectiveSettings = effectiveSettings;
         this.effectiveSettingsMixin = effectiveSettingsMixin;
+        this.staticExtensions =
+                staticExtensions == null ? Collections.emptyMap() : Collections.unmodifiableMap(staticExtensions);
     }
 
     /**
@@ -422,6 +427,17 @@ public final class ContextOverrides {
     }
 
     /**
+     * Used in static runtime only: return the user-set static extensions map, that may contain SPI instances
+     * to be hooked into Resolver. Dangerous! If you don't know what you are doing, ask first. In non-static
+     * runtime case, you should rely on usual component discovery, as this field is used only by static runtime.
+     *
+     * @since 2.4.46
+     */
+    public Map<Class<?>, Map<String, Object>> getStaticExtensions() {
+        return staticExtensions;
+    }
+
+    /**
      * Creates {@link Builder} out of current instance.
      *
      * @since 2.4.0
@@ -455,7 +471,8 @@ public final class ContextOverrides {
                 .withGlobalSettingsXmlOverride(globalSettingsXmlOverride)
                 .withGlobalToolchainsXmlOverride(globalToolchainsXmlOverride)
                 .withEffectiveSettings(effectiveSettings)
-                .withEffectiveSettingsMixin(effectiveSettingsMixin);
+                .withEffectiveSettingsMixin(effectiveSettingsMixin)
+                .withStaticExtensions(staticExtensions);
     }
 
     @Override
@@ -494,7 +511,8 @@ public final class ContextOverrides {
                 && Objects.equals(globalSettingsXmlOverride, that.globalSettingsXmlOverride)
                 && Objects.equals(globalToolchainsXmlOverride, that.globalToolchainsXmlOverride)
                 && Objects.equals(effectiveSettings, that.effectiveSettings)
-                && Objects.equals(effectiveSettingsMixin, that.effectiveSettingsMixin);
+                && Objects.equals(effectiveSettingsMixin, that.effectiveSettingsMixin)
+                && Objects.equals(staticExtensions, that.staticExtensions);
     }
 
     @Override
@@ -527,7 +545,8 @@ public final class ContextOverrides {
                 globalSettingsXmlOverride,
                 globalToolchainsXmlOverride,
                 effectiveSettings,
-                effectiveSettingsMixin);
+                effectiveSettingsMixin,
+                staticExtensions);
     }
 
     /**
@@ -596,6 +615,8 @@ public final class ContextOverrides {
         private Object effectiveSettings = null;
 
         private Object effectiveSettingsMixin = null;
+
+        private Map<Class<?>, Map<String, Object>> staticExtensions = Collections.emptyMap();
 
         /**
          * Hide ctor, use {@link #create()} to create new builder instances.
@@ -918,6 +939,17 @@ public final class ContextOverrides {
         }
 
         /**
+         * Sets user set static extensions to Resolver/MIMA. Used only in static runtime. With Sisu runtime, one should
+         * rely on usual component discovery instead, and this field is unused.
+         *
+         * @since 2.4.46
+         */
+        public Builder withStaticExtensions(Map<Class<?>, Map<String, Object>> staticExtensions) {
+            this.staticExtensions = requireNonNull(staticExtensions);
+            return this;
+        }
+
+        /**
          * Builds an immutable instance of {@link ContextOverrides} using so far applied settings and configuration.
          */
         public ContextOverrides build() {
@@ -949,7 +981,8 @@ public final class ContextOverrides {
                     globalSettingsXmlOverride,
                     globalToolchainsXmlOverride,
                     effectiveSettings,
-                    effectiveSettingsMixin);
+                    effectiveSettingsMixin,
+                    staticExtensions);
         }
     }
 }

@@ -63,7 +63,8 @@ public class StandaloneStaticRuntime extends StandaloneRuntimeSupport {
     }
 
     protected Lookup createRepositorySystemLookup(PreBoot preBoot) {
-        return new MemoizingRepositorySystemSupplierLookup();
+        return new MemoizingRepositorySystemSupplierLookup(
+                preBoot.getOverrides().getStaticExtensions());
     }
 
     protected Lookup createCompatLookup(PreBoot preBoot) {
