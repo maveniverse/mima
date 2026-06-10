@@ -940,12 +940,12 @@ public final class ContextOverrides {
 
         /**
          * Sets user set static extensions to Resolver/MIMA. Used only in static runtime. With Sisu runtime, one should
-         * rely on usual component discovery instead, and this field is unused.
+         * rely on usual component discovery instead, and this field is unused. Allows {@code null}, means "no extensions".
          *
          * @since 2.4.46
          */
         public Builder withStaticExtensions(Map<Class<?>, Map<String, Object>> staticExtensions) {
-            this.staticExtensions = requireNonNull(staticExtensions);
+            this.staticExtensions = staticExtensions;
             return this;
         }
 
