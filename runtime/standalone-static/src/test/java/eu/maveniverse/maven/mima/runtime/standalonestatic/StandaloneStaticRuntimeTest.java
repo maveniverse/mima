@@ -97,4 +97,27 @@ public class StandaloneStaticRuntimeTest {
             assertTrue(e.getMessage().contains("trusted checksum mismatch"), e.getMessage());
         }
     }
+
+    @Test
+    void smokeWithBadExtensions() {
+        // set up static extensions
+        HashMap<String, Object> trustedSources = new HashMap<>();
+        trustedSources.put("fake", "this should not be a string but a TrustedChecksumsSource instance");
+        HashMap<Class<?>, Map<String, Object>> extensions = new HashMap<>();
+        extensions.put(TrustedChecksumsSource.class, trustedSources);
+
+        StandaloneStaticRuntime runtime = new StandaloneStaticRuntime();
+        try (Context context = runtime.create(ContextOverrides.create()
+                .withLocalRepositoryOverride(Paths.get("target/local-repo"))
+                .withStaticExtensions(extensions)
+                .build())) {
+            fail("Context creation should have fail");
+        } catch (IllegalArgumentException e) {
+            assertTrue(
+                    e.getMessage()
+                            .contains(
+                                    "User provided static extensions for key org.eclipse.aether.spi.checksums.TrustedChecksumsSource are of wrong type"),
+                    e.getMessage());
+        }
+    }
 }

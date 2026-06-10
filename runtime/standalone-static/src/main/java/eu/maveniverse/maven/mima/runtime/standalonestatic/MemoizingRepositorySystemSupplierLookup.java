@@ -67,6 +67,11 @@ public class MemoizingRepositorySystemSupplierLookup extends RepositorySystemSup
         HashMap<String, Object> memoized = new HashMap<>();
         memoized.putAll(instances);
         memoized.putAll(staticExtensions.getOrDefault(key, Collections.emptyMap()));
+        // ensure map values are all subtypes of key
+        if (memoized.values().stream().anyMatch(v -> !key.isAssignableFrom(v.getClass()))) {
+            throw new IllegalArgumentException(
+                    String.format("User provided static extensions for key %s are of wrong type", key.getName()));
+        }
         plurals.put(key, memoized);
         return (Map) memoized;
     }
