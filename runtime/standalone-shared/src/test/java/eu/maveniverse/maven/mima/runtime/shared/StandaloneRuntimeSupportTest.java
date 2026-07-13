@@ -1,4 +1,4 @@
-package eu.maveniverse.maven.mima.context.internal;
+package eu.maveniverse.maven.mima.runtime.shared;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -7,6 +7,7 @@ import eu.maveniverse.maven.mima.context.Context;
 import eu.maveniverse.maven.mima.context.ContextOverrides;
 import eu.maveniverse.maven.mima.context.Lookup;
 import eu.maveniverse.maven.mima.context.MavenUserHome;
+import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
@@ -18,7 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class RuntimeSupportTest {
+class StandaloneRuntimeSupportTest {
     private RepositorySystem repositorySystem;
     private RepositorySystemSession.SessionBuilder sessionBuilder;
     private RepositorySystemSession.CloseableSession session;
@@ -36,7 +37,7 @@ class RuntimeSupportTest {
 
     @Test
     void itPropagatesNullMavenSystemHome() {
-        RuntimeSupport runtimeSupport = new RuntimeSupport("test", "123", 999, "123", "123") {
+        RuntimeSupport runtimeSupport = new StandaloneRuntimeSupport("test", 999) {
             @Override
             public boolean managedRepositorySystem() {
                 return false;

@@ -10,19 +10,24 @@ package eu.maveniverse.maven.mima.runtime.standalonestatic;
 import eu.maveniverse.maven.mima.context.Lookup;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.Collections;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.impl.*;
+import org.eclipse.aether.spi.checksums.TrustedChecksumsSource;
 import org.eclipse.aether.supplier.RepositorySystemSupplier;
 
 public class MemoizingRepositorySystemSupplierLookup implements Lookup {
-    private final RepositorySystemSupplier repositorySystemSupplier;
+    private final MimaRepositorySystemSupplier repositorySystemSupplier;
 
-    public MemoizingRepositorySystemSupplierLookup() {
-        this.repositorySystemSupplier = new RepositorySystemSupplier();
+    public MemoizingRepositorySystemSupplierLookup(Map<Class<?>, Map<String, Object>> staticExtensions) {
+        this.repositorySystemSupplier = new MimaRepositorySystemSupplier(staticExtensions);
     }
 
     public RepositorySystem get() {
-        return repositorySystemSupplier.get();
+        return lookup(RepositorySystem.class).orElseThrow(() -> new NoSuchElementException("No value present"));
     }
 
     @Override
@@ -39,7 +44,7 @@ public class MemoizingRepositorySystemSupplierLookup implements Lookup {
     private <T> Map<String, T> lookupMap(Class<T> type) {
         String methodName = "get" + type.getSimpleName();
         try {
-            Method method = RepositorySystemSupplier.class.getMethod(methodName);
+            Method method = MimaRepositorySystemSupplier.class.getMethod(methodName);
             Object result = method.invoke(repositorySystemSupplier);
             if (result instanceof Map) {
                 return (Map<String, T>) result;
@@ -49,6 +54,38 @@ public class MemoizingRepositorySystemSupplierLookup implements Lookup {
             return Collections.emptyMap();
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static class MimaRepositorySystemSupplier extends RepositorySystemSupplier {
+        private final Map<Class<?>, Map<String, Object>> staticExtensions;
+
+        private MimaRepositorySystemSupplier(Map<Class<?>, Map<String, Object>> staticExtensions) {
+            this.staticExtensions = staticExtensions;
+
+            // validate: key class should be assignable from the value map values
+            // (as they should be implementing key class, that is usually interface)
+            for (Class<?> key : staticExtensions.keySet()) {
+                Map<String, Object> values = staticExtensions.get(key);
+                for (Object value : values.values()) {
+                    if (!key.isInstance(value)) {
+                        throw new IllegalArgumentException(String.format(
+                                "User provided static extensions for key %s are of wrong type", key.getName()));
+                    }
+                }
+            }
+        }
+
+        @Override
+        protected Map<String, TrustedChecksumsSource> createTrustedChecksumsSources() {
+            Map<String, TrustedChecksumsSource> result = super.createTrustedChecksumsSources();
+            Map<String, Object> userProvided = staticExtensions.get(TrustedChecksumsSource.class);
+            if (userProvided != null) {
+                for (Map.Entry<String, Object> entry : userProvided.entrySet()) {
+                    result.put(entry.getKey(), (TrustedChecksumsSource) entry.getValue());
+                }
+            }
+            return result;
         }
     }
 }

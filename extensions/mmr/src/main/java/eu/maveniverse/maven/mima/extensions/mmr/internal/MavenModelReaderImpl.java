@@ -122,12 +122,12 @@ public class MavenModelReaderImpl {
         Artifact a = request.getArtifact();
 
         Artifact pomArtifact = ArtifactDescriptorUtils.toPomArtifact(a);
-        if (a.getPath() != null) {
-            pomArtifact = pomArtifact.setPath(a.getPath());
+        if (a.getFile() != null) {
+            pomArtifact = pomArtifact.setFile(a.getFile());
         }
 
         ArtifactResult resolveResult = null;
-        if (pomArtifact.getPath() == null) {
+        if (pomArtifact.getFile() == null) {
             try {
                 VersionRequest versionRequest =
                         new VersionRequest(pomArtifact, repositories, request.getRequestContext());
@@ -176,11 +176,10 @@ public class MavenModelReaderImpl {
                     remoteRepositoryManager,
                     repositories));
             if (resolveResult != null && resolveResult.getRepository() instanceof WorkspaceRepository) {
-                modelRequest.setPomFile(pomArtifact.getPath().toFile());
+                modelRequest.setPomFile(pomArtifact.getFile());
             } else {
-                modelRequest.setModelSource(
-                        new FileModelSource(pomArtifact.getPath().toFile()));
-                modelRequest.setPomFile(pomArtifact.getPath().toFile());
+                modelRequest.setModelSource(new FileModelSource(pomArtifact.getFile()));
+                modelRequest.setPomFile(pomArtifact.getFile());
             }
 
             ModelBuildingResult modelResult = modelBuilder.build(modelRequest);

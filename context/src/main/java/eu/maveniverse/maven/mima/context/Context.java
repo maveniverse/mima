@@ -11,6 +11,7 @@ import static java.util.Objects.requireNonNull;
 
 import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
 import java.io.Closeable;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -190,9 +191,11 @@ public final class Context implements Closeable {
     public void close() {
         if (closed.compareAndSet(false, true)) {
             try {
-                if (repositorySystemSession instanceof RepositorySystemSession.CloseableSession) {
-                    ((RepositorySystemSession.CloseableSession) repositorySystemSession).close();
+                if (repositorySystemSession instanceof Closeable) {
+                    ((Closeable) repositorySystemSession).close();
                 }
+            } catch (IOException e) {
+                // ignore
             } finally {
                 if (managedCloser != null) {
                     managedCloser.run();
