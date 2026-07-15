@@ -108,6 +108,11 @@ provided by Maven itself. This runtime activates **only when runs within Maven**
 and has no transitive dependencies. In case of libraries intended to work in both modes, inside but outside of Maven 
 as well, this dependency may be always present.
 
+**IMPORTANT NOTES**: If your library is intended to be used as Maven Plugin, and you plan to support Maven 3.9 and
+older (Resolver 1.x line), your codebase MUST use Resolver 1.x APIs, for example you must use deprecated `Artifact#getFile()` 
+method, as Resolver 2.x APIs are not available in Maven 3.9.x and older. If you plan to support only Maven 3.10.x and
+above (Resolver 2.x line), you may use Resolver 2.x APIs freely, but your library will not work with Maven 3.9.x and older.
+
 ### Standalone Sisu
 
 To be used when library using MIMA runs standalone, and you still want to enjoy the benefits of Eclipse Sisu dynamism
