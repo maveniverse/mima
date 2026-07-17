@@ -8,72 +8,27 @@
 package eu.maveniverse.maven.mima.runtime.standalonestatic;
 
 import eu.maveniverse.maven.mima.context.Lookup;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import org.apache.maven.model.building.ModelBuilder;
-import org.apache.maven.repository.internal.ModelCacheFactory;
-import org.eclipse.aether.RepositoryListener;
 import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory;
-import org.eclipse.aether.impl.*;
-import org.eclipse.aether.internal.impl.LocalPathComposer;
-import org.eclipse.aether.internal.impl.LocalPathPrefixComposerFactory;
-import org.eclipse.aether.internal.impl.TrackingFileManager;
-import org.eclipse.aether.internal.impl.collect.DependencyCollectorDelegate;
-import org.eclipse.aether.internal.impl.synccontext.named.NameMapper;
-import org.eclipse.aether.internal.impl.synccontext.named.NamedLockFactoryAdapterFactory;
-import org.eclipse.aether.named.NamedLockFactory;
-import org.eclipse.aether.spi.checksums.ProvidedChecksumsSource;
 import org.eclipse.aether.spi.checksums.TrustedChecksumsSource;
-import org.eclipse.aether.spi.connector.RepositoryConnectorFactory;
-import org.eclipse.aether.spi.connector.checksum.ChecksumAlgorithmFactory;
-import org.eclipse.aether.spi.connector.checksum.ChecksumAlgorithmFactorySelector;
-import org.eclipse.aether.spi.connector.checksum.ChecksumPolicyProvider;
-import org.eclipse.aether.spi.connector.filter.RemoteRepositoryFilterSource;
-import org.eclipse.aether.spi.connector.layout.RepositoryLayoutFactory;
-import org.eclipse.aether.spi.connector.layout.RepositoryLayoutProvider;
 import org.eclipse.aether.spi.connector.transport.TransporterFactory;
-import org.eclipse.aether.spi.connector.transport.TransporterProvider;
-import org.eclipse.aether.spi.io.FileProcessor;
-import org.eclipse.aether.spi.resolution.ArtifactResolverPostProcessor;
-import org.eclipse.aether.spi.synccontext.SyncContextFactory;
 import org.eclipse.aether.supplier.RepositorySystemSupplier;
-import org.eclipse.aether.transport.http.ChecksumExtractor;
+import org.eclipse.aether.transport.file.FileTransporterFactory;
 
-public class MemoizingRepositorySystemSupplierLookup extends RepositorySystemSupplier implements Lookup {
-    private final Map<Class<?>, Map<String, Object>> staticExtensions;
-    private final HashMap<Class<?>, Object> singulars = new HashMap<>();
-    private final HashMap<Class<?>, Map<String, Object>> plurals = new HashMap<>();
+public class MemoizingRepositorySystemSupplierLookup implements Lookup {
+    private final MimaRepositorySystemSupplier repositorySystemSupplier;
 
     public MemoizingRepositorySystemSupplierLookup(Map<Class<?>, Map<String, Object>> staticExtensions) {
-        this.staticExtensions = staticExtensions;
-        memoize(RepositorySystem.class, super.get()); // to trigger filling up of memoized components
+        this.repositorySystemSupplier = new MimaRepositorySystemSupplier(staticExtensions);
     }
 
-    @Override
     public RepositorySystem get() {
         return lookup(RepositorySystem.class).orElseThrow(() -> new NoSuchElementException("No value present"));
-    }
-
-    protected <T> T memoize(Class<T> key, T instance) {
-        singulars.put(key, instance);
-        return instance;
-    }
-
-    protected <T> Map<String, T> memoize(Class<T> key, Map<String, T> instances) {
-        HashMap<String, Object> memoized = new HashMap<>();
-        memoized.putAll(instances);
-        memoized.putAll(staticExtensions.getOrDefault(key, Collections.emptyMap()));
-        // ensure map values are all subtypes of key
-        if (memoized.values().stream().anyMatch(v -> !key.isAssignableFrom(v.getClass()))) {
-            throw new IllegalArgumentException(
-                    String.format("User provided static extensions for key %s are of wrong type", key.getName()));
-        }
-        plurals.put(key, memoized);
-        return (Map) memoized;
     }
 
     @Override
@@ -86,390 +41,80 @@ public class MemoizingRepositorySystemSupplierLookup extends RepositorySystemSup
         return Optional.ofNullable(lookupMap(type).get(name));
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({"unchecked"})
     private <T> Map<String, T> lookupMap(Class<T> type) {
-        Map<String, T> result = (Map) plurals.get(type);
-        if (result != null) {
+        String methodName = "get" + type.getSimpleName();
+        try {
+            Method method = MimaRepositorySystemSupplier.class.getMethod(methodName);
+            Object result = method.invoke(repositorySystemSupplier);
+            if (result instanceof Map) {
+                return (Map<String, T>) result;
+            }
+            return Collections.singletonMap("default", (T) result);
+        } catch (NoSuchMethodException e) {
+            return Collections.emptyMap();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static class MimaRepositorySystemSupplier extends RepositorySystemSupplier {
+        private final Map<Class<?>, Map<String, Object>> staticExtensions;
+
+        private MimaRepositorySystemSupplier(Map<Class<?>, Map<String, Object>> staticExtensions) {
+            this.staticExtensions = staticExtensions;
+
+            // validate: key class should be assignable from the value map values
+            // (as they should be implementing key class, that is usually interface)
+            for (Class<?> key : staticExtensions.keySet()) {
+                Map<String, Object> values = staticExtensions.get(key);
+                for (Object value : values.values()) {
+                    if (!key.isInstance(value)) {
+                        throw new IllegalArgumentException(String.format(
+                                "User provided static extensions for key %s are of wrong type", key.getName()));
+                    }
+                }
+            }
+        }
+
+        private static boolean isPresent(String clazzName) {
+            try {
+                MemoizingRepositorySystemSupplierLookup.class.getClassLoader().loadClass(clazzName);
+                return true;
+            } catch (ClassNotFoundException e) {
+                return false;
+            }
+        }
+
+        @Override
+        protected Map<String, TransporterFactory> createTransporterFactories() {
+            HashMap<String, TransporterFactory> result = new HashMap<>();
+            result.put(FileTransporterFactory.NAME, new FileTransporterFactory());
+            if (isPresent("org.eclipse.aether.transport.url.UrlTransporterFactory")) {
+                result.put(
+                        org.eclipse.aether.transport.url.UrlTransporterFactory.NAME,
+                        new org.eclipse.aether.transport.url.UrlTransporterFactory(
+                                getChecksumExtractor(), getPathProcessor()));
+            }
+            if (isPresent("org.eclipse.aether.transport.apache.ApacheTransporterFactory")) {
+                result.put(
+                        org.eclipse.aether.transport.apache.ApacheTransporterFactory.NAME,
+                        new org.eclipse.aether.transport.apache.ApacheTransporterFactory(
+                                getChecksumExtractor(), getPathProcessor()));
+            }
             return result;
         }
-        T component = (T) singulars.get(type);
-        if (component != null) {
-            return Collections.singletonMap("default", component);
+
+        @Override
+        protected Map<String, TrustedChecksumsSource> createTrustedChecksumsSources() {
+            Map<String, TrustedChecksumsSource> result = super.createTrustedChecksumsSources();
+            Map<String, Object> userProvided = staticExtensions.get(TrustedChecksumsSource.class);
+            if (userProvided != null) {
+                for (Map.Entry<String, Object> entry : userProvided.entrySet()) {
+                    result.put(entry.getKey(), (TrustedChecksumsSource) entry.getValue());
+                }
+            }
+            return result;
         }
-        return Collections.emptyMap();
-    }
-
-    @Override
-    protected FileProcessor getFileProcessor() {
-        return memoize(FileProcessor.class, super.getFileProcessor());
-    }
-
-    @Override
-    protected TrackingFileManager getTrackingFileManager() {
-        return memoize(TrackingFileManager.class, super.getTrackingFileManager());
-    }
-
-    @Override
-    protected LocalPathComposer getLocalPathComposer() {
-        return memoize(LocalPathComposer.class, super.getLocalPathComposer());
-    }
-
-    @Override
-    protected LocalPathPrefixComposerFactory getLocalPathPrefixComposerFactory() {
-        return memoize(LocalPathPrefixComposerFactory.class, super.getLocalPathPrefixComposerFactory());
-    }
-
-    @Override
-    protected RepositorySystemLifecycle getRepositorySystemLifecycle() {
-        return memoize(RepositorySystemLifecycle.class, super.getRepositorySystemLifecycle());
-    }
-
-    @Override
-    protected OfflineController getOfflineController() {
-        return memoize(OfflineController.class, super.getOfflineController());
-    }
-
-    @Override
-    protected UpdatePolicyAnalyzer getUpdatePolicyAnalyzer() {
-        return memoize(UpdatePolicyAnalyzer.class, super.getUpdatePolicyAnalyzer());
-    }
-
-    @Override
-    protected ChecksumPolicyProvider getChecksumPolicyProvider() {
-        return memoize(ChecksumPolicyProvider.class, super.getChecksumPolicyProvider());
-    }
-
-    @Override
-    protected UpdateCheckManager getUpdateCheckManager(
-            TrackingFileManager trackingFileManager, UpdatePolicyAnalyzer updatePolicyAnalyzer) {
-        return memoize(
-                UpdateCheckManager.class, super.getUpdateCheckManager(trackingFileManager, updatePolicyAnalyzer));
-    }
-
-    @Override
-    protected Map<String, NamedLockFactory> getNamedLockFactories() {
-        return memoize(NamedLockFactory.class, super.getNamedLockFactories());
-    }
-
-    @Override
-    protected Map<String, NameMapper> getNameMappers() {
-        return memoize(NameMapper.class, super.getNameMappers());
-    }
-
-    @Override
-    protected NamedLockFactoryAdapterFactory getNamedLockFactoryAdapterFactory(
-            Map<String, NamedLockFactory> namedLockFactories,
-            Map<String, NameMapper> nameMappers,
-            RepositorySystemLifecycle repositorySystemLifecycle) {
-        return memoize(
-                NamedLockFactoryAdapterFactory.class,
-                super.getNamedLockFactoryAdapterFactory(namedLockFactories, nameMappers, repositorySystemLifecycle));
-    }
-
-    @Override
-    protected SyncContextFactory getSyncContextFactory(NamedLockFactoryAdapterFactory namedLockFactoryAdapterFactory) {
-        return memoize(SyncContextFactory.class, super.getSyncContextFactory(namedLockFactoryAdapterFactory));
-    }
-
-    @Override
-    protected Map<String, ChecksumAlgorithmFactory> getChecksumAlgorithmFactories() {
-        return memoize(ChecksumAlgorithmFactory.class, super.getChecksumAlgorithmFactories());
-    }
-
-    @Override
-    protected ChecksumAlgorithmFactorySelector getChecksumAlgorithmFactorySelector(
-            Map<String, ChecksumAlgorithmFactory> checksumAlgorithmFactories) {
-        return memoize(
-                ChecksumAlgorithmFactorySelector.class,
-                super.getChecksumAlgorithmFactorySelector(checksumAlgorithmFactories));
-    }
-
-    @Override
-    protected Map<String, RepositoryLayoutFactory> getRepositoryLayoutFactories(
-            ChecksumAlgorithmFactorySelector checksumAlgorithmFactorySelector) {
-        return memoize(
-                RepositoryLayoutFactory.class, super.getRepositoryLayoutFactories(checksumAlgorithmFactorySelector));
-    }
-
-    @Override
-    protected RepositoryLayoutProvider getRepositoryLayoutProvider(
-            Map<String, RepositoryLayoutFactory> repositoryLayoutFactories) {
-        return memoize(RepositoryLayoutProvider.class, super.getRepositoryLayoutProvider(repositoryLayoutFactories));
-    }
-
-    @Override
-    protected LocalRepositoryProvider getLocalRepositoryProvider(
-            LocalPathComposer localPathComposer,
-            TrackingFileManager trackingFileManager,
-            LocalPathPrefixComposerFactory localPathPrefixComposerFactory) {
-        return memoize(
-                LocalRepositoryProvider.class,
-                super.getLocalRepositoryProvider(
-                        localPathComposer, trackingFileManager, localPathPrefixComposerFactory));
-    }
-
-    @Override
-    protected RemoteRepositoryManager getRemoteRepositoryManager(
-            UpdatePolicyAnalyzer updatePolicyAnalyzer, ChecksumPolicyProvider checksumPolicyProvider) {
-        return memoize(
-                RemoteRepositoryManager.class,
-                super.getRemoteRepositoryManager(updatePolicyAnalyzer, checksumPolicyProvider));
-    }
-
-    @Override
-    protected Map<String, RemoteRepositoryFilterSource> getRemoteRepositoryFilterSources(
-            RepositorySystemLifecycle repositorySystemLifecycle, RepositoryLayoutProvider repositoryLayoutProvider) {
-        return memoize(
-                RemoteRepositoryFilterSource.class,
-                super.getRemoteRepositoryFilterSources(repositorySystemLifecycle, repositoryLayoutProvider));
-    }
-
-    @Override
-    protected RemoteRepositoryFilterManager getRemoteRepositoryFilterManager(
-            Map<String, RemoteRepositoryFilterSource> remoteRepositoryFilterSources) {
-        return memoize(
-                RemoteRepositoryFilterManager.class,
-                super.getRemoteRepositoryFilterManager(remoteRepositoryFilterSources));
-    }
-
-    @Override
-    protected Map<String, RepositoryListener> getRepositoryListeners() {
-        return memoize(RepositoryListener.class, super.getRepositoryListeners());
-    }
-
-    @Override
-    protected RepositoryEventDispatcher getRepositoryEventDispatcher(
-            Map<String, RepositoryListener> repositoryListeners) {
-        return memoize(RepositoryEventDispatcher.class, super.getRepositoryEventDispatcher(repositoryListeners));
-    }
-
-    @Override
-    protected Map<String, TrustedChecksumsSource> getTrustedChecksumsSources(
-            FileProcessor fileProcessor,
-            LocalPathComposer localPathComposer,
-            RepositorySystemLifecycle repositorySystemLifecycle) {
-        return memoize(
-                TrustedChecksumsSource.class,
-                super.getTrustedChecksumsSources(fileProcessor, localPathComposer, repositorySystemLifecycle));
-    }
-
-    @Override
-    protected Map<String, ProvidedChecksumsSource> getProvidedChecksumsSources(
-            Map<String, TrustedChecksumsSource> trustedChecksumsSources) {
-        return memoize(ProvidedChecksumsSource.class, super.getProvidedChecksumsSources(trustedChecksumsSources));
-    }
-
-    @Override
-    protected Map<String, ChecksumExtractor> getChecksumExtractors() {
-        return memoize(ChecksumExtractor.class, super.getChecksumExtractors());
-    }
-
-    @Override
-    protected Map<String, TransporterFactory> getTransporterFactories(Map<String, ChecksumExtractor> extractors) {
-        return memoize(TransporterFactory.class, super.getTransporterFactories(extractors));
-    }
-
-    @Override
-    protected TransporterProvider getTransporterProvider(Map<String, TransporterFactory> transporterFactories) {
-        return memoize(TransporterProvider.class, super.getTransporterProvider(transporterFactories));
-    }
-
-    @Override
-    protected BasicRepositoryConnectorFactory getBasicRepositoryConnectorFactory(
-            TransporterProvider transporterProvider,
-            RepositoryLayoutProvider repositoryLayoutProvider,
-            ChecksumPolicyProvider checksumPolicyProvider,
-            FileProcessor fileProcessor,
-            Map<String, ProvidedChecksumsSource> providedChecksumsSources) {
-        return memoize(
-                BasicRepositoryConnectorFactory.class,
-                super.getBasicRepositoryConnectorFactory(
-                        transporterProvider,
-                        repositoryLayoutProvider,
-                        checksumPolicyProvider,
-                        fileProcessor,
-                        providedChecksumsSources));
-    }
-
-    @Override
-    protected Map<String, RepositoryConnectorFactory> getRepositoryConnectorFactories(
-            BasicRepositoryConnectorFactory basicRepositoryConnectorFactory) {
-        return memoize(
-                RepositoryConnectorFactory.class,
-                super.getRepositoryConnectorFactories(basicRepositoryConnectorFactory));
-    }
-
-    @Override
-    protected RepositoryConnectorProvider getRepositoryConnectorProvider(
-            Map<String, RepositoryConnectorFactory> repositoryConnectorFactories,
-            RemoteRepositoryFilterManager remoteRepositoryFilterManager) {
-        return memoize(
-                RepositoryConnectorProvider.class,
-                super.getRepositoryConnectorProvider(repositoryConnectorFactories, remoteRepositoryFilterManager));
-    }
-
-    @Override
-    protected Installer getInstaller(
-            FileProcessor fileProcessor,
-            RepositoryEventDispatcher repositoryEventDispatcher,
-            Map<String, MetadataGeneratorFactory> metadataGeneratorFactories,
-            SyncContextFactory syncContextFactory) {
-        return memoize(
-                Installer.class,
-                super.getInstaller(
-                        fileProcessor, repositoryEventDispatcher, metadataGeneratorFactories, syncContextFactory));
-    }
-
-    @Override
-    protected Deployer getDeployer(
-            FileProcessor fileProcessor,
-            RepositoryEventDispatcher repositoryEventDispatcher,
-            RepositoryConnectorProvider repositoryConnectorProvider,
-            RemoteRepositoryManager remoteRepositoryManager,
-            UpdateCheckManager updateCheckManager,
-            Map<String, MetadataGeneratorFactory> metadataGeneratorFactories,
-            SyncContextFactory syncContextFactory,
-            OfflineController offlineController) {
-        return memoize(
-                Deployer.class,
-                super.getDeployer(
-                        fileProcessor,
-                        repositoryEventDispatcher,
-                        repositoryConnectorProvider,
-                        remoteRepositoryManager,
-                        updateCheckManager,
-                        metadataGeneratorFactories,
-                        syncContextFactory,
-                        offlineController));
-    }
-
-    @Override
-    protected Map<String, DependencyCollectorDelegate> getDependencyCollectorDelegates(
-            RemoteRepositoryManager remoteRepositoryManager,
-            ArtifactDescriptorReader artifactDescriptorReader,
-            VersionRangeResolver versionRangeResolver) {
-        return memoize(
-                DependencyCollectorDelegate.class,
-                super.getDependencyCollectorDelegates(
-                        remoteRepositoryManager, artifactDescriptorReader, versionRangeResolver));
-    }
-
-    @Override
-    protected DependencyCollector getDependencyCollector(
-            Map<String, DependencyCollectorDelegate> dependencyCollectorDelegates) {
-        return memoize(DependencyCollector.class, super.getDependencyCollector(dependencyCollectorDelegates));
-    }
-
-    @Override
-    protected Map<String, ArtifactResolverPostProcessor> getArtifactResolverPostProcessors(
-            ChecksumAlgorithmFactorySelector checksumAlgorithmFactorySelector,
-            Map<String, TrustedChecksumsSource> trustedChecksumsSources) {
-        return memoize(
-                ArtifactResolverPostProcessor.class,
-                super.getArtifactResolverPostProcessors(checksumAlgorithmFactorySelector, trustedChecksumsSources));
-    }
-
-    @Override
-    protected ArtifactResolver getArtifactResolver(
-            FileProcessor fileProcessor,
-            RepositoryEventDispatcher repositoryEventDispatcher,
-            VersionResolver versionResolver,
-            UpdateCheckManager updateCheckManager,
-            RepositoryConnectorProvider repositoryConnectorProvider,
-            RemoteRepositoryManager remoteRepositoryManager,
-            SyncContextFactory syncContextFactory,
-            OfflineController offlineController,
-            Map<String, ArtifactResolverPostProcessor> artifactResolverPostProcessors,
-            RemoteRepositoryFilterManager remoteRepositoryFilterManager) {
-        return memoize(
-                ArtifactResolver.class,
-                super.getArtifactResolver(
-                        fileProcessor,
-                        repositoryEventDispatcher,
-                        versionResolver,
-                        updateCheckManager,
-                        repositoryConnectorProvider,
-                        remoteRepositoryManager,
-                        syncContextFactory,
-                        offlineController,
-                        artifactResolverPostProcessors,
-                        remoteRepositoryFilterManager));
-    }
-
-    @Override
-    protected MetadataResolver getMetadataResolver(
-            RepositoryEventDispatcher repositoryEventDispatcher,
-            UpdateCheckManager updateCheckManager,
-            RepositoryConnectorProvider repositoryConnectorProvider,
-            RemoteRepositoryManager remoteRepositoryManager,
-            SyncContextFactory syncContextFactory,
-            OfflineController offlineController,
-            RemoteRepositoryFilterManager remoteRepositoryFilterManager) {
-        return memoize(
-                MetadataResolver.class,
-                super.getMetadataResolver(
-                        repositoryEventDispatcher,
-                        updateCheckManager,
-                        repositoryConnectorProvider,
-                        remoteRepositoryManager,
-                        syncContextFactory,
-                        offlineController,
-                        remoteRepositoryFilterManager));
-    }
-
-    @Override
-    protected Map<String, MetadataGeneratorFactory> getMetadataGeneratorFactories() {
-        return memoize(MetadataGeneratorFactory.class, super.getMetadataGeneratorFactories());
-    }
-
-    @Override
-    protected ArtifactDescriptorReader getArtifactDescriptorReader(
-            RemoteRepositoryManager remoteRepositoryManager,
-            VersionResolver versionResolver,
-            VersionRangeResolver versionRangeResolver,
-            ArtifactResolver artifactResolver,
-            ModelBuilder modelBuilder,
-            RepositoryEventDispatcher repositoryEventDispatcher,
-            ModelCacheFactory modelCacheFactory) {
-        return memoize(
-                ArtifactDescriptorReader.class,
-                super.getArtifactDescriptorReader(
-                        remoteRepositoryManager,
-                        versionResolver,
-                        versionRangeResolver,
-                        artifactResolver,
-                        modelBuilder,
-                        repositoryEventDispatcher,
-                        modelCacheFactory));
-    }
-
-    @Override
-    protected VersionResolver getVersionResolver(
-            MetadataResolver metadataResolver,
-            SyncContextFactory syncContextFactory,
-            RepositoryEventDispatcher repositoryEventDispatcher) {
-        return memoize(
-                VersionResolver.class,
-                super.getVersionResolver(metadataResolver, syncContextFactory, repositoryEventDispatcher));
-    }
-
-    @Override
-    protected VersionRangeResolver getVersionRangeResolver(
-            MetadataResolver metadataResolver,
-            SyncContextFactory syncContextFactory,
-            RepositoryEventDispatcher repositoryEventDispatcher) {
-        return memoize(
-                VersionRangeResolver.class,
-                super.getVersionRangeResolver(metadataResolver, syncContextFactory, repositoryEventDispatcher));
-    }
-
-    @Override
-    protected ModelBuilder getModelBuilder() {
-        return memoize(ModelBuilder.class, super.getModelBuilder());
-    }
-
-    @Override
-    protected ModelCacheFactory getModelCacheFactory() {
-        return memoize(ModelCacheFactory.class, super.getModelCacheFactory());
     }
 }
