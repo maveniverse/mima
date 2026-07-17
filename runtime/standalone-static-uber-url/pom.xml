@@ -17,7 +17,7 @@
     <version>2.5.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>standalone-static-uber</artifactId>
+  <artifactId>standalone-static-uber-url</artifactId>
   <name>${project.groupId}:${project.artifactId}</name>
 
   <!-- Note: this plugin has no sources, is just shaded :standalone-static,
@@ -36,6 +36,20 @@
     <dependency>
       <groupId>eu.maveniverse.maven.mima.runtime</groupId>
       <artifactId>standalone-static</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.maven.resolver</groupId>
+          <artifactId>maven-resolver-transport-apache</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.code.gson</groupId>
+          <artifactId>gson</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-transport-url</artifactId>
     </dependency>
 
     <dependency>

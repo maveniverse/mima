@@ -9,15 +9,16 @@ package eu.maveniverse.maven.mima.runtime.standalonestatic;
 
 import eu.maveniverse.maven.mima.context.Lookup;
 import java.lang.reflect.Method;
-import java.util.*;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.impl.*;
 import org.eclipse.aether.spi.checksums.TrustedChecksumsSource;
+import org.eclipse.aether.spi.connector.transport.TransporterFactory;
 import org.eclipse.aether.supplier.RepositorySystemSupplier;
+import org.eclipse.aether.transport.file.FileTransporterFactory;
 
 public class MemoizingRepositorySystemSupplierLookup implements Lookup {
     private final MimaRepositorySystemSupplier repositorySystemSupplier;
@@ -74,6 +75,34 @@ public class MemoizingRepositorySystemSupplierLookup implements Lookup {
                     }
                 }
             }
+        }
+
+        private static boolean isPresent(String clazzName) {
+            try {
+                MemoizingRepositorySystemSupplierLookup.class.getClassLoader().loadClass(clazzName);
+                return true;
+            } catch (ClassNotFoundException e) {
+                return false;
+            }
+        }
+
+        @Override
+        protected Map<String, TransporterFactory> createTransporterFactories() {
+            HashMap<String, TransporterFactory> result = new HashMap<>();
+            result.put(FileTransporterFactory.NAME, new FileTransporterFactory());
+            if (isPresent("org.eclipse.aether.transport.url.UrlTransporterFactory")) {
+                result.put(
+                        org.eclipse.aether.transport.url.UrlTransporterFactory.NAME,
+                        new org.eclipse.aether.transport.url.UrlTransporterFactory(
+                                getChecksumExtractor(), getPathProcessor()));
+            }
+            if (isPresent("org.eclipse.aether.transport.apache.ApacheTransporterFactory")) {
+                result.put(
+                        org.eclipse.aether.transport.apache.ApacheTransporterFactory.NAME,
+                        new org.eclipse.aether.transport.apache.ApacheTransporterFactory(
+                                getChecksumExtractor(), getPathProcessor()));
+            }
+            return result;
         }
 
         @Override

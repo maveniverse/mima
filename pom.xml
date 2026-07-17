@@ -60,7 +60,7 @@
     <project.build.outputTimestamp>2026-06-10T12:01:10Z</project.build.outputTimestamp>
 
     <!-- Dependency versions -->
-    <version.resolver>2.0.20</version.resolver>
+    <version.resolver>2.0.21-SNAPSHOT</version.resolver>
     <version.maven>3.10.0-rc-1</version.maven>
     <version.sisu>1.0.1</version.sisu>
     <version.slf4j>2.0.18</version.slf4j>
@@ -177,6 +177,11 @@
       <dependency>
         <groupId>org.apache.maven.resolver</groupId>
         <artifactId>maven-resolver-transport-apache</artifactId>
+        <version>${version.resolver}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.maven.resolver</groupId>
+        <artifactId>maven-resolver-transport-url</artifactId>
         <version>${version.resolver}</version>
       </dependency>
       <dependency>
