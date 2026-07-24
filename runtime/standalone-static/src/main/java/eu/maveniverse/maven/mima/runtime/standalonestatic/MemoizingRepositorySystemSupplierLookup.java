@@ -48,8 +48,12 @@ public class MemoizingRepositorySystemSupplierLookup extends RepositorySystemSup
     private final HashMap<Class<?>, Object> singulars = new HashMap<>();
     private final HashMap<Class<?>, Map<String, Object>> plurals = new HashMap<>();
 
+    public MemoizingRepositorySystemSupplierLookup() {
+        this(Collections.emptyMap());
+    }
+
     public MemoizingRepositorySystemSupplierLookup(Map<Class<?>, Map<String, Object>> staticExtensions) {
-        this.staticExtensions = staticExtensions;
+        this.staticExtensions = staticExtensions != null ? staticExtensions : Collections.emptyMap();
         memoize(RepositorySystem.class, super.get()); // to trigger filling up of memoized components
     }
 
