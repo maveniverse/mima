@@ -57,7 +57,7 @@
   </ciManagement>
 
   <properties>
-    <project.build.outputTimestamp>2026-07-24T19:22:22Z</project.build.outputTimestamp>
+    <project.build.outputTimestamp>2026-08-07T17:40:36Z</project.build.outputTimestamp>
 
     <!-- Dependency versions -->
     <version.resolver>2.0.21</version.resolver>
