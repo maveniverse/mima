@@ -23,6 +23,10 @@ import org.eclipse.aether.transport.file.FileTransporterFactory;
 public class MemoizingRepositorySystemSupplierLookup implements Lookup {
     private final MimaRepositorySystemSupplier repositorySystemSupplier;
 
+    public MemoizingRepositorySystemSupplierLookup() {
+        this(Collections.emptyMap());
+    }
+
     public MemoizingRepositorySystemSupplierLookup(Map<Class<?>, Map<String, Object>> staticExtensions) {
         this.repositorySystemSupplier = new MimaRepositorySystemSupplier(staticExtensions);
     }
