@@ -32,11 +32,11 @@
   </modules>
 
   <properties>
-    <version.mima>2.4.49-SNAPSHOT</version.mima>
+    <version.mima>3.0.0-SNAPSHOT</version.mima>
     <!-- tied to MIMA/Maven -->
-    <version.slf4j>1.7.36</version.slf4j>
-    <version.maven>3.9.16</version.maven>
-    <version.resolver>1.9.27</version.resolver>
+    <version.slf4j>2.0.18</version.slf4j>
+    <version.maven>3.10.0-rc-1</version.maven>
+    <version.resolver>2.0.21</version.resolver>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>

@@ -69,6 +69,7 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.eclipse.aether.repository.AuthenticationContext;
 import org.eclipse.aether.repository.Proxy;
 import org.eclipse.aether.repository.RemoteRepository;
+import org.eclipse.aether.transport.apache.ApacheTransporterConfigurationKeys;
 import org.eclipse.aether.util.ConfigUtils;
 
 /**
@@ -228,14 +229,14 @@ public class MavenHttpClient4FactoryImpl {
                     session, ConfigurationProperties.DEFAULT_USER_AGENT, ConfigurationProperties.USER_AGENT);
             int maxRedirects = ConfigUtils.getInteger(
                     session,
-                    ConfigurationProperties.DEFAULT_HTTP_MAX_REDIRECTS,
-                    ConfigurationProperties.HTTP_MAX_REDIRECTS + "." + repository.getId(),
-                    ConfigurationProperties.HTTP_MAX_REDIRECTS);
+                    ApacheTransporterConfigurationKeys.DEFAULT_MAX_REDIRECTS,
+                    ApacheTransporterConfigurationKeys.CONFIG_PROP_MAX_REDIRECTS + "." + repository.getId(),
+                    ApacheTransporterConfigurationKeys.CONFIG_PROP_MAX_REDIRECTS);
             boolean followRedirects = ConfigUtils.getBoolean(
                     session,
-                    ConfigurationProperties.DEFAULT_FOLLOW_REDIRECTS,
-                    ConfigurationProperties.HTTP_FOLLOW_REDIRECTS + "." + repository.getId(),
-                    ConfigurationProperties.HTTP_FOLLOW_REDIRECTS);
+                    ApacheTransporterConfigurationKeys.DEFAULT_FOLLOW_REDIRECTS,
+                    ApacheTransporterConfigurationKeys.CONFIG_PROP_FOLLOW_REDIRECTS + "." + repository.getId(),
+                    ApacheTransporterConfigurationKeys.CONFIG_PROP_FOLLOW_REDIRECTS);
             final String expectContinue = ConfigUtils.getString(
                     session,
                     null,
