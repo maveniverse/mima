@@ -14,7 +14,7 @@
   <parent>
     <groupId>eu.maveniverse.maven.parent</groupId>
     <artifactId>parent</artifactId>
-    <version>59</version>
+    <version>62</version>
   </parent>
 
   <groupId>eu.maveniverse.maven.mima</groupId>
@@ -269,7 +269,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>33.6.0-jre</version>
+        <version>33.7.1-jre</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.sisu</groupId>
