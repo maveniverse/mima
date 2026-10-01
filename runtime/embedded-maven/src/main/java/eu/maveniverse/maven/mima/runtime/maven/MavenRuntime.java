@@ -138,7 +138,7 @@ public final class MavenRuntime extends RuntimeSupport {
     }
 
     private void customizeLocalRepositoryManager(Context context, DefaultRepositorySystemSession session) {
-        Path localRepoPath = session.getLocalRepository().getBasedir().toPath();
+        Path localRepoPath = session.getLocalRepository().getBasePath();
         if (context.mavenUserHome().localRepository().equals(localRepoPath)) {
             return;
         }
@@ -147,17 +147,18 @@ public final class MavenRuntime extends RuntimeSupport {
 
     private void newLocalRepositoryManager(
             Path localRepoPath, RepositorySystem repositorySystem, DefaultRepositorySystemSession session) {
-        LocalRepository localRepo = new LocalRepository(localRepoPath.toFile());
+        LocalRepository localRepo = new LocalRepository(localRepoPath);
         LocalRepositoryManager lrm = repositorySystem.newLocalRepositoryManager(session, localRepo);
 
         String localRepoTail = ConfigUtils.getString(session, null, MAVEN_REPO_LOCAL_TAIL);
         if (localRepoTail != null) {
             ArrayList<LocalRepositoryManager> tail = new ArrayList<>();
             List<String> paths = Arrays.stream(localRepoTail.split(","))
-                    .filter(p -> p != null && !p.trim().isEmpty())
+                    .map(String::trim)
+                    .filter(p -> !p.isEmpty())
                     .collect(toList());
             for (String path : paths) {
-                tail.add(repositorySystem.newLocalRepositoryManager(session, new LocalRepository(path)));
+                tail.add(repositorySystem.newLocalRepositoryManager(session, new LocalRepository(Paths.get(path))));
             }
             session.setLocalRepositoryManager(new ChainedLocalRepositoryManager(lrm, tail, true));
         } else {
@@ -191,20 +192,20 @@ public final class MavenRuntime extends RuntimeSupport {
         if (overrides.getArtifactUpdatePolicy() != null) {
             switch (overrides.getArtifactUpdatePolicy()) {
                 case ALWAYS:
-                    session.setUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_ALWAYS);
+                    session.setArtifactUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_ALWAYS);
                     break;
                 case NEVER:
-                    session.setUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_NEVER);
+                    session.setArtifactUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_NEVER);
                     break;
             }
         }
         if (overrides.getMetadataUpdatePolicy() != null) {
             switch (overrides.getMetadataUpdatePolicy()) {
                 case ALWAYS:
-                    session.setUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_ALWAYS);
+                    session.setMetadataUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_ALWAYS);
                     break;
                 case NEVER:
-                    session.setUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_NEVER);
+                    session.setMetadataUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_NEVER);
                     break;
             }
         }

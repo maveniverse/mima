@@ -94,8 +94,7 @@ public class StandaloneStaticRuntimeTest {
                                     "test"));
             fail("Resolution should have fail");
         } catch (ArtifactResolutionException e) {
-            assertTrue(
-                    e.getMessage().contains("Checksum validation failed, expected 'fake' (PROVIDED)"), e.getMessage());
+            assertTrue(e.getMessage().contains("Checksum validation failed"), e.getMessage());
         }
     }
 

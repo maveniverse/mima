@@ -219,7 +219,8 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
                 ConfigUtils.getString(contextOverrides.getConfigProperties(), null, MAVEN_REPO_LOCAL_TAIL);
         if (localRepoTail != null) {
             List<String> paths = Arrays.stream(localRepoTail.split(","))
-                    .filter(p -> !p.trim().isEmpty())
+                    .map(String::trim)
+                    .filter(p -> !p.isEmpty())
                     .collect(toList());
             for (String path : paths) {
                 localRepositories.add(new LocalRepository(Paths.get(path)));
@@ -538,6 +539,7 @@ public abstract class StandaloneRuntimeSupport extends RuntimeSupport {
         if (!overrides.extraArtifactTypes().isEmpty()) {
             DefaultArtifactTypeRegistry registry = supplier.getArtifactTypeRegistry();
             overrides.extraArtifactTypes().forEach(registry::add);
+            session.setArtifactTypeRegistry(registry);
         }
 
         session.setCache(new DefaultRepositoryCache());

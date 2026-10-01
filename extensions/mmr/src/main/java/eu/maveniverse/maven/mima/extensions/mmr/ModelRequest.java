@@ -88,7 +88,7 @@ public class ModelRequest {
          */
         public Builder setPomFile(Path pomFile) {
             requireNonNull(pomFile);
-            return setArtifact(new DefaultArtifact("irrelevant:irrelevant:irrelevant").setFile(pomFile.toFile()));
+            return setArtifact(new DefaultArtifact("irrelevant:irrelevant:irrelevant").setPath(pomFile));
         }
 
         /**

@@ -441,6 +441,7 @@ public final class ContextOverrides {
      * Used in static runtime only: return the user-set static extensions map, that may contain SPI instances
      * to be hooked into Resolver. Dangerous! If you don't know what you are doing, ask first. In non-static
      * runtime case, you should rely on usual component discovery, as this field is used only by static runtime.
+     * This method never returns {@code null}, but empty map if no extensions given.
      *
      * @since 2.4.46
      */

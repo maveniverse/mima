@@ -8,7 +8,7 @@
 package eu.maveniverse.maven.mima.runtime.standalonestatic.uber;
 
 /**
- * This class is ONLY here to make this module allowed by Central Staging Ruleset (present of sources and javadoc is must).
+ * This class exists only to satisfy Central Staging rules (sources and Javadoc must be present).
  */
 public final class Dummy {
     private Dummy() {}
