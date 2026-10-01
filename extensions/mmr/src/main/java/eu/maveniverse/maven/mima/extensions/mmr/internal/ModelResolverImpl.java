@@ -141,7 +141,7 @@ public class ModelResolverImpl implements ModelResolver {
         } catch (ArtifactResolutionException e) {
             throw new UnresolvableModelException(e.getMessage(), groupId, artifactId, version, e);
         }
-        return new FileModelSource(pomArtifact.getPath().toFile());
+        return new FileModelSource(pomArtifact.getFile());
     }
 
     @Override

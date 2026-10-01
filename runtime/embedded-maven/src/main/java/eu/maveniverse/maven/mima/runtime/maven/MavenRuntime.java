@@ -18,6 +18,7 @@ import eu.maveniverse.maven.mima.context.internal.MavenSystemHomeImpl;
 import eu.maveniverse.maven.mima.context.internal.MavenUserHomeImpl;
 import eu.maveniverse.maven.mima.context.internal.RuntimeSupport;
 import eu.maveniverse.maven.mima.runtime.maven.internal.PlexusLookup;
+import java.io.Closeable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -49,6 +50,10 @@ import org.eclipse.aether.util.ConfigUtils;
 import org.eclipse.aether.util.repository.ChainedLocalRepositoryManager;
 import org.eclipse.sisu.Nullable;
 
+/**
+ * Big note: this class <em>intentionally uses deprecathed methods</em> to ensure Maven 3.9.x/Resolver 1.x compatibility.
+ * It is ro ensure code written by users, if doing same, still works.
+ */
 @Singleton
 @Named
 public final class MavenRuntime extends RuntimeSupport {
@@ -59,6 +64,8 @@ public final class MavenRuntime extends RuntimeSupport {
     private final Provider<MavenSession> mavenSessionProvider;
 
     private final RuntimeInformation runtimeInformation;
+
+    private final boolean weDealWithR1;
 
     @Inject
     public MavenRuntime(
@@ -78,6 +85,7 @@ public final class MavenRuntime extends RuntimeSupport {
         this.plexusContainer = plexusContainer;
         this.mavenSessionProvider = mavenSessionProvider;
         this.runtimeInformation = rt;
+        this.weDealWithR1 = !(repositorySystem instanceof Closeable);
     }
 
     @Override
@@ -105,7 +113,11 @@ public final class MavenRuntime extends RuntimeSupport {
 
         customizeArtifactDescriptorPolicy(overrides, session);
 
-        customizeSnapshotUpdatePolicy(overrides, session);
+        if (weDealWithR1) {
+            customizeSnapshotUpdatePolicyR1(overrides, session);
+        } else {
+            customizeSnapshotUpdatePolicyR2(overrides, session);
+        }
 
         // settings are used only in creation, not customization
 
@@ -138,7 +150,7 @@ public final class MavenRuntime extends RuntimeSupport {
     }
 
     private void customizeLocalRepositoryManager(Context context, DefaultRepositorySystemSession session) {
-        Path localRepoPath = session.getLocalRepository().getBasePath();
+        Path localRepoPath = session.getLocalRepository().getBasedir().toPath();
         if (context.mavenUserHome().localRepository().equals(localRepoPath)) {
             return;
         }
@@ -147,7 +159,7 @@ public final class MavenRuntime extends RuntimeSupport {
 
     private void newLocalRepositoryManager(
             Path localRepoPath, RepositorySystem repositorySystem, DefaultRepositorySystemSession session) {
-        LocalRepository localRepo = new LocalRepository(localRepoPath);
+        LocalRepository localRepo = new LocalRepository(localRepoPath.toFile());
         LocalRepositoryManager lrm = repositorySystem.newLocalRepositoryManager(session, localRepo);
 
         String localRepoTail = ConfigUtils.getString(session, null, MAVEN_REPO_LOCAL_TAIL);
@@ -158,7 +170,7 @@ public final class MavenRuntime extends RuntimeSupport {
                     .filter(p -> !p.isEmpty())
                     .collect(toList());
             for (String path : paths) {
-                tail.add(repositorySystem.newLocalRepositoryManager(session, new LocalRepository(Paths.get(path))));
+                tail.add(repositorySystem.newLocalRepositoryManager(session, new LocalRepository(path)));
             }
             session.setLocalRepositoryManager(new ChainedLocalRepositoryManager(lrm, tail, true));
         } else {
@@ -188,7 +200,30 @@ public final class MavenRuntime extends RuntimeSupport {
         }
     }
 
-    private void customizeSnapshotUpdatePolicy(ContextOverrides overrides, DefaultRepositorySystemSession session) {
+    private void customizeSnapshotUpdatePolicyR1(ContextOverrides overrides, DefaultRepositorySystemSession session) {
+        if (overrides.getArtifactUpdatePolicy() != null) {
+            switch (overrides.getArtifactUpdatePolicy()) {
+                case ALWAYS:
+                    session.setUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_ALWAYS);
+                    break;
+                case NEVER:
+                    session.setUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_NEVER);
+                    break;
+            }
+        }
+        if (overrides.getMetadataUpdatePolicy() != null) {
+            switch (overrides.getMetadataUpdatePolicy()) {
+                case ALWAYS:
+                    session.setUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_ALWAYS);
+                    break;
+                case NEVER:
+                    session.setUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_NEVER);
+                    break;
+            }
+        }
+    }
+
+    private void customizeSnapshotUpdatePolicyR2(ContextOverrides overrides, DefaultRepositorySystemSession session) {
         if (overrides.getArtifactUpdatePolicy() != null) {
             switch (overrides.getArtifactUpdatePolicy()) {
                 case ALWAYS:

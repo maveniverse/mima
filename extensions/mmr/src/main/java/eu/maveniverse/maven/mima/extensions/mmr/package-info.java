@@ -7,5 +7,7 @@
  */
 /**
  * MMR extension for MIMA.
+ *
+ * Note: intentional use of deprecated methods to retain Maven 3.9 compatibility.
  */
 package eu.maveniverse.maven.mima.extensions.mmr;
