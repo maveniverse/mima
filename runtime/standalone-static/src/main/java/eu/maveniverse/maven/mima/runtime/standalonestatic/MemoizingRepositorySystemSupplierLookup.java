@@ -47,7 +47,20 @@ public class MemoizingRepositorySystemSupplierLookup implements Lookup {
 
     @SuppressWarnings({"unchecked"})
     private <T> Map<String, T> lookupMap(Class<T> type) {
+        // Factory -> Factories
+        // Strategy -> Strategies
+        // Mapper -> Mappers
+        // Source -> Sources
+        // Listener -> Listeners
+        // Delegate -> Delegates
+        // Processor -> Processors
+        // Transformer -> Transformers
         String methodName = "get" + type.getSimpleName();
+        if (methodName.endsWith("y")) {
+            methodName = methodName.substring(0, methodName.length() - 1) + "ies";
+        } else {
+            methodName  = methodName + "s";
+        }
         try {
             Method method = MimaRepositorySystemSupplier.class.getMethod(methodName);
             Object result = method.invoke(repositorySystemSupplier);
