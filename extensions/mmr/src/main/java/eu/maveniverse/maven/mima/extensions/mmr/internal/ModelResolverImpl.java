@@ -7,7 +7,6 @@
  */
 package eu.maveniverse.maven.mima.extensions.mmr.internal;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -142,10 +141,7 @@ public class ModelResolverImpl implements ModelResolver {
         } catch (ArtifactResolutionException e) {
             throw new UnresolvableModelException(e.getMessage(), groupId, artifactId, version, e);
         }
-
-        File pomFile = pomArtifact.getFile();
-
-        return new FileModelSource(pomFile);
+        return new FileModelSource(pomArtifact.getFile());
     }
 
     @Override

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (c) 2023-2026 Maveniverse Org.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the Eclipse Public License v2.0
+    which accompanies this distribution, and is available at
+    https://www.eclipse.org/legal/epl-v20.html
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>eu.maveniverse.maven.mima.runtime</groupId>
+    <artifactId>runtime</artifactId>
+    <version>3.0.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>standalone-static-uber-url</artifactId>
+  <name>${project.groupId}:${project.artifactId}</name>
+
+  <!-- Note: this plugin has no sources, is just shaded :standalone-static,
+  still Central requires presence of sources/javadocs JARs, so they are faked. -->
+
+  <properties>
+    <Automatic-Module-Name>eu.maveniverse.maven.mima.runtime.standalonestatic</Automatic-Module-Name>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>eu.maveniverse.maven.mima</groupId>
+      <artifactId>context</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>eu.maveniverse.maven.mima.runtime</groupId>
+      <artifactId>standalone-static</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.maven.resolver</groupId>
+          <artifactId>maven-resolver-transport-apache</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.code.gson</groupId>
+          <artifactId>gson</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.resolver</groupId>
+      <artifactId>maven-resolver-transport-url</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <configuration>
+          <dependencyReducedPomLocation>${project.build.directory}/dependency-reduced-pom.xml</dependencyReducedPomLocation>
+          <artifactSet>
+            <excludes>
+              <exclude>org.slf4j:*</exclude>
+            </excludes>
+          </artifactSet>
+          <filters>
+            <filter>
+              <artifact>*:*</artifact>
+              <excludes>
+                <exclude>META-INF/DEPENDENCIES</exclude>
+                <exclude>META-INF/LICENSE</exclude>
+                <exclude>META-INF/LICENSE.txt</exclude>
+                <exclude>META-INF/MANIFEST.MF</exclude>
+                <exclude>META-INF/NOTICE</exclude>
+                <exclude>META-INF/NOTICE.txt</exclude>
+                <exclude>META-INF/services/javax.annotation.processing.Processor</exclude>
+                <exclude>**/module-info.class</exclude>
+              </excludes>
+            </filter>
+          </filters>
+          <shadedClassifierName />
+          <transformers>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.SisuIndexResourceTransformer" />
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer" />
+          </transformers>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <phase>package</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <configuration>
+          <skipSource>true</skipSource>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>source-dependencies</id>
+            <goals>
+              <goal>unpack-dependencies</goal>
+            </goals>
+            <phase>prepare-package</phase>
+            <configuration>
+              <classifier>sources</classifier>
+              <failOnMissingClassifierArtifact>false</failOnMissingClassifierArtifact>
+              <outputDirectory>${project.build.directory}/sources</outputDirectory>
+              <excludeGroupIds>org.slf4j</excludeGroupIds>
+              <includes>**/*.java</includes>
+              <includeScope>runtime</includeScope>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>uber-source</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <descriptors>
+                <descriptor>${project.basedir}/src/assemblies/uber-source.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -55,6 +55,10 @@ public class MavenModelReaderTest {
             if (overrideRepository == null) {
                 assertEquals(context.remoteRepositories().get(0), responseRepository);
             } else {
+                // if remote, we need to make it BARE
+                if (responseRepository instanceof RemoteRepository) {
+                    responseRepository = ((RemoteRepository) responseRepository).toBareRemoteRepository();
+                }
                 assertEquals(overrideRepository, responseRepository);
             }
 

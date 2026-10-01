@@ -8,7 +8,6 @@
 package eu.maveniverse.maven.mima.context.internal;
 
 import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 import eu.maveniverse.maven.mima.context.Context;
@@ -18,32 +17,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
-import org.eclipse.aether.DefaultRepositoryCache;
-import org.eclipse.aether.DefaultRepositorySystemSession;
-import org.eclipse.aether.DefaultSessionData;
-import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.repository.LocalRepository;
-import org.eclipse.aether.repository.LocalRepositoryManager;
-import org.eclipse.aether.repository.RemoteRepository;
-import org.eclipse.aether.repository.RepositoryPolicy;
-import org.eclipse.aether.util.ConfigUtils;
-import org.eclipse.aether.util.repository.ChainedLocalRepositoryManager;
 
 /**
  * Support class for {@link Runtime} implementations.
  */
 public abstract class RuntimeSupport implements Runtime {
-    private static final String MAVEN_REPO_LOCAL_TAIL = "maven.repo.local.tail";
-
-    private static final String MAVEN_REPO_LOCAL_TAIL_IGNORE_AVAILABILITY = "maven.repo.local.tail.ignoreAvailability";
+    protected static final String MAVEN_REPO_LOCAL_TAIL = "maven.repo.local.tail";
 
     public static final Path DEFAULT_BASEDIR =
             Paths.get(System.getProperty("user.dir")).toAbsolutePath();
@@ -103,150 +85,13 @@ public abstract class RuntimeSupport implements Runtime {
         return customizeContext(this, overrides, context, reset);
     }
 
-    protected Context customizeContext(
-            RuntimeSupport runtime, ContextOverrides overrides, Context context, boolean reset) {
-        DefaultRepositorySystemSession session = new DefaultRepositorySystemSession(context.repositorySystemSession());
-        if (reset) {
-            session.setCache(new DefaultRepositoryCache());
-            session.setData(new DefaultSessionData());
-        }
+    protected abstract Context customizeContext(
+            RuntimeSupport runtime, ContextOverrides overrides, Context context, boolean reset);
 
-        if (managedRepositorySystem()) {
-            session.setSystemProperties(overrides.getSystemProperties());
-            session.setUserProperties(overrides.getUserProperties());
-            session.setConfigProperties(overrides.getConfigProperties());
-        }
-
-        overrides.isOffline().ifPresent(session::setOffline);
-
-        overrides.isIgnoreArtifactDescriptorRepositories().ifPresent(session::setIgnoreArtifactDescriptorRepositories);
-
-        customizeLocalRepositoryManager(context, session);
-
-        customizeChecksumPolicy(overrides, session);
-
-        customizeArtifactDescriptorPolicy(overrides, session);
-
-        customizeSnapshotUpdatePolicy(overrides, session);
-
-        // settings are used only in creation, not customization
-
-        if (overrides.getTransferListener() != null) {
-            session.setTransferListener(overrides.getTransferListener());
-        }
-        if (overrides.getRepositoryListener() != null) {
-            session.setRepositoryListener(overrides.getRepositoryListener());
-        }
-
-        session.setReadOnly();
-
-        overrides = overrides.toBuilder()
-                .repositories(customizeRemoteRepositories(overrides, context.remoteRepositories()))
-                .build();
-
-        return new Context(
-                runtime,
-                overrides,
-                overrides.getBasedirOverride() != null ? overrides.getBasedirOverride() : context.basedir(),
-                ((MavenUserHomeImpl) context.mavenUserHome()).derive(overrides),
-                context.mavenSystemHome() != null
-                        ? ((MavenSystemHomeImpl) context.mavenSystemHome()).derive(overrides)
-                        : null,
-                context.repositorySystem(),
-                session,
-                context.httpProxy(),
-                context.lookup(),
-                null); // derived context: close should NOT shut down repositorySystem
-    }
-
-    protected void customizeLocalRepositoryManager(Context context, DefaultRepositorySystemSession session) {
-        Path localRepoPath = session.getLocalRepository().getBasedir().toPath();
-        if (context.mavenUserHome().localRepository().equals(localRepoPath)) {
-            return;
-        }
-        newLocalRepositoryManager(context.mavenUserHome().localRepository(), context.repositorySystem(), session);
-    }
-
-    protected void newLocalRepositoryManager(
-            Path localRepoPath, RepositorySystem repositorySystem, DefaultRepositorySystemSession session) {
-        LocalRepository localRepo = new LocalRepository(localRepoPath.toFile());
-        LocalRepositoryManager lrm = repositorySystem.newLocalRepositoryManager(session, localRepo);
-
-        String localRepoTail = ConfigUtils.getString(session, null, MAVEN_REPO_LOCAL_TAIL);
-        if (localRepoTail != null) {
-            boolean ignoreTailAvailability =
-                    ConfigUtils.getBoolean(session, true, MAVEN_REPO_LOCAL_TAIL_IGNORE_AVAILABILITY);
-            ArrayList<LocalRepositoryManager> tail = new ArrayList<>();
-            List<String> paths = Arrays.stream(localRepoTail.split(","))
-                    .filter(p -> p != null && !p.trim().isEmpty())
-                    .collect(toList());
-            for (String path : paths) {
-                tail.add(repositorySystem.newLocalRepositoryManager(session, new LocalRepository(path)));
-            }
-            session.setLocalRepositoryManager(new ChainedLocalRepositoryManager(lrm, tail, ignoreTailAvailability));
-        } else {
-            session.setLocalRepositoryManager(lrm);
-        }
-    }
-
-    protected void customizeChecksumPolicy(ContextOverrides overrides, DefaultRepositorySystemSession session) {
-        if (overrides.getChecksumPolicy() != null) {
-            switch (overrides.getChecksumPolicy()) {
-                case FAIL:
-                    session.setChecksumPolicy(RepositoryPolicy.CHECKSUM_POLICY_FAIL);
-                    break;
-                case WARN:
-                    session.setChecksumPolicy(RepositoryPolicy.CHECKSUM_POLICY_WARN);
-                    break;
-                case IGNORE:
-                    session.setChecksumPolicy(RepositoryPolicy.CHECKSUM_POLICY_IGNORE);
-                    break;
-            }
-        }
-    }
-
-    protected void customizeArtifactDescriptorPolicy(
-            ContextOverrides overrides, DefaultRepositorySystemSession session) {
-        if (overrides.getArtifactDescriptorPolicy() != null) {
-            session.setArtifactDescriptorPolicy(overrides.getArtifactDescriptorPolicy());
-        }
-    }
-
-    protected void customizeSnapshotUpdatePolicy(ContextOverrides overrides, DefaultRepositorySystemSession session) {
-        if (overrides.getSnapshotUpdatePolicy() != null) {
-            switch (overrides.getSnapshotUpdatePolicy()) {
-                case ALWAYS:
-                    session.setUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_ALWAYS);
-                    break;
-                case NEVER:
-                    session.setUpdatePolicy(RepositoryPolicy.UPDATE_POLICY_NEVER);
-                    break;
-            }
-        }
-    }
-
-    protected List<RemoteRepository> customizeRemoteRepositories(
-            ContextOverrides contextOverrides, List<RemoteRepository> remoteRepositories) {
-        if (Objects.equals(contextOverrides.getRepositories(), remoteRepositories)) {
-            // no change here
-            return remoteRepositories;
-        }
-        ArrayList<RemoteRepository> result = new ArrayList<>();
-        if (contextOverrides.addRepositoriesOp() == ContextOverrides.AddRepositoriesOp.REPLACE) {
-            result.addAll(contextOverrides.getRepositories());
-        } else {
-            if (contextOverrides.addRepositoriesOp() == ContextOverrides.AddRepositoriesOp.PREPEND) {
-                result.addAll(contextOverrides.getRepositories());
-            }
-            result.addAll(remoteRepositories);
-            if (contextOverrides.addRepositoriesOp() == ContextOverrides.AddRepositoriesOp.APPEND) {
-                result.addAll(contextOverrides.getRepositories());
-            }
-        }
-        return Collections.unmodifiableList(result);
-    }
-
-    protected MavenUserHomeImpl defaultMavenUserHome() {
+    /**
+     * Visible for test.
+     */
+    public MavenUserHomeImpl defaultMavenUserHome() {
         return new MavenUserHomeImpl(DEFAULT_MAVEN_USER_HOME);
     }
 
