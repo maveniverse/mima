@@ -51,9 +51,9 @@ import org.eclipse.aether.util.repository.ChainedLocalRepositoryManager;
 import org.eclipse.sisu.Nullable;
 
 /**
- * Big note: this class <em>intentionally uses deprecathed methods</em> to ensure Maven 3.9.x/Resolver 1.x compatibility.
- * It is ro ensure code written by users, if doing same, still works.
- */
+ * Big note: this class <em>intentionally uses deprecated methods</em> to ensure Maven 3.9.x/Resolver 1.x compatibility.
+ * This ensures that user code doing the same still works.
+ * */
 @Singleton
 @Named
 public final class MavenRuntime extends RuntimeSupport {
@@ -158,7 +158,7 @@ public final class MavenRuntime extends RuntimeSupport {
         if (context.mavenUserHome().localRepository().equals(localRepoPath)) {
             return;
         }
-        newLocalRepositoryManager(context.mavenUserHome().localRepository(), context.repositorySystem(), session);
+        newLocalRepositoryManager(localRepoPath, context.repositorySystem(), session);
     }
 
     private void newLocalRepositoryManager(
