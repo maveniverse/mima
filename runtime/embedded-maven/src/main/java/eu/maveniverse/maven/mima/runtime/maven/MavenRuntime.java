@@ -103,11 +103,16 @@ public final class MavenRuntime extends RuntimeSupport {
             session.setConfigProperties(overrides.getConfigProperties());
         }
 
+        MavenUserHome mavenUserHome = context.mavenUserHome().derive(overrides);
+
+        MavenSystemHome mavenSystemHome =
+                context.mavenSystemHome() != null ? context.mavenSystemHome().derive(overrides) : null;
+
         overrides.isOffline().ifPresent(session::setOffline);
 
         overrides.isIgnoreArtifactDescriptorRepositories().ifPresent(session::setIgnoreArtifactDescriptorRepositories);
 
-        customizeLocalRepositoryManager(context, session);
+        customizeLocalRepositoryManager(context, mavenUserHome, session);
 
         customizeChecksumPolicy(overrides, session);
 
@@ -138,10 +143,8 @@ public final class MavenRuntime extends RuntimeSupport {
                 runtime,
                 overrides,
                 overrides.getBasedirOverride() != null ? overrides.getBasedirOverride() : context.basedir(),
-                ((MavenUserHomeImpl) context.mavenUserHome()).derive(overrides),
-                context.mavenSystemHome() != null
-                        ? ((MavenSystemHomeImpl) context.mavenSystemHome()).derive(overrides)
-                        : null,
+                mavenUserHome,
+                mavenSystemHome,
                 context.repositorySystem(),
                 session,
                 context.httpProxy(),
@@ -149,8 +152,9 @@ public final class MavenRuntime extends RuntimeSupport {
                 null); // derived context: close should NOT shut down repositorySystem
     }
 
-    private void customizeLocalRepositoryManager(Context context, DefaultRepositorySystemSession session) {
-        Path localRepoPath = session.getLocalRepository().getBasedir().toPath();
+    private void customizeLocalRepositoryManager(
+            Context context, MavenUserHome derived, DefaultRepositorySystemSession session) {
+        Path localRepoPath = derived.localRepository();
         if (context.mavenUserHome().localRepository().equals(localRepoPath)) {
             return;
         }
