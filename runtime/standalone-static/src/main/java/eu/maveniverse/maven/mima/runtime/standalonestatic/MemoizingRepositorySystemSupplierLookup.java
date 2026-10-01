@@ -42,11 +42,11 @@ public class MemoizingRepositorySystemSupplierLookup implements Lookup {
 
     @Override
     public <T> Optional<T> lookup(Class<T> type, String name) {
-        return Optional.ofNullable(lookupMap(type).get(name));
+        return Optional.ofNullable(lookupMap(false, type).get(name));
     }
 
     @SuppressWarnings({"unchecked"})
-    private <T> Map<String, T> lookupMap(Class<T> type) {
+    private <T> Map<String, T> lookupMap(boolean tryPlural, Class<T> type) {
         // Factory -> Factories
         // Strategy -> Strategies
         // Mapper -> Mappers
@@ -56,10 +56,12 @@ public class MemoizingRepositorySystemSupplierLookup implements Lookup {
         // Processor -> Processors
         // Transformer -> Transformers
         String methodName = "get" + type.getSimpleName();
-        if (methodName.endsWith("y")) {
-            methodName = methodName.substring(0, methodName.length() - 1) + "ies";
-        } else {
-            methodName  = methodName + "s";
+        if (tryPlural) {
+            if (methodName.endsWith("y")) {
+                methodName = methodName.substring(0, methodName.length() - 1) + "ies";
+            } else {
+                methodName = methodName + "s";
+            }
         }
         try {
             Method method = MimaRepositorySystemSupplier.class.getMethod(methodName);
@@ -69,7 +71,11 @@ public class MemoizingRepositorySystemSupplierLookup implements Lookup {
             }
             return Collections.singletonMap("default", (T) result);
         } catch (NoSuchMethodException e) {
-            return Collections.emptyMap();
+            if (!tryPlural) {
+                return lookupMap(true, type);
+            } else {
+                return Collections.emptyMap();
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
