@@ -11,5 +11,4 @@ jobs:
     name: Verify
     uses: maveniverse/parent/.github/workflows/ci.yml@release-63
     with:
-      maven-matrix: '[ "3.10.0", "4.0.0-rc-7" ]'
       maven-test: './mvnw -f demo install -e -B -V'
