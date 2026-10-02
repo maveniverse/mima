@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import org.apache.maven.repository.supplier.RepositorySystemSupplier;
 import org.eclipse.aether.RepositoryListener;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.impl.MetadataGeneratorFactory;
@@ -35,7 +36,6 @@ import org.eclipse.aether.spi.connector.transport.http.ChecksumExtractorStrategy
 import org.eclipse.aether.spi.locking.LockingInhibitorFactory;
 import org.eclipse.aether.spi.resolution.ArtifactResolverPostProcessor;
 import org.eclipse.aether.spi.validator.ValidatorFactory;
-import org.eclipse.aether.supplier.RepositorySystemSupplier;
 import org.eclipse.aether.transport.file.FileTransporterFactory;
 
 public class MemoizingRepositorySystemSupplierLookup implements Lookup {
