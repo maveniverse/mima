@@ -184,11 +184,6 @@
         <artifactId>maven-resolver-transport-url</artifactId>
         <version>${version.resolver}</version>
       </dependency>
-      <dependency>
-        <groupId>org.apache.maven.resolver</groupId>
-        <artifactId>maven-resolver-supplier-mvn3</artifactId>
-        <version>${version.resolver}</version>
-      </dependency>
 
       <dependency>
         <groupId>org.apache.maven</groupId>
