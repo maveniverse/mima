@@ -14,7 +14,7 @@
   <parent>
     <groupId>eu.maveniverse.maven.parent</groupId>
     <artifactId>parent</artifactId>
-    <version>64</version>
+    <version>65</version>
     <relativePath />
   </parent>
 
@@ -35,8 +35,8 @@
     <version.mima>3.0.2-SNAPSHOT</version.mima>
     <!-- tied to MIMA/Maven -->
     <version.slf4j>2.0.20</version.slf4j>
-    <version.maven>3.10.0</version.maven>
-    <version.resolver>2.0.24</version.resolver>
+    <version.maven>3.10.2</version.maven>
+    <version.resolver>2.0.26</version.resolver>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
