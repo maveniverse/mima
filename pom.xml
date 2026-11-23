@@ -14,7 +14,7 @@
   <parent>
     <groupId>eu.maveniverse.maven.parent</groupId>
     <artifactId>parent</artifactId>
-    <version>64</version>
+    <version>65</version>
   </parent>
 
   <groupId>eu.maveniverse.maven.mima</groupId>
@@ -60,9 +60,9 @@
     <project.build.outputTimestamp>2026-10-02T18:31:08Z</project.build.outputTimestamp>
 
     <!-- Dependency versions -->
-    <version.resolver>2.0.24</version.resolver>
-    <version.maven>3.10.0</version.maven>
-    <version.sisu>1.1.0</version.sisu>
+    <version.resolver>2.0.26</version.resolver>
+    <version.maven>3.10.2</version.maven>
+    <version.sisu>1.1.2</version.sisu>
     <version.slf4j>2.0.20</version.slf4j>
     <version.junit>5.14.4</version.junit>
   </properties>
@@ -264,7 +264,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>33.7.2-jre</version>
+        <version>33.8.0-jre</version>
       </dependency>
       <dependency>
         <groupId>org.eclipse.sisu</groupId>
